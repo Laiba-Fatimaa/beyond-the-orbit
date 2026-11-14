@@ -343,124 +343,324 @@ class SpaceRenderer {
     /**
      * Draws the orbital radar view on the mission operations deck.
      */
-    drawFlightDeckRadar(canvasId, destination, orbitPhase, altitudeKm, isDaylight, isGroundContact) {
+    /**
+     * Draws the cinematic orbital flight deck environment.
+     * Features:
+     * - Dominant high-resolution planetary horizon
+     * - Moving spacecraft along orbital trajectory with glowing thruster plumes
+     * - Surface Reconnaissance Viewfinder targeting box over geological target
+     * - Scanning laser beam, DSN RF link, and telemetry telemetry HUD
+     */
+    drawFlightDeckRadar(canvasId, destination, orbitPhase, altitudeKm, isDaylight, isGroundContact, activeTarget = null) {
         const c = document.getElementById(canvasId);
         if (!c) return;
         const ctx = c.getContext('2d');
         const w = c.width = c.clientWidth;
         const h = c.height = c.clientHeight;
 
-        ctx.fillStyle = '#060B18';
+        ctx.fillStyle = '#030612';
         ctx.fillRect(0, 0, w, h);
 
-        const cx = w / 2;
-        const cy = h / 2;
-        const planetR = Math.min(w, h) * 0.22;
-        const orbitRx = Math.min(w, h) * 0.42;
-        const orbitRy = orbitRx * 0.55;
+        // Deep space starfield in viewport
+        for (let i = 0; i < 40; i++) {
+            const sx = (i * 137.5) % w;
+            const sy = (i * 89.3) % h;
+            ctx.fillStyle = `rgba(200, 225, 255, ${0.2 + (i % 5) * 0.15})`;
+            ctx.beginPath();
+            ctx.arc(sx, sy, (i % 3 === 0 ? 1.4 : 0.8), 0, Math.PI * 2);
+            ctx.fill();
+        }
 
-        // Draw orbital plane
-        ctx.strokeStyle = 'rgba(67, 217, 255, 0.25)';
+        // Central Planet position — shifted right/center to create dramatic composition
+        const cx = w * 0.58;
+        const cy = h * 0.56;
+        const planetR = Math.min(w, h) * 0.44;
+        const orbitRx = planetR * 1.42;
+        const orbitRy = orbitRx * 0.62;
+
+        // If Europa, draw colossal Jupiter gas giant with Great Red Spot in background
+        if (destination === "Europa") {
+            const jx = w * 0.88;
+            const jy = h * 0.22;
+            const jR = planetR * 0.75;
+            const jGrad = ctx.createRadialGradient(jx - jR * 0.3, jy - jR * 0.3, jR * 0.1, jx, jy, jR);
+            jGrad.addColorStop(0, '#E8CBB0');
+            jGrad.addColorStop(0.4, '#C99065');
+            jGrad.addColorStop(0.75, '#8C4B28');
+            jGrad.addColorStop(1, '#1A0D06');
+            ctx.fillStyle = jGrad;
+            ctx.beginPath();
+            ctx.arc(jx, jy, jR, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Jupiter bands
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(jx, jy, jR, 0, Math.PI * 2);
+            ctx.clip();
+            for (let b = -4; b <= 4; b++) {
+                ctx.fillStyle = b % 2 === 0 ? 'rgba(90, 40, 15, 0.4)' : 'rgba(235, 200, 170, 0.25)';
+                ctx.fillRect(jx - jR, jy + b * (jR * 0.2), jR * 2, jR * 0.12);
+            }
+            // Great Red Spot
+            ctx.fillStyle = '#A33E26';
+            ctx.beginPath();
+            ctx.ellipse(jx + jR * 0.25, jy + jR * 0.28, jR * 0.22, jR * 0.12, 0.1, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        }
+
+        // Draw orbital trajectory plane
+        ctx.strokeStyle = 'rgba(0, 212, 255, 0.3)';
         ctx.lineWidth = 1.5;
-        ctx.setLineDash([4, 4]);
+        ctx.setLineDash([6, 6]);
         ctx.beginPath();
         ctx.ellipse(cx, cy, orbitRx, orbitRy, -Math.PI * 0.08, 0, Math.PI * 2);
         ctx.stroke();
         ctx.setLineDash([]);
 
-        // Ground station uplink cone (when in contact)
-        if (isGroundContact) {
-            ctx.strokeStyle = 'rgba(0, 240, 255, 0.6)';
-            ctx.lineWidth = 1.5;
-            ctx.beginPath();
-            ctx.moveTo(w * 0.15, h * 0.85);
-            ctx.lineTo(cx + Math.cos(orbitPhase) * orbitRx, cy + Math.sin(orbitPhase) * orbitRy);
-            ctx.stroke();
-
-            ctx.fillStyle = '#00F0FF';
-            ctx.font = '10px "Rajdhani", sans-serif';
-            ctx.fillText('📡 DSN CARRIER LOCK', w * 0.05, h * 0.85);
-        }
-
-        // Draw central planet
-        this.drawPlanetOnContext(ctx, cx, cy, planetR, destination, this.planetAngle);
-
         // Calculate spacecraft position on orbit
         const craftX = cx + Math.cos(orbitPhase) * orbitRx;
         const craftY = cy + Math.sin(orbitPhase) * orbitRy;
 
-        // Sensor scanning cone
-        if (this.scanningActive) {
-            ctx.fillStyle = 'rgba(67, 217, 255, 0.2)';
+        // Ground station uplink cone (when in contact)
+        if (isGroundContact) {
+            ctx.strokeStyle = 'rgba(0, 212, 255, 0.5)';
+            ctx.lineWidth = 1.5;
             ctx.beginPath();
-            ctx.moveTo(craftX, craftY);
-            ctx.lineTo(craftX - 35, craftY + 50);
-            ctx.lineTo(craftX + 35, craftY + 50);
-            ctx.closePath();
-            ctx.fill();
+            ctx.moveTo(w * 0.08, h * 0.92);
+            ctx.lineTo(craftX, craftY);
+            ctx.stroke();
 
-            ctx.strokeStyle = '#43D9FF';
-            ctx.lineWidth = 1;
+            ctx.fillStyle = '#00D4FF';
+            ctx.font = '10px "Rajdhani", sans-serif';
+            ctx.fillText('📡 DSN CARRIER LOCK: 2.2 GHz', w * 0.03, h * 0.95);
+        }
+
+        // Draw destination planet
+        this.drawPlanetOnContext(ctx, cx, cy, planetR, destination, this.planetAngle);
+
+        // --- SURFACE RECONNAISSANCE VIEWFINDER TARGET BOX ---
+        // A high-tech square HUD targeting box over the planet's surface
+        const vfSize = Math.min(w, h) * 0.26;
+        const vfX = cx + planetR * 0.18;
+        const vfY = cy - planetR * 0.32;
+
+        ctx.save();
+        // Viewfinder background with magnified planetary surface terrain
+        ctx.fillStyle = 'rgba(7, 14, 30, 0.88)';
+        ctx.fillRect(vfX, vfY, vfSize, vfSize);
+
+        // Magnified surface terrain inside box
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(vfX, vfY, vfSize, vfSize);
+        ctx.clip();
+        
+        if (destination === "Mars") {
+            // Mars canyon/riverbed terrain inside viewfinder
+            ctx.fillStyle = '#A84422';
+            ctx.fillRect(vfX, vfY, vfSize, vfSize);
+            // Canyon rift
+            ctx.strokeStyle = '#4A1406';
+            ctx.lineWidth = 6;
+            ctx.beginPath();
+            ctx.moveTo(vfX, vfY + vfSize * 0.4);
+            ctx.quadraticCurveTo(vfX + vfSize * 0.5, vfY + vfSize * 0.65, vfX + vfSize, vfY + vfSize * 0.5);
+            ctx.stroke();
+            // Sediment layers
+            ctx.strokeStyle = '#752812';
+            ctx.lineWidth = 2;
+            for (let i = 0; i < 4; i++) {
+                ctx.beginPath();
+                ctx.moveTo(vfX, vfY + vfSize * (0.2 + i * 0.18));
+                ctx.lineTo(vfX + vfSize, vfY + vfSize * (0.2 + i * 0.18) + 8);
+                ctx.stroke();
+            }
+        } else if (destination === "Moon") {
+            // Moon crater basin
+            ctx.fillStyle = '#5A6372';
+            ctx.fillRect(vfX, vfY, vfSize, vfSize);
+            ctx.fillStyle = '#2A303A';
+            ctx.beginPath();
+            ctx.arc(vfX + vfSize * 0.5, vfY + vfSize * 0.5, vfSize * 0.38, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#8E9AA8';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+        } else {
+            // Europa ice cracks
+            ctx.fillStyle = '#D2DFEE';
+            ctx.fillRect(vfX, vfY, vfSize, vfSize);
+            ctx.strokeStyle = '#943820';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(vfX, vfY + vfSize * 0.2);
+            ctx.lineTo(vfX + vfSize, vfY + vfSize * 0.8);
+            ctx.moveTo(vfX + vfSize * 0.7, vfY);
+            ctx.lineTo(vfX + vfSize * 0.2, vfY + vfSize);
             ctx.stroke();
         }
 
-        // Spacecraft icon & thruster plume
-        ctx.save();
-        ctx.translate(craftX, craftY);
+        // Scanlines inside viewfinder
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+        for (let s = 0; s < vfSize; s += 4) {
+            ctx.fillRect(vfX, vfY + s, vfSize, 1.5);
+        }
+        ctx.restore();
 
-        if (this.thrusterActive) {
-            // Thruster fire exhaust plume
-            ctx.fillStyle = 'rgba(255, 120, 40, 0.85)';
-            ctx.beginPath();
-            ctx.moveTo(-4, 6);
-            ctx.lineTo(0, 22);
-            ctx.lineTo(4, 6);
-            ctx.closePath();
-            ctx.fill();
+        // High-tech bracket corners
+        const cornerLen = 14;
+        ctx.strokeStyle = '#00D4FF';
+        ctx.lineWidth = 2.5;
+        // Top-left
+        ctx.beginPath(); ctx.moveTo(vfX, vfY + cornerLen); ctx.lineTo(vfX, vfY); ctx.lineTo(vfX + cornerLen, vfY); ctx.stroke();
+        // Top-right
+        ctx.beginPath(); ctx.moveTo(vfX + vfSize - cornerLen, vfY); ctx.lineTo(vfX + vfSize, vfY); ctx.lineTo(vfX + vfSize, vfY + cornerLen); ctx.stroke();
+        // Bottom-left
+        ctx.beginPath(); ctx.moveTo(vfX, vfY + vfSize - cornerLen); ctx.lineTo(vfX, vfY + vfSize); ctx.lineTo(vfX + cornerLen, vfY + vfSize); ctx.stroke();
+        // Bottom-right
+        ctx.beginPath(); ctx.moveTo(vfX + vfSize - cornerLen, vfY + vfSize); ctx.lineTo(vfX + vfSize, vfY + vfSize); ctx.lineTo(vfX + vfSize, vfY + vfSize - cornerLen); ctx.stroke();
 
-            ctx.fillStyle = '#FFE600';
+        // Center crosshair
+        const vMidX = vfX + vfSize / 2;
+        const vMidY = vfY + vfSize / 2;
+        ctx.strokeStyle = 'rgba(0, 212, 255, 0.8)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(vMidX - 10, vMidY); ctx.lineTo(vMidX + 10, vMidY);
+        ctx.moveTo(vMidX, vMidY - 10); ctx.lineTo(vMidX, vMidY + 10);
+        ctx.stroke();
+        ctx.strokeRect(vMidX - 4, vMidY - 4, 8, 8);
+
+        // Viewfinder Target Label
+        const tgtName = activeTarget ? activeTarget.name : (destination === "Mars" ? "Jezero Crater Paleolake Delta" : (destination === "Moon" ? "Shackleton Crater Ice Basin" : "Conamara Chaos Cryo-Plume"));
+        ctx.fillStyle = '#00D4FF';
+        ctx.font = '10px "Rajdhani", sans-serif';
+        ctx.fillText(`TARGET RECON: ${tgtName.toUpperCase()}`, vfX + 4, vfY - 6);
+        ctx.fillStyle = '#CAD5E8';
+        ctx.font = '9px "Rajdhani", sans-serif';
+        ctx.fillText('COORD: 18.38°N 77.58°E · ELEV -2500m', vfX + 4, vfY + vfSize + 12);
+
+        // Target acquisition lead line from target to spacecraft
+        ctx.strokeStyle = 'rgba(0, 212, 255, 0.35)';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([3, 3]);
+        ctx.beginPath();
+        ctx.moveTo(vMidX, vMidY);
+        ctx.lineTo(craftX, craftY);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        ctx.restore();
+
+        // --- SENSOR SCANNING CONE & BEAM ---
+        if (this.scanningActive) {
+            // Intense scanning laser beam from craft to viewfinder center
+            const scanGrad = ctx.createLinearGradient(craftX, craftY, vMidX, vMidY);
+            scanGrad.addColorStop(0, '#00D4FF');
+            scanGrad.addColorStop(0.5, 'rgba(0, 255, 136, 0.8)');
+            scanGrad.addColorStop(1, 'rgba(0, 212, 255, 0.1)');
+            ctx.strokeStyle = scanGrad;
+            ctx.lineWidth = 3;
             ctx.beginPath();
-            ctx.moveTo(-2, 6);
-            ctx.lineTo(0, 14);
-            ctx.lineTo(2, 6);
+            ctx.moveTo(craftX, craftY);
+            ctx.lineTo(vMidX, vMidY);
+            ctx.stroke();
+
+            // Broad sensor scan cone
+            ctx.fillStyle = 'rgba(0, 212, 255, 0.18)';
+            ctx.beginPath();
+            ctx.moveTo(craftX, craftY);
+            ctx.lineTo(vfX, vfY);
+            ctx.lineTo(vfX + vfSize, vfY + vfSize);
             ctx.closePath();
             ctx.fill();
         }
 
-        // Spacecraft bus
-        ctx.fillStyle = isDaylight ? '#43D9FF' : '#9BAAC2';
-        ctx.fillRect(-6, -4, 12, 8);
-        ctx.strokeStyle = '#FFFFFF';
-        ctx.lineWidth = 1;
-        ctx.strokeRect(-6, -4, 12, 8);
+        // --- DETAILED SPACECRAFT ON ORBIT ---
+        ctx.save();
+        ctx.translate(craftX, craftY);
 
-        // Solar panels wings
-        ctx.fillStyle = '#0B2046';
+        // Orient spacecraft tangential to orbit
+        const craftAngle = orbitPhase + Math.PI / 2;
+        ctx.rotate(craftAngle);
+
+        // Thruster exhaust plumes (Chemical or Ion)
+        if (this.thrusterActive) {
+            // Major engine fire
+            const fireGrad = ctx.createLinearGradient(0, 10, 0, 45);
+            fireGrad.addColorStop(0, '#FFFFFF');
+            fireGrad.addColorStop(0.3, '#FFB547');
+            fireGrad.addColorStop(0.7, '#FF3355');
+            fireGrad.addColorStop(1, 'rgba(255, 51, 85, 0)');
+            ctx.fillStyle = fireGrad;
+            ctx.beginPath();
+            ctx.moveTo(-6, 10);
+            ctx.lineTo(0, 48);
+            ctx.lineTo(6, 10);
+            ctx.closePath();
+            ctx.fill();
+        } else {
+            // Idle blue ion thruster glow
+            ctx.fillStyle = 'rgba(0, 212, 255, 0.7)';
+            ctx.beginPath();
+            ctx.moveTo(-3, 8);
+            ctx.lineTo(0, 18);
+            ctx.lineTo(3, 8);
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        // Spacecraft bus core body
+        ctx.fillStyle = isDaylight ? '#1A294A' : '#0B1324';
+        ctx.strokeStyle = '#CAD5E8';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.roundRect(-10, -8, 20, 16, 2);
+        ctx.fill();
+        ctx.stroke();
+
+        // Gold thermal blanket accent
+        ctx.fillStyle = '#C8A230';
+        ctx.fillRect(-8, -6, 16, 4);
+
+        // Solar panels (Left & Right)
+        ctx.fillStyle = '#0B2355';
         ctx.strokeStyle = '#38BDF8';
-        ctx.fillRect(-18, -3, 11, 6);
-        ctx.strokeRect(-18, -3, 11, 6);
-        ctx.fillRect(7, -3, 11, 6);
-        ctx.strokeRect(7, -3, 11, 6);
+        ctx.lineWidth = 1.2;
+        // Left wing
+        ctx.fillRect(-32, -6, 20, 12);
+        ctx.strokeRect(-32, -6, 20, 12);
+        // Right wing
+        ctx.fillRect(12, -6, 20, 12);
+        ctx.strokeRect(12, -6, 20, 12);
 
-        // Blinking telemetry beacon
-        const beaconOn = Math.floor(Date.now() / 350) % 2 === 0;
+        // High gain antenna dish
+        ctx.strokeStyle = '#FFFFFF';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(0, -12, 6, 0, Math.PI);
+        ctx.stroke();
+
+        // Blinking green navigation beacon
+        const beaconOn = Math.floor(Date.now() / 400) % 2 === 0;
         if (beaconOn) {
             ctx.fillStyle = '#00FF88';
             ctx.beginPath();
-            ctx.arc(0, 0, 2.5, 0, Math.PI * 2);
+            ctx.arc(0, 0, 3, 0, Math.PI * 2);
             ctx.fill();
         }
 
         ctx.restore();
 
-        // Overlay status text
-        ctx.fillStyle = '#9BAAC2';
+        // Top telemetry tags on flight deck canvas
+        ctx.fillStyle = '#CAD5E8';
         ctx.font = '11px "Orbitron", sans-serif';
-        ctx.fillText(`ORBIT ALT: ${altitudeKm.toFixed(0)} KM`, 14, 22);
+        ctx.fillText(`ORBIT ALTITUDE: ${altitudeKm.toFixed(0)} KM`, 20, 32);
         ctx.fillStyle = isDaylight ? '#FFB547' : '#64748B';
-        ctx.fillText(isDaylight ? '☀ SUNLIT PASS' : '🌑 ECLIPSE SHADOW', 14, 38);
+        ctx.fillText(isDaylight ? '☀ SUNLIT PASS' : '🌑 ECLIPSE SHADOW', 20, 48);
     }
-}
 
     /**
      * Renders the cinematic landing page: enormous planet filling the bottom
@@ -745,6 +945,7 @@ class SpaceRenderer {
             this.drawPlanetOnContext(ctx, w * 0.8, h * 0.2, pR * 0.6, 'Jupiter_bg', 0);
         }
     }
+}
 
 window.SpaceRenderer = SpaceRenderer;
 

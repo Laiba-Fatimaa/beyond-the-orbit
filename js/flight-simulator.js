@@ -395,26 +395,30 @@ class FlightSimulator {
     }
 
     updateHUD(powerGenW, powerConsW, netPowerW) {
-        // Battery %
+        // Battery % & HUD Bar
         const batPct = Math.round((this.batteryCurrentWh / this.batteryCapacityWh) * 100);
         const batEl = document.getElementById("hud-power-val");
+        const batBar = document.getElementById("hud-power-bar");
         if (batEl) {
             batEl.textContent = `${batPct}%`;
-            batEl.style.color = batPct > 60 ? "#43D9FF" : (batPct > 25 ? "#FFB547" : "#FF5263");
+            batEl.style.color = batPct > 60 ? "var(--accent-cyan)" : (batPct > 25 ? "var(--accent-amber)" : "var(--accent-red)");
         }
+        if (batBar) batBar.style.width = `${batPct}%`;
 
-        // Health %
+        // Health % & HUD Bar
         const healthEl = document.getElementById("hud-health-val");
+        const healthBar = document.getElementById("hud-health-bar");
+        const healthRound = Math.round(this.healthPct);
         if (healthEl) {
-            healthEl.textContent = `${Math.round(this.healthPct)}%`;
-            healthEl.style.color = this.healthPct > 70 ? "#00FF88" : (this.healthPct > 40 ? "#FFB547" : "#FF2A55");
+            healthEl.textContent = `${healthRound}%`;
+            healthEl.style.color = healthRound > 70 ? "var(--accent-green)" : (healthRound > 40 ? "var(--accent-amber)" : "var(--accent-red)");
         }
+        if (healthBar) healthBar.style.width = `${healthRound}%`;
 
         // Buffer MB
         const bufEl = document.getElementById("hud-datacol-val");
         if (bufEl) {
             bufEl.textContent = `${Math.round(this.dataBufferMb)} / ${this.maxBufferMb} MB`;
-            bufEl.style.color = (this.dataBufferMb / this.maxBufferMb) > 0.85 ? "#FFB547" : "#43D9FF";
         }
 
         // Downlinked MB
@@ -425,11 +429,24 @@ class FlightSimulator {
         const sciEl = document.getElementById("hud-science-val");
         if (sciEl) sciEl.textContent = `${this.scienceScore}`;
 
-        // Fuel reserve readout
+        // Fuel reserve readout & HUD Bar
         const fuelEl = document.getElementById("hud-fuel-val");
-        if (fuelEl) fuelEl.textContent = `${Math.round(this.propellantKg)} kg (${this.deltaVRemainingMs} m/s)`;
+        const fuelBar = document.getElementById("hud-fuel-bar");
+        const fuelPct = Math.min(100, Math.round((this.propellantKg / 120) * 100));
+        if (fuelEl) fuelEl.textContent = `${fuelPct}% (${Math.round(this.propellantKg)} kg)`;
+        if (fuelBar) fuelBar.style.width = `${fuelPct}%`;
 
-        // Target In Sight Indicator
+        // Target In Sight Indicator & Discovery Banner
+        const discText = document.getElementById("discovery-text");
+        if (discText) {
+            if (this.activeTargetInSight) {
+                discText.innerHTML = `<strong>TARGET IN SENSOR CONE:</strong> ${this.activeTargetInSight.name} — Surface scan available!`;
+            } else {
+                const dest = GAME_DATA.missions[this.missionId].destination;
+                discText.innerHTML = `<strong>ORBITAL RECONNAISSANCE:</strong> Tracking ${dest} horizon · ${this.isDaylight ? 'Sunlit pass' : 'Eclipse shadow'}`;
+            }
+        }
+
         const tgtBadge = document.getElementById("target-sensor-badge");
         if (tgtBadge) {
             if (this.activeTargetInSight) {
@@ -441,7 +458,7 @@ class FlightSimulator {
             }
         }
 
-        // Draw orbital radar canvas
+        // Draw orbital flight deck with surface viewfinder
         if (window.spaceRenderer) {
             window.spaceRenderer.drawFlightDeckRadar(
                 "flight-deck-radar-canvas",
@@ -449,7 +466,8 @@ class FlightSimulator {
                 this.orbitAngle,
                 this.altitudeKm,
                 this.isDaylight,
-                this.isGroundContact
+                this.isGroundContact,
+                this.activeTargetInSight
             );
         }
 
