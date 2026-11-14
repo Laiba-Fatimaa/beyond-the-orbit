@@ -162,6 +162,8 @@ class UIController {
 
         const endMissionBtn = document.getElementById("action-end-mission-btn");
         if (endMissionBtn) {
+            // Hide the manual finalize button — it's emergency-only, revealed after 3 mins
+            endMissionBtn.style.display = "none";
             endMissionBtn.addEventListener("click", () => {
                 if (window.AudioFX) window.AudioFX.playSuccess();
                 this.flightSim.stop();
@@ -703,7 +705,7 @@ class UIController {
         if (phaseTitle) phaseTitle.textContent = `Mission: ${mission.name}`;
 
         // Initialize Elapsed Timer
-        this.missionSecondsElapsed = 1477; // Start at ~24m
+        this.missionSecondsElapsed = 0; // Start from 0:00
         const timerDigits = document.getElementById("mission-elapsed-time");
         if (this.missionTimer) clearInterval(this.missionTimer);
         this.missionTimer = setInterval(() => {
@@ -721,6 +723,20 @@ class UIController {
 
         // Render Objectives Checklist on HUD
         this.renderFlightObjectivesList(mission);
+
+        // Reveal the emergency manual debrief button after 3 minutes (safety net)
+        const endMissionBtn = document.getElementById("action-end-mission-btn");
+        if (endMissionBtn) {
+            endMissionBtn.style.display = "none";
+            clearTimeout(this._endBtnRevealTimer);
+            this._endBtnRevealTimer = setTimeout(() => {
+                if (endMissionBtn && this.currentScreen === "simulation") {
+                    endMissionBtn.style.display = "block";
+                    endMissionBtn.textContent = "⏹ END MISSION EARLY";
+                    endMissionBtn.title = "Emergency: Manually end the mission and go to debrief";
+                }
+            }, 180000); // 3 minutes
+        }
     }
 
     renderFlightObjectivesList(mission) {

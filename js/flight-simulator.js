@@ -37,6 +37,8 @@ class FlightSimulator {
         this.anomalyQueue = [];
         this.activeAnomaly = null;
 
+        this._missionCompletedTriggered = false;
+
         this.lastTimestamp = Date.now();
         this.loopInterval = null;
     }
@@ -88,6 +90,7 @@ class FlightSimulator {
             triggered: false
         }));
         this.activeAnomaly = null;
+        this._missionCompletedTriggered = false;
 
         if (this.loopInterval) clearInterval(this.loopInterval);
         this.lastTimestamp = Date.now();
@@ -140,8 +143,8 @@ class FlightSimulator {
         // 0. Update Distance & Flight Phase
         if (this.flightPhase === 1) {
             const stepKm = (this.initialDistanceKm / 45) * effectiveDt;
-            this.distanceRemainingKm = Math.max(this.initialDistanceKm * 0.45, this.distanceRemainingKm - stepKm);
-            if (this.distanceRemainingKm <= this.initialDistanceKm * 0.5) {
+            this.distanceRemainingKm = Math.max(this.initialDistanceKm * 0.4, this.distanceRemainingKm - stepKm);
+            if (this.distanceRemainingKm <= this.initialDistanceKm * 0.45) {
                 this.flightPhase = 2;
                 this.postTelemetryLog("MID-COURSE CORRIDOR REACHED: Deep space trajectory nominal. Verification burn available.");
             }
@@ -237,7 +240,7 @@ class FlightSimulator {
             );
 
             // Win condition: All scientific objectives fulfilled & telemetry downlinked (or high science yield achieved)
-            if ((allObjectivesCompleted && this.dataDownlinkedMb > 1200) || this.scienceScore >= 80) {
+            if ((allObjectivesCompleted && this.dataDownlinkedMb > 800) || this.scienceScore >= 75) {
                 this._missionCompletedTriggered = true;
                 this.postTelemetryLog("🌟 MISSION OBJECTIVES ACHIEVED: All primary scientific exploration milestones complete. Telemetry archived.");
                 this.postTelemetryLog("COMMENCING AUTOMATIC TRANSITION TO MISSION DEBRIEF...");
