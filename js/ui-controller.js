@@ -543,8 +543,124 @@ class UIController {
             return;
         }
 
-        if (window.AudioFX) window.AudioFX.playLaunch();
-        this.showScreen("simulation");
+        const mission = GAME_DATA.missions[this.selectedMissionId];
+        const modal = document.getElementById("launch-modal-container");
+        if (!modal) {
+            if (window.AudioFX) window.AudioFX.playLaunch();
+            this.showScreen("simulation");
+            return;
+        }
+
+        // Setup telemetry labels
+        const lvEl = document.getElementById("launch-lv-name");
+        if (lvEl) lvEl.textContent = calc.selectedComponents.launchVehicle.name;
+
+        const destEl = document.getElementById("launch-target-dest");
+        if (destEl) destEl.textContent = `${mission.destination} Injection`;
+
+        const digitsEl = document.getElementById("launch-countdown-digits");
+        const statusEl = document.getElementById("launch-status-text");
+        const progBar = document.getElementById("launch-progress-bar");
+
+        modal.style.display = "flex";
+
+        // Setup launch plume canvas animation
+        const canvas = document.getElementById("launch-anim-canvas");
+        let animActive = true;
+        let launchParticles = [];
+
+        if (canvas) {
+            const ctx = canvas.getContext("2d");
+            canvas.width = canvas.clientWidth || 680;
+            canvas.height = canvas.clientHeight || 450;
+
+            const renderPlume = () => {
+                if (!animActive) return;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                // Spawn flame/spark particles
+                const originX = canvas.width * 0.5;
+                const originY = canvas.height * 0.42;
+
+                for (let i = 0; i < 4; i++) {
+                    launchParticles.push({
+                        x: originX + (Math.random() - 0.5) * 30,
+                        y: originY,
+                        vx: (Math.random() - 0.5) * 5,
+                        vy: Math.random() * 8 + 4,
+                        size: Math.random() * 12 + 6,
+                        life: 1.0,
+                        color: Math.random() > 0.4 ? "#FF9500" : (Math.random() > 0.5 ? "#FF3B30" : "#FFCC00")
+                    });
+                }
+
+                // Update & draw particles
+                for (let i = launchParticles.length - 1; i >= 0; i--) {
+                    const p = launchParticles[i];
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.size *= 0.96;
+                    p.life -= 0.03;
+
+                    if (p.life <= 0) {
+                        launchParticles.splice(i, 1);
+                        continue;
+                    }
+
+                    ctx.fillStyle = p.color;
+                    ctx.globalAlpha = p.life * 0.7;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.globalAlpha = 1.0;
+
+                requestAnimationFrame(renderPlume);
+            };
+            requestAnimationFrame(renderPlume);
+        }
+
+        const skipBtn = document.getElementById("skip-launch-btn");
+        const finishLaunch = () => {
+            animActive = false;
+            modal.style.display = "none";
+            this.showScreen("simulation");
+        };
+
+        if (skipBtn) skipBtn.onclick = finishLaunch;
+
+        // Sequence timeline
+        if (digitsEl) digitsEl.textContent = "T - 00:03";
+        if (statusEl) statusEl.textContent = "TERMINAL COUNTDOWN SEQUENCE INITIATED";
+        if (progBar) progBar.style.width = "20%";
+
+        setTimeout(() => {
+            if (!animActive) return;
+            if (digitsEl) digitsEl.textContent = "T - 00:02";
+            if (statusEl) statusEl.textContent = "MAIN ENGINE VALVES OPEN · TURBOPUMPS AT 100%";
+            if (progBar) progBar.style.width = "45%";
+            if (window.AudioFX) window.AudioFX.playClick();
+        }, 1000);
+
+        setTimeout(() => {
+            if (!animActive) return;
+            if (digitsEl) digitsEl.textContent = "T - 00:01";
+            if (statusEl) statusEl.textContent = "MAIN ENGINE IGNITION SEQUENCE START";
+            if (progBar) progBar.style.width = "75%";
+            if (window.AudioFX) window.AudioFX.playLaunch();
+        }, 2000);
+
+        setTimeout(() => {
+            if (!animActive) return;
+            if (digitsEl) digitsEl.textContent = "LIFTOFF!";
+            if (statusEl) statusEl.textContent = "WE HAVE LIFTOFF OF BEYOND THE ORBIT!";
+            if (progBar) progBar.style.width = "100%";
+        }, 2800);
+
+        setTimeout(() => {
+            if (!animActive) return;
+            finishLaunch();
+        }, 3600);
     }
 
     // =========================================================

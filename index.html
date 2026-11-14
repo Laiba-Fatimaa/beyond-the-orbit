@@ -261,6 +261,42 @@
         </section>
 
         <!-- =========================================================
+             CINEMATIC LAUNCH SEQUENCE MODAL
+             ========================================================= -->
+        <div class="launch-modal-overlay" id="launch-modal-container" style="display:none;">
+            <div class="launch-modal-box">
+                <canvas id="launch-anim-canvas" class="launch-anim-canvas"></canvas>
+                <div class="launch-modal-content">
+                    <div class="launch-badge glow-orange-pulse">KENNEDY SPACE CENTER · PAD 39A</div>
+                    <div class="launch-countdown-num" id="launch-countdown-digits">T - 00:03</div>
+                    <div class="launch-status-sub" id="launch-status-text">TERMINAL COUNTDOWN SEQUENCE INITIATED</div>
+                    <div class="launch-telemetry-row">
+                        <div class="telemetry-pill">
+                            <span class="telemetry-lbl">VEHICLE</span>
+                            <span class="telemetry-val" id="launch-lv-name">Heavy-Lift Falcon Core</span>
+                        </div>
+                        <div class="telemetry-pill">
+                            <span class="telemetry-lbl">TARGET DESTINATION</span>
+                            <span class="telemetry-val" id="launch-target-dest">Mars Injection</span>
+                        </div>
+                        <div class="telemetry-pill">
+                            <span class="telemetry-lbl">SYSTEM STATUS</span>
+                            <span class="telemetry-val" style="color:var(--accent-green);">ALL SYSTEMS GO</span>
+                        </div>
+                    </div>
+                    <div class="launch-progress-bar-wrap">
+                        <div class="launch-progress-bar-fill" id="launch-progress-bar"></div>
+                    </div>
+                    <div style="margin-top:18px;">
+                        <button class="btn-secondary" id="skip-launch-btn" style="font-size:12px; padding:8px 20px;">
+                            SKIP TO FLIGHT DECK ››
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- =========================================================
              SCREEN 4 — FLIGHT OPERATIONS DECK
              ========================================================= -->
         <section id="screen-simulation" class="game-screen">
@@ -272,6 +308,11 @@
                 </div>
 
                 <div class="flight-top-right">
+                    <div class="mission-timer-box" id="distance-tracker-box">
+                        <span class="timer-label">Distance to Target</span>
+                        <span class="timer-digits" id="mission-distance-val">225,000,000 km</span>
+                    </div>
+
                     <div class="mission-timer-box">
                         <span class="timer-label">Mission Elapsed Time</span>
                         <span class="timer-digits" id="mission-elapsed-time">00:24:37</span>

@@ -27,6 +27,8 @@ class SpaceRenderer {
         this.thrusterActive = false;
         this.scanningActive = false;
         this.downlinkActive = false;
+        this.mouseX = 0;
+        this.mouseY = 0;
 
         this.init();
     }
@@ -34,6 +36,10 @@ class SpaceRenderer {
     init() {
         this.resize();
         window.addEventListener('resize', () => this.resize());
+        window.addEventListener('mousemove', (e) => {
+            this.mouseX = (e.clientX / (window.innerWidth || 1)) - 0.5;
+            this.mouseY = (e.clientY / (window.innerHeight || 1)) - 0.5;
+        });
         this.generateStars();
         this.animate();
     }
@@ -677,8 +683,8 @@ class SpaceRenderer {
 
         // Enormous planet at bottom — radius large enough to fill the bottom half
         const planetR = Math.max(w, h) * 0.65;
-        const cx = w * 0.5;
-        const cy = h + planetR * 0.35; // pushes center below viewport so top of planet is visible
+        const cx = (w * 0.5) + (this.mouseX * 25);
+        const cy = (h + planetR * 0.35) + (this.mouseY * 18); // pushes center below viewport so top of planet is visible
 
         // Atmospheric outer glow (bluish haze)
         const atmoGlow = ctx.createRadialGradient(cx, cy, planetR * 0.95, cx, cy, planetR * 1.3);
@@ -779,9 +785,9 @@ class SpaceRenderer {
         ctx.clearRect(0, 0, w, h);
 
         const t = Date.now() * 0.001;
-        // Spacecraft position — upper-right area, slightly offset
-        const scX = w * 0.72;
-        const scY = h * 0.35 + Math.sin(t * 0.4) * 8; // gentle floating
+        // Spacecraft position — upper-right area, with subtle inverse parallax
+        const scX = (w * 0.72) - (this.mouseX * 35);
+        const scY = (h * 0.35 + Math.sin(t * 0.4) * 8) - (this.mouseY * 25); // gentle floating
         const scale = Math.min(w, h) / 800; // responsive scaling
 
         ctx.save();

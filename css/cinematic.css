@@ -1864,3 +1864,129 @@ body.screen-landing .top-nav {
     padding-top: 20px;
     border-top: 1px solid var(--border-subtle);
 }
+
+/* =========================================================
+   CINEMATIC LAUNCH SEQUENCE MODAL
+   ========================================================= */
+.launch-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: radial-gradient(circle at center, rgba(10, 18, 38, 0.94) 0%, rgba(3, 6, 16, 0.98) 100%);
+    backdrop-filter: blur(20px);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.4s ease forwards;
+}
+
+.launch-modal-box {
+    position: relative;
+    width: 90%;
+    max-width: 680px;
+    background: rgba(14, 25, 52, 0.92);
+    border: 1px solid var(--accent-amber);
+    box-shadow: 0 0 60px rgba(255, 181, 71, 0.4), inset 0 0 30px rgba(255, 181, 71, 0.12);
+    border-radius: 12px;
+    padding: 38px 32px;
+    text-align: center;
+    overflow: hidden;
+}
+
+.launch-anim-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    opacity: 0.9;
+}
+
+.launch-modal-content {
+    position: relative;
+    z-index: 2;
+}
+
+.launch-badge {
+    display: inline-block;
+    font-family: var(--font-display);
+    font-size: 11px;
+    letter-spacing: 2px;
+    padding: 5px 14px;
+    border-radius: 20px;
+    background: rgba(255, 181, 71, 0.15);
+    border: 1px solid var(--accent-amber);
+    color: var(--accent-amber);
+    margin-bottom: 14px;
+}
+
+.launch-countdown-num {
+    font-family: var(--font-display);
+    font-size: 58px;
+    font-weight: 900;
+    letter-spacing: 4px;
+    color: var(--text-white);
+    text-shadow: 0 0 35px rgba(255, 181, 71, 0.85), 0 0 70px rgba(255, 110, 50, 0.55);
+    margin: 8px 0;
+}
+
+.launch-status-sub {
+    font-family: var(--font-ui);
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: var(--accent-cyan);
+    margin-bottom: 24px;
+}
+
+.launch-telemetry-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.telemetry-pill {
+    background: rgba(7, 14, 30, 0.85);
+    border: 1px solid var(--border-subtle);
+    border-radius: 6px;
+    padding: 10px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.telemetry-lbl {
+    font-family: var(--font-display);
+    font-size: 9px;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+}
+
+.telemetry-val {
+    font-family: var(--font-ui);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-white);
+}
+
+.launch-progress-bar-wrap {
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 10px;
+}
+
+.launch-progress-bar-fill {
+    width: 0%;
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-amber), var(--accent-cyan));
+    box-shadow: 0 0 12px var(--accent-cyan);
+    transition: width 0.1s linear;
+}

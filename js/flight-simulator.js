@@ -51,6 +51,15 @@ class FlightSimulator {
         this.timeWarp = 1;
         this.orbitAngle = 0;
         this.altitudeKm = mission.destination === "Moon" ? 100 : (mission.destination === "Mars" ? 320 : 250);
+        this.flightPhase = 1;
+        if (mission.destination === "Moon") {
+            this.initialDistanceKm = 384400;
+        } else if (mission.destination === "Mars") {
+            this.initialDistanceKm = 225000000;
+        } else {
+            this.initialDistanceKm = 628000000;
+        }
+        this.distanceRemainingKm = this.initialDistanceKm;
         this.propellantKg = comps.propulsion.massKg * 0.65;
         this.deltaVRemainingMs = comps.propulsion.deltaVMs || 600;
         this.batteryCapacityWh = comps.battery.capacityWh || 1200;
@@ -127,6 +136,30 @@ class FlightSimulator {
         const effectiveDt = dt * this.timeWarp;
         const comps = this.design.selectedComponents;
         const env = GAME_DATA.missions[this.missionId].env;
+
+        // 0. Update Distance & Flight Phase
+        if (this.flightPhase === 1) {
+            const stepKm = (this.initialDistanceKm / 45) * effectiveDt;
+            this.distanceRemainingKm = Math.max(this.initialDistanceKm * 0.45, this.distanceRemainingKm - stepKm);
+            if (this.distanceRemainingKm <= this.initialDistanceKm * 0.5) {
+                this.flightPhase = 2;
+                this.postTelemetryLog("MID-COURSE CORRIDOR REACHED: Deep space trajectory nominal. Verification burn available.");
+            }
+        } else if (this.flightPhase === 2) {
+            const stepKm = (this.initialDistanceKm / 60) * effectiveDt;
+            this.distanceRemainingKm = Math.max(15000, this.distanceRemainingKm - stepKm);
+            if (this.distanceRemainingKm <= 35000) {
+                this.flightPhase = 3;
+                const dest = GAME_DATA.missions[this.missionId].destination;
+                this.postTelemetryLog(`PLANETARY ENCOUNTER: Entering ${dest} gravitational sphere. Execute orbital insertion burn.`);
+            }
+        } else if (this.flightPhase === 3) {
+            this.distanceRemainingKm = Math.max(this.altitudeKm, this.distanceRemainingKm - (800 * effectiveDt));
+            if (this.distanceRemainingKm <= this.altitudeKm + 50) {
+                this.flightPhase = 4;
+                this.postTelemetryLog(`ORBITAL INSERTION NOMINAL: Stable low parking orbit confirmed at ${this.altitudeKm} km altitude.`);
+            }
+        }
 
         // 1. Advance Orbital Motion
         const orbitalPeriodSec = 120; // Simulated orbit duration: 2 minutes
@@ -360,8 +393,19 @@ class FlightSimulator {
 
         if (window.AudioFX) window.AudioFX.playLaunch();
 
-        this.altitudeKm = Math.max(40, this.altitudeKm - 25);
-        this.postTelemetryLog(`TRAJECTORY BURN EXECUTED [${comps.propulsion.name}]: Orbit trimmed to ${this.altitudeKm} km altitude. ΔV remaining: ${this.deltaVRemainingMs} m/s.`);
+        const dest = GAME_DATA.missions[this.missionId].destination;
+        if (this.flightPhase === 2) {
+            this.flightPhase = 3;
+            this.distanceRemainingKm = Math.min(this.distanceRemainingKm, 30000);
+            this.postTelemetryLog(`TRAJECTORY BURN EXECUTED [${comps.propulsion.name}]: Mid-course corridor locked. En route to terminal arrival.`);
+        } else if (this.flightPhase === 3) {
+            this.flightPhase = 4;
+            this.distanceRemainingKm = this.altitudeKm;
+            this.postTelemetryLog(`ORBITAL INSERTION BURN COMPLETE [${comps.propulsion.name}]: Retrograde burn captured into ${dest} orbit.`);
+        } else {
+            this.altitudeKm = Math.max(40, this.altitudeKm - 25);
+            this.postTelemetryLog(`TRAJECTORY BURN EXECUTED [${comps.propulsion.name}]: Orbit trimmed to ${this.altitudeKm} km altitude. ΔV remaining: ${this.deltaVRemainingMs} m/s.`);
+        }
     }
 
     setPowerMode(mode) {
@@ -456,6 +500,27 @@ class FlightSimulator {
             } else {
                 tgtBadge.style.display = "none";
             }
+        }
+
+        // Distance readout & Phase Subtitle
+        const distEl = document.getElementById("mission-distance-val");
+        if (distEl) {
+            if (this.flightPhase >= 4) {
+                distEl.textContent = `${Math.round(this.altitudeKm)} km (Orbit)`;
+            } else {
+                distEl.textContent = `${Math.round(this.distanceRemainingKm).toLocaleString()} km`;
+            }
+        }
+
+        const phaseSub = document.getElementById("sim-phase-sub");
+        if (phaseSub) {
+            const phaseNames = {
+                1: "Phase 1/4: Trans-Planetary Cruise & Distance Countdown",
+                2: "Phase 2/4: Mid-Course Cruise & Trajectory Verification",
+                3: "Phase 3/4: Planetary Arrival & Orbital Insertion Burn",
+                4: "Phase 4/4: Low-Orbit Scientific Reconnaissance"
+            };
+            phaseSub.textContent = phaseNames[this.flightPhase] || "Phase: Orbital Reconnaissance";
         }
 
         // Draw orbital flight deck with surface viewfinder
