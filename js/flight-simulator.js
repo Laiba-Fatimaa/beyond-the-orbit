@@ -532,7 +532,8 @@ class FlightSimulator {
                 this.altitudeKm,
                 this.isDaylight,
                 this.isGroundContact,
-                this.activeTargetInSight
+                this.activeTargetInSight,
+                this.flightPhase
             );
         }
 

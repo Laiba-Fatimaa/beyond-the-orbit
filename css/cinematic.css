@@ -1196,17 +1196,37 @@ body.screen-landing .top-nav {
     padding: 80px 40px 60px;
     max-width: 1100px;
     margin: 0 auto;
+    position: relative;
 }
 
-/* Destination-specific debrief backgrounds applied via body class */
-body.debrief-moon #screen-debrief {
-    background: linear-gradient(to bottom, rgba(5,7,11,0.78) 0%, rgba(9,15,25,0.9) 60%), url('../assets/moon_mission_env.jpg') no-repeat center top / cover fixed;
+/* Destination-specific debrief backgrounds — applied full-viewport via pseudo-element */
+body.debrief-moon::before,
+body.debrief-mars::before,
+body.debrief-europa::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-size: cover;
+    background-position: center top;
+    background-repeat: no-repeat;
 }
-body.debrief-mars #screen-debrief {
-    background: linear-gradient(to bottom, rgba(5,7,11,0.72) 0%, rgba(16,10,5,0.88) 60%), url('../assets/mars_mission_env.jpg') no-repeat center top / cover fixed;
+body.debrief-moon::before {
+    background-image: linear-gradient(to bottom, rgba(5,7,11,0.65) 0%, rgba(9,15,25,0.88) 65%), url('assets/moon_mission_env.jpg');
 }
+body.debrief-mars::before {
+    background-image: linear-gradient(to bottom, rgba(5,7,11,0.6) 0%, rgba(16,10,5,0.88) 65%), url('assets/mars_mission_env.jpg');
+}
+body.debrief-europa::before {
+    background-image: linear-gradient(to bottom, rgba(5,7,11,0.6) 0%, rgba(5,10,20,0.88) 65%), url('assets/europa_mission_env.jpg');
+}
+/* Ensure debrief content sits above the pseudo-element */
+body.debrief-moon #screen-debrief,
+body.debrief-mars #screen-debrief,
 body.debrief-europa #screen-debrief {
-    background: linear-gradient(to bottom, rgba(5,7,11,0.72) 0%, rgba(5,10,20,0.9) 60%), url('../assets/europa_mission_env.jpg') no-repeat center top / cover fixed;
+    position: relative;
+    z-index: 1;
 }
 
 #screen-debrief.active-screen {
