@@ -1,29 +1,31 @@
 /* BEYOND THE ORBIT — CINEMATIC AEROSPACE GAME STYLESHEET */
 
 :root {
-    --bg-void: #020408;
-    --bg-space: #040814;
-    --bg-deep: #070E1E;
-    --bg-panel: #0A1628;
-    --bg-panel-hover: #0E1D35;
-    --bg-card: #0D192E;
-    --border-subtle: #1A2744;
-    --border-dim: #1E2D4A;
-    --border-bright: #2A4374;
-    --accent-cyan: #00D4FF;
-    --accent-blue: #1E6BFF;
-    --accent-amber: #FFB547;
-    --accent-red: #FF3355;
-    --accent-green: #00E676;
-    --text-white: #F0F4FF;
-    --text-light: #CAD5E8;
-    --text-dim: #8899B5;
-    --text-muted: #556A88;
+    --bg-void: #05070B;
+    --bg-space: #090F19;
+    --bg-deep: #101923;
+    --bg-charcoal: #171C22;
+    --bg-panel: rgba(16, 25, 35, 0.88);
+    --bg-panel-hover: rgba(23, 28, 34, 0.95);
+    --bg-card: rgba(16, 25, 35, 0.92);
+    --border-subtle: #26313C;
+    --border-dim: #374350;
+    --border-bright: #697785;
+    --accent-cyan: #8BC7D5;
+    --accent-blue: #4A6E85;
+    --accent-amber: #D8A45B;
+    --accent-orange: #D87548;
+    --accent-red: #E05252;
+    --accent-green: #52B788;
+    --text-white: #EAF4F7;
+    --text-light: #D0DCE5;
+    --text-dim: #8B9BB0;
+    --text-muted: #697785;
     --font-display: 'Orbitron', monospace, sans-serif;
     --font-ui: 'Rajdhani', sans-serif;
     --font-body: 'Inter', -apple-system, sans-serif;
-    --glow-cyan: 0 0 30px rgba(0, 212, 255, 0.4);
-    --glow-amber: 0 0 20px rgba(255, 181, 71, 0.3);
+    --glow-cyan: 0 0 20px rgba(139, 199, 213, 0.3);
+    --glow-amber: 0 0 20px rgba(216, 164, 91, 0.3);
 }
 
 /* ===== GLOBAL RESET & BASE ===== */
@@ -239,6 +241,7 @@ body.screen-landing .top-nav {
     align-items: center;
     justify-content: center;
     overflow: hidden;
+    background: radial-gradient(circle at 50% 70%, rgba(139, 199, 213, 0.12) 0%, rgba(5, 7, 11, 0.5) 60%, #05070B 95%), url('../assets/screen1_landing.jpg') no-repeat center bottom / cover;
 }
 
 #screen-landing.active-screen {
@@ -465,6 +468,8 @@ body.screen-landing .top-nav {
 #screen-selection {
     min-height: 100vh;
     padding: 80px 40px 60px;
+    background: radial-gradient(circle at 50% 30%, rgba(16, 25, 35, 0.7) 0%, rgba(5, 7, 11, 0.92) 100%), url('../assets/screen2_selection.jpg') no-repeat center center / cover;
+    background-attachment: fixed;
 }
 
 #screen-selection.active-screen {
