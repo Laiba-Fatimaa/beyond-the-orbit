@@ -462,4 +462,289 @@ class SpaceRenderer {
     }
 }
 
+    /**
+     * Renders the cinematic landing page: enormous planet filling the bottom
+     * of the viewport with atmospheric glow and a detailed spacecraft in the foreground.
+     */
+    renderLandingPlanet(canvasId) {
+        const c = document.getElementById(canvasId);
+        if (!c) return;
+        const ctx = c.getContext('2d');
+        const w = c.width = c.clientWidth || window.innerWidth;
+        const h = c.height = c.clientHeight || window.innerHeight;
+
+        ctx.clearRect(0, 0, w, h);
+
+        // Enormous planet at bottom — radius large enough to fill the bottom half
+        const planetR = Math.max(w, h) * 0.65;
+        const cx = w * 0.5;
+        const cy = h + planetR * 0.35; // pushes center below viewport so top of planet is visible
+
+        // Atmospheric outer glow (bluish haze)
+        const atmoGlow = ctx.createRadialGradient(cx, cy, planetR * 0.95, cx, cy, planetR * 1.3);
+        atmoGlow.addColorStop(0, 'rgba(30, 120, 255, 0.15)');
+        atmoGlow.addColorStop(0.5, 'rgba(0, 180, 255, 0.06)');
+        atmoGlow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = atmoGlow;
+        ctx.fillRect(0, 0, w, h);
+
+        // Planet body — deep blue-gray Earth-like sphere with terrain
+        const bodyGrad = ctx.createRadialGradient(
+            cx - planetR * 0.3, cy - planetR * 0.4, planetR * 0.1,
+            cx, cy, planetR
+        );
+        bodyGrad.addColorStop(0, '#4A7CB8');
+        bodyGrad.addColorStop(0.2, '#2A5A8F');
+        bodyGrad.addColorStop(0.45, '#1A3A6A');
+        bodyGrad.addColorStop(0.7, '#0E2245');
+        bodyGrad.addColorStop(1, '#040E22');
+
+        ctx.fillStyle = bodyGrad;
+        ctx.beginPath();
+        ctx.arc(cx, cy, planetR, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Terrain features — continental shapes
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(cx, cy, planetR, 0, Math.PI * 2);
+        ctx.clip();
+
+        const t = (this.planetAngle || 0) * 0.3;
+
+        // Landmasses (brownish-green continents)
+        ctx.fillStyle = 'rgba(60, 100, 50, 0.25)';
+        ctx.beginPath();
+        ctx.moveTo(cx - planetR * 0.25 + Math.sin(t) * 20, cy - planetR * 0.35);
+        ctx.quadraticCurveTo(cx + planetR * 0.05, cy - planetR * 0.55, cx + planetR * 0.2, cy - planetR * 0.3);
+        ctx.quadraticCurveTo(cx + planetR * 0.35, cy - planetR * 0.15, cx + planetR * 0.15, cy - planetR * 0.05);
+        ctx.quadraticCurveTo(cx - planetR * 0.1, cy - planetR * 0.1, cx - planetR * 0.25 + Math.sin(t) * 20, cy - planetR * 0.35);
+        ctx.fill();
+
+        ctx.fillStyle = 'rgba(80, 120, 60, 0.2)';
+        ctx.beginPath();
+        ctx.arc(cx - planetR * 0.3, cy - planetR * 0.15, planetR * 0.15, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Cloud bands
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+        ctx.lineWidth = planetR * 0.03;
+        for (let i = 0; i < 5; i++) {
+            const cloudY = cy - planetR * (0.5 - i * 0.15);
+            ctx.beginPath();
+            ctx.moveTo(cx - planetR * 0.8, cloudY);
+            ctx.quadraticCurveTo(cx, cloudY - 15 + Math.sin(t + i) * 8, cx + planetR * 0.8, cloudY + 5);
+            ctx.stroke();
+        }
+
+        ctx.restore();
+
+        // Atmospheric limb (bright horizon glow)
+        const limbGrad = ctx.createRadialGradient(cx, cy, planetR * 0.98, cx, cy, planetR * 1.02);
+        limbGrad.addColorStop(0, 'rgba(100, 180, 255, 0.5)');
+        limbGrad.addColorStop(0.5, 'rgba(50, 130, 255, 0.25)');
+        limbGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.strokeStyle = limbGrad;
+        ctx.lineWidth = planetR * 0.015;
+        ctx.beginPath();
+        ctx.arc(cx, cy, planetR, -Math.PI, 0);
+        ctx.stroke();
+
+        // Bright horizon light bloom at the very top of the planet
+        const bloomGrad = ctx.createRadialGradient(cx, cy - planetR + 10, 0, cx, cy - planetR + 10, planetR * 0.4);
+        bloomGrad.addColorStop(0, 'rgba(140, 200, 255, 0.35)');
+        bloomGrad.addColorStop(0.3, 'rgba(60, 140, 255, 0.15)');
+        bloomGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = bloomGrad;
+        ctx.fillRect(0, 0, w, h);
+
+        // Sunrise glow on the right
+        const sunGrad = ctx.createRadialGradient(w * 0.85, cy - planetR * 0.2, 0, w * 0.85, cy - planetR * 0.2, planetR * 0.5);
+        sunGrad.addColorStop(0, 'rgba(255, 200, 100, 0.15)');
+        sunGrad.addColorStop(0.4, 'rgba(255, 140, 60, 0.05)');
+        sunGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = sunGrad;
+        ctx.fillRect(0, 0, w, h);
+    }
+
+    /**
+     * Renders a detailed spacecraft probe on the landing page canvas.
+     */
+    renderLandingCraft(canvasId) {
+        const c = document.getElementById(canvasId);
+        if (!c) return;
+        const ctx = c.getContext('2d');
+        const w = c.width = c.clientWidth || window.innerWidth;
+        const h = c.height = c.clientHeight || window.innerHeight;
+        ctx.clearRect(0, 0, w, h);
+
+        const t = Date.now() * 0.001;
+        // Spacecraft position — upper-right area, slightly offset
+        const scX = w * 0.72;
+        const scY = h * 0.35 + Math.sin(t * 0.4) * 8; // gentle floating
+        const scale = Math.min(w, h) / 800; // responsive scaling
+
+        ctx.save();
+        ctx.translate(scX, scY);
+        ctx.rotate(-0.15); // slight tilt
+        ctx.scale(scale, scale);
+
+        // Solar panels — left wing
+        ctx.fillStyle = '#0B2355';
+        ctx.strokeStyle = '#2980D9';
+        ctx.lineWidth = 1.5;
+        // Left panel segment 1
+        ctx.fillRect(-160, -15, 55, 30);
+        ctx.strokeRect(-160, -15, 55, 30);
+        // Left panel segment 2
+        ctx.fillRect(-100, -15, 55, 30);
+        ctx.strokeRect(-100, -15, 55, 30);
+        // Panel grid lines
+        ctx.strokeStyle = 'rgba(41, 128, 217, 0.4)';
+        ctx.lineWidth = 0.5;
+        for (let gx = -155; gx < -45; gx += 12) {
+            ctx.beginPath(); ctx.moveTo(gx, -15); ctx.lineTo(gx, 15); ctx.stroke();
+        }
+        for (let gy = -10; gy <= 10; gy += 10) {
+            ctx.beginPath(); ctx.moveTo(-160, gy); ctx.lineTo(-45, gy); ctx.stroke();
+        }
+
+        // Solar panels — right wing
+        ctx.fillStyle = '#0B2355';
+        ctx.strokeStyle = '#2980D9';
+        ctx.lineWidth = 1.5;
+        ctx.fillRect(45, -15, 55, 30);
+        ctx.strokeRect(45, -15, 55, 30);
+        ctx.fillRect(105, -15, 55, 30);
+        ctx.strokeRect(105, -15, 55, 30);
+        ctx.strokeStyle = 'rgba(41, 128, 217, 0.4)';
+        ctx.lineWidth = 0.5;
+        for (let gx = 50; gx < 160; gx += 12) {
+            ctx.beginPath(); ctx.moveTo(gx, -15); ctx.lineTo(gx, 15); ctx.stroke();
+        }
+        for (let gy = -10; gy <= 10; gy += 10) {
+            ctx.beginPath(); ctx.moveTo(45, gy); ctx.lineTo(160, gy); ctx.stroke();
+        }
+
+        // Main spacecraft bus body
+        ctx.fillStyle = '#1A2540';
+        ctx.strokeStyle = '#AAB8D0';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.roundRect(-40, -28, 80, 56, 4);
+        ctx.fill();
+        ctx.stroke();
+
+        // Golden thermal blanket accent
+        ctx.fillStyle = '#C8A230';
+        ctx.fillRect(-36, -24, 72, 10);
+        ctx.fillStyle = '#A88520';
+        ctx.fillRect(-36, -14, 72, 5);
+
+        // Science instruments pod
+        ctx.fillStyle = '#0E1B30';
+        ctx.strokeStyle = '#5BA3E0';
+        ctx.lineWidth = 1;
+        ctx.fillRect(-25, 8, 50, 16);
+        ctx.strokeRect(-25, 8, 50, 16);
+
+        // HGA dish — high-gain antenna (on top)
+        ctx.fillStyle = '#D0D8E8';
+        ctx.beginPath();
+        ctx.ellipse(0, -38, 22, 8, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#8899B5';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        // Antenna feed
+        ctx.strokeStyle = '#AAB8D0';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(0, -38);
+        ctx.lineTo(0, -52);
+        ctx.stroke();
+        ctx.fillStyle = '#FF4444';
+        ctx.beginPath();
+        ctx.arc(0, -54, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Thruster nozzle at bottom
+        ctx.fillStyle = '#556070';
+        ctx.beginPath();
+        ctx.moveTo(-12, 28);
+        ctx.lineTo(-16, 40);
+        ctx.lineTo(16, 40);
+        ctx.lineTo(12, 28);
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = '#8899B5';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        // Solar reflection glint (animated)
+        const glintAlpha = 0.3 + 0.2 * Math.sin(t * 2);
+        ctx.fillStyle = `rgba(255, 255, 255, ${glintAlpha})`;
+        ctx.beginPath();
+        ctx.arc(-120, -5, 3, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Blinking status light
+        if (Math.floor(t * 1.5) % 2 === 0) {
+            ctx.fillStyle = '#00E676';
+            ctx.beginPath();
+            ctx.arc(30, -20, 2, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        ctx.restore();
+
+        // Lens flare effect near spacecraft
+        const flareX = scX + 60 * scale;
+        const flareY = scY - 40 * scale;
+        const flareGrad = ctx.createRadialGradient(flareX, flareY, 0, flareX, flareY, 60);
+        flareGrad.addColorStop(0, 'rgba(200, 220, 255, 0.12)');
+        flareGrad.addColorStop(0.5, 'rgba(100, 160, 255, 0.04)');
+        flareGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = flareGrad;
+        ctx.fillRect(0, 0, w, h);
+    }
+
+    /**
+     * Renders a destination preview planet on a canvas — used for mission selection cards.
+     */
+    renderDestinationPreview(canvasId, destination) {
+        const c = document.getElementById(canvasId);
+        if (!c) return;
+        const ctx = c.getContext('2d');
+        const w = c.width = c.clientWidth;
+        const h = c.height = c.clientHeight;
+
+        // Dark space background with subtle gradient
+        const bgGrad = ctx.createLinearGradient(0, 0, 0, h);
+        bgGrad.addColorStop(0, '#030610');
+        bgGrad.addColorStop(1, '#080E20');
+        ctx.fillStyle = bgGrad;
+        ctx.fillRect(0, 0, w, h);
+
+        // Add a few local stars
+        for (let i = 0; i < 30; i++) {
+            const sx = Math.random() * w;
+            const sy = Math.random() * h;
+            ctx.fillStyle = `rgba(200, 220, 255, ${Math.random() * 0.5 + 0.1})`;
+            ctx.beginPath();
+            ctx.arc(sx, sy, Math.random() * 1 + 0.3, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        // Draw the planet
+        const pR = Math.min(w, h) * 0.38;
+        this.drawPlanetOnContext(ctx, w / 2, h * 0.48, pR, destination, this.planetAngle * 0.5);
+
+        // For Europa, also draw Jupiter in background
+        if (destination === 'Europa') {
+            this.drawPlanetOnContext(ctx, w * 0.8, h * 0.2, pR * 0.6, 'Jupiter_bg', 0);
+        }
+    }
+
 window.SpaceRenderer = SpaceRenderer;
+
