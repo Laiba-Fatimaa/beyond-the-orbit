@@ -1213,13 +1213,13 @@ body.debrief-europa::before {
     background-repeat: no-repeat;
 }
 body.debrief-moon::before {
-    background-image: linear-gradient(to bottom, rgba(5,7,11,0.65) 0%, rgba(9,15,25,0.88) 65%), url('assets/moon_mission_env.jpg');
+    background-image: linear-gradient(to bottom, rgba(5,7,11,0.65) 0%, rgba(9,15,25,0.88) 65%), url('../assets/moon_mission_env.jpg');
 }
 body.debrief-mars::before {
-    background-image: linear-gradient(to bottom, rgba(5,7,11,0.6) 0%, rgba(16,10,5,0.88) 65%), url('assets/mars_mission_env.jpg');
+    background-image: linear-gradient(to bottom, rgba(5,7,11,0.6) 0%, rgba(16,10,5,0.88) 65%), url('../assets/mars_mission_env.jpg');
 }
 body.debrief-europa::before {
-    background-image: linear-gradient(to bottom, rgba(5,7,11,0.6) 0%, rgba(5,10,20,0.88) 65%), url('assets/europa_mission_env.jpg');
+    background-image: linear-gradient(to bottom, rgba(5,7,11,0.6) 0%, rgba(5,10,20,0.88) 65%), url('../assets/europa_mission_env.jpg');
 }
 /* Ensure debrief content sits above the pseudo-element */
 body.debrief-moon #screen-debrief,
