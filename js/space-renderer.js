@@ -70,6 +70,7 @@ class SpaceRenderer {
             moon_card:      'assets/dest_card_moon.jpg',
             europa_disk:    'assets/europa_disk.jpg',
             hangar_wide:    'assets/hangar_wide.jpg',
+            spacecraft_pedestal: 'assets/spacecraft_pedestal.png',
         };
         for (const [key, src] of Object.entries(assets)) {
             const img = new Image();
@@ -522,34 +523,82 @@ class SpaceRenderer {
                 ctx.fillText('EARTH RECEDING', w * 0.065, h * 0.18 + eR + 14);
             }
 
-            // Spacecraft silhouette (small, center-ish)
-            const scX = w * 0.5, scY = h * 0.5;
+            // Realistic High-Fidelity Spacecraft Probe
+            const scX = w * 0.5 + Math.sin(t * 0.7) * 4;
+            const scY = h * 0.5 + Math.cos(t * 0.5) * 3;
             ctx.save();
             ctx.translate(scX, scY);
-            ctx.rotate(-0.1);
-            const sScale = 0.55;
-            // Body
-            ctx.fillStyle = '#1A253D';
-            ctx.strokeStyle = '#AAB8D0';
-            ctx.lineWidth = 1.5;
-            ctx.beginPath();
-            ctx.roundRect(-28 * sScale, -18 * sScale, 56 * sScale, 36 * sScale, 3);
-            ctx.fill();
-            ctx.stroke();
-            // Panels
-            ctx.fillStyle = '#0B2355';
-            ctx.strokeStyle = '#2980D9';
-            ctx.lineWidth = 1;
-            ctx.fillRect((-28 - 70) * sScale, -10 * sScale, 65 * sScale, 20 * sScale);
-            ctx.strokeRect((-28 - 70) * sScale, -10 * sScale, 65 * sScale, 20 * sScale);
-            ctx.fillRect(28 * sScale, -10 * sScale, 65 * sScale, 20 * sScale);
-            ctx.strokeRect(28 * sScale, -10 * sScale, 65 * sScale, 20 * sScale);
-            // Thruster glow
-            const thrGrad = ctx.createRadialGradient(-28 * sScale, 0, 0, -40 * sScale, 0, 30 * sScale);
-            thrGrad.addColorStop(0, 'rgba(100,180,255,0.9)');
-            thrGrad.addColorStop(1, 'rgba(0,100,255,0)');
-            ctx.fillStyle = thrGrad;
-            ctx.fillRect(-80 * sScale, -15 * sScale, 55 * sScale, 30 * sScale);
+            ctx.rotate(-0.08);
+
+            const craftImg = this._imgs ? this._imgs.spacecraft_pedestal : null;
+            if (craftImg && craftImg.complete && craftImg.naturalWidth > 0) {
+                // High-resolution authentic MRO spacecraft model
+                const cw = 110;
+                const ch = (cw / craftImg.naturalWidth) * craftImg.naturalHeight;
+                
+                // Thruster plume behind probe
+                if (this.thrusterActive) {
+                    const thrGrad = ctx.createLinearGradient(-cw * 0.45, 0, -cw * 0.9, 0);
+                    thrGrad.addColorStop(0, '#FFFFFF');
+                    thrGrad.addColorStop(0.3, '#FFE082');
+                    thrGrad.addColorStop(0.7, '#FF7043');
+                    thrGrad.addColorStop(1, 'rgba(255, 70, 17, 0)');
+                    ctx.fillStyle = thrGrad;
+                    ctx.beginPath();
+                    ctx.moveTo(-cw * 0.35, -7);
+                    ctx.lineTo(-cw * 0.95 - Math.random() * 15, 0);
+                    ctx.lineTo(-cw * 0.35, 7);
+                    ctx.closePath();
+                    ctx.fill();
+                } else {
+                    // Ion drive idle glow
+                    const ionGrad = ctx.createRadialGradient(-cw * 0.35, 0, 1, -cw * 0.5, 0, 14);
+                    ionGrad.addColorStop(0, 'rgba(0, 212, 255, 0.95)');
+                    ionGrad.addColorStop(0.6, 'rgba(0, 150, 255, 0.4)');
+                    ionGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                    ctx.fillStyle = ionGrad;
+                    ctx.beginPath();
+                    ctx.arc(-cw * 0.35, 0, 14, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                ctx.drawImage(craftImg, -cw * 0.5, -ch * 0.5, cw, ch);
+            } else {
+                // Fallback realistic vector probe
+                const sScale = 0.6;
+                // High-gain dish
+                ctx.strokeStyle = '#FFFFFF';
+                ctx.lineWidth = 1.6;
+                ctx.beginPath();
+                ctx.arc(24 * sScale, 0, 12 * sScale, -Math.PI * 0.45, Math.PI * 0.45);
+                ctx.stroke();
+                // Golden multi-layer insulation (MLI) body
+                const mliGrad = ctx.createLinearGradient(-18 * sScale, -14 * sScale, 18 * sScale, 14 * sScale);
+                mliGrad.addColorStop(0, '#D4AF37');
+                mliGrad.addColorStop(0.5, '#F5D77F');
+                mliGrad.addColorStop(1, '#997316');
+                ctx.fillStyle = mliGrad;
+                ctx.strokeStyle = '#E8EDF2';
+                ctx.lineWidth = 1.2;
+                ctx.beginPath();
+                ctx.roundRect(-20 * sScale, -14 * sScale, 40 * sScale, 28 * sScale, 2);
+                ctx.fill();
+                ctx.stroke();
+                // Solar array wings
+                ctx.fillStyle = '#0F2C59';
+                ctx.strokeStyle = '#38BDF8';
+                ctx.lineWidth = 1;
+                ctx.fillRect((-20 - 65) * sScale, -8 * sScale, 60 * sScale, 16 * sScale);
+                ctx.strokeRect((-20 - 65) * sScale, -8 * sScale, 60 * sScale, 16 * sScale);
+                ctx.fillRect(20 * sScale, -8 * sScale, 60 * sScale, 16 * sScale);
+                ctx.strokeRect(20 * sScale, -8 * sScale, 60 * sScale, 16 * sScale);
+                // Thruster
+                const thrGrad = ctx.createRadialGradient(-20 * sScale, 0, 0, -35 * sScale, 0, 25 * sScale);
+                thrGrad.addColorStop(0, 'rgba(0, 212, 255, 0.9)');
+                thrGrad.addColorStop(1, 'rgba(0, 50, 200, 0)');
+                ctx.fillStyle = thrGrad;
+                ctx.fillRect(-55 * sScale, -10 * sScale, 35 * sScale, 20 * sScale);
+            }
             ctx.restore();
 
             return; // Don't draw planet/orbit view for phases 1 & 2
@@ -655,40 +704,48 @@ class SpaceRenderer {
                 ctx.fillText('ALIGNING RETROGRADE VECTOR', -85, -20);
             }
 
-            // Spacecraft body
-            ctx.fillStyle = '#101C33';
-            ctx.strokeStyle = '#CAD5E8';
-            ctx.lineWidth = 1.8;
-            ctx.beginPath();
-            ctx.roundRect(-16, -12, 32, 24, 3);
-            ctx.fill();
-            ctx.stroke();
+            // Spacecraft representation: Real photographic MRO craft or detailed CAD structure
+            const craftImg = this._imgs ? this._imgs.spacecraft_pedestal : null;
+            if (craftImg && craftImg.complete && craftImg.naturalWidth > 0) {
+                const cw = 140;
+                const ch = (cw / craftImg.naturalWidth) * craftImg.naturalHeight;
+                ctx.drawImage(craftImg, -cw * 0.45, -ch * 0.5, cw, ch);
+            } else {
+                // Spacecraft body
+                ctx.fillStyle = '#101C33';
+                ctx.strokeStyle = '#CAD5E8';
+                ctx.lineWidth = 1.8;
+                ctx.beginPath();
+                ctx.roundRect(-16, -12, 32, 24, 3);
+                ctx.fill();
+                ctx.stroke();
 
-            // Gold thermal MLI blanket
-            ctx.fillStyle = '#C8A230';
-            ctx.fillRect(-12, -8, 24, 6);
+                // Gold thermal MLI blanket
+                ctx.fillStyle = '#C8A230';
+                ctx.fillRect(-12, -8, 24, 6);
 
-            // Extended Solar Panels (Top & Bottom)
-            ctx.fillStyle = '#0B2355';
-            ctx.strokeStyle = '#2980D9';
-            ctx.lineWidth = 1.2;
-            // Top wing
-            ctx.fillRect(-6, -42, 12, 30);
-            ctx.strokeRect(-6, -42, 12, 30);
-            // Bottom wing
-            ctx.fillRect(-6, 12, 12, 30);
-            ctx.strokeRect(-6, 12, 12, 30);
+                // Extended Solar Panels (Top & Bottom)
+                ctx.fillStyle = '#0B2355';
+                ctx.strokeStyle = '#2980D9';
+                ctx.lineWidth = 1.2;
+                // Top wing
+                ctx.fillRect(-6, -42, 12, 30);
+                ctx.strokeRect(-6, -42, 12, 30);
+                // Bottom wing
+                ctx.fillRect(-6, 12, 12, 30);
+                ctx.strokeRect(-6, 12, 12, 30);
 
-            // High-Gain Antenna Dish
-            ctx.strokeStyle = '#FFFFFF';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.arc(16, 0, 10, -Math.PI * 0.45, Math.PI * 0.45);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(16, 0);
-            ctx.lineTo(24, 0);
-            ctx.stroke();
+                // High-Gain Antenna Dish
+                ctx.strokeStyle = '#FFFFFF';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(16, 0, 10, -Math.PI * 0.45, Math.PI * 0.45);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(16, 0);
+                ctx.lineTo(24, 0);
+                ctx.stroke();
+            }
 
             ctx.restore();
 
@@ -952,36 +1009,47 @@ class SpaceRenderer {
             ctx.fill();
         }
 
-        // Spacecraft bus core body
-        ctx.fillStyle = isDaylight ? '#1A294A' : '#0B1324';
-        ctx.strokeStyle = '#CAD5E8';
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.roundRect(-10, -8, 20, 16, 2);
-        ctx.fill();
-        ctx.stroke();
+        // Spacecraft bus core body: High-resolution probe render
+        const craftImg = this._imgs ? this._imgs.spacecraft_pedestal : null;
+        if (craftImg && craftImg.complete && craftImg.naturalWidth > 0) {
+            const cw = 54;
+            const ch = (cw / craftImg.naturalWidth) * craftImg.naturalHeight;
+            ctx.save();
+            ctx.rotate(-Math.PI / 2); // align with orbital vector
+            ctx.drawImage(craftImg, -cw * 0.5, -ch * 0.5, cw, ch);
+            ctx.restore();
+        } else {
+            // Spacecraft bus core body
+            ctx.fillStyle = isDaylight ? '#1A294A' : '#0B1324';
+            ctx.strokeStyle = '#CAD5E8';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.roundRect(-10, -8, 20, 16, 2);
+            ctx.fill();
+            ctx.stroke();
 
-        // Gold thermal blanket accent
-        ctx.fillStyle = '#C8A230';
-        ctx.fillRect(-8, -6, 16, 4);
+            // Gold thermal blanket accent
+            ctx.fillStyle = '#C8A230';
+            ctx.fillRect(-8, -6, 16, 4);
 
-        // Solar panels (Left & Right)
-        ctx.fillStyle = '#0B2355';
-        ctx.strokeStyle = '#38BDF8';
-        ctx.lineWidth = 1.2;
-        // Left wing
-        ctx.fillRect(-32, -6, 20, 12);
-        ctx.strokeRect(-32, -6, 20, 12);
-        // Right wing
-        ctx.fillRect(12, -6, 20, 12);
-        ctx.strokeRect(12, -6, 20, 12);
+            // Solar panels (Left & Right)
+            ctx.fillStyle = '#0B2355';
+            ctx.strokeStyle = '#38BDF8';
+            ctx.lineWidth = 1.2;
+            // Left wing
+            ctx.fillRect(-32, -6, 20, 12);
+            ctx.strokeRect(-32, -6, 20, 12);
+            // Right wing
+            ctx.fillRect(12, -6, 20, 12);
+            ctx.strokeRect(12, -6, 20, 12);
 
-        // High gain antenna dish
-        ctx.strokeStyle = '#FFFFFF';
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.arc(0, -12, 6, 0, Math.PI);
-        ctx.stroke();
+            // High gain antenna dish
+            ctx.strokeStyle = '#FFFFFF';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.arc(0, -12, 6, 0, Math.PI);
+            ctx.stroke();
+        }
 
         // Blinking green navigation beacon
         const beaconOn = Math.floor(Date.now() / 400) % 2 === 0;

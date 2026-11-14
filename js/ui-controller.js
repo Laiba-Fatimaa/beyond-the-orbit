@@ -326,7 +326,7 @@ class UIController {
             const grad = destGradients[m.destination] || "";
 
             return `
-                <div class="dest-card ${isSelected ? 'selected' : ''}" data-mission-id="${m.id}" onclick="window.app.setMission('${m.id}', false)">
+                <div class="dest-card ${isSelected ? 'selected' : ''}" data-mission-id="${m.id}" onclick="window.app.setMission('${m.id}', true)">
                     <div class="dest-planet-viewport" style="background-image: url('${photo}'); background-size:cover; background-position:center;">
                         <div class="dest-planet-gradient" style="background: ${grad};"></div>
                         <div class="dest-planet-label">${info.icon || ''} ${names.title || m.destination.toUpperCase()}</div>
@@ -360,7 +360,7 @@ class UIController {
                         </div>
 
                         <button class="dest-select-btn" onclick="event.stopPropagation(); window.app.setMission('${m.id}', true);">
-                            ${isSelected ? '✔ CONFIGURE SPACECRAFT ›' : 'SELECT DESTINATION ›'}
+                            LAUNCH TO ${m.destination.toUpperCase()} ›
                         </button>
                     </div>
                 </div>
@@ -659,38 +659,54 @@ class UIController {
 
         if (skipBtn) skipBtn.onclick = finishLaunch;
 
-        // Sequence timeline
-        if (digitsEl) digitsEl.textContent = "T - 00:03";
-        if (statusEl) statusEl.textContent = "TERMINAL COUNTDOWN SEQUENCE INITIATED";
-        if (progBar) progBar.style.width = "20%";
+        // Sequence timeline: Authentic 5-4-3-2-1-LIFTOFF sequence
+        if (digitsEl) digitsEl.textContent = "T - 00:05";
+        if (statusEl) statusEl.textContent = "TERMINAL COUNTDOWN SEQUENCE INITIATED · RANGE GO";
+        if (progBar) progBar.style.width = "10%";
+        if (window.AudioFX) window.AudioFX.playClick();
 
         setTimeout(() => {
             if (!animActive) return;
-            if (digitsEl) digitsEl.textContent = "T - 00:02";
-            if (statusEl) statusEl.textContent = "MAIN ENGINE VALVES OPEN · TURBOPUMPS AT 100%";
-            if (progBar) progBar.style.width = "45%";
+            if (digitsEl) digitsEl.textContent = "T - 00:04";
+            if (statusEl) statusEl.textContent = "INTERNAL POWER TRANSFERRED · FLIGHT COMPUTERS ARMED";
+            if (progBar) progBar.style.width = "28%";
             if (window.AudioFX) window.AudioFX.playClick();
         }, 1000);
 
         setTimeout(() => {
             if (!animActive) return;
-            if (digitsEl) digitsEl.textContent = "T - 00:01";
-            if (statusEl) statusEl.textContent = "MAIN ENGINE IGNITION SEQUENCE START";
-            if (progBar) progBar.style.width = "75%";
-            if (window.AudioFX) window.AudioFX.playLaunch();
+            if (digitsEl) digitsEl.textContent = "T - 00:03";
+            if (statusEl) statusEl.textContent = "MAIN ENGINE VALVES OPEN · TURBOPUMPS AT 100%";
+            if (progBar) progBar.style.width = "48%";
+            if (window.AudioFX) window.AudioFX.playClick();
         }, 2000);
+
+        setTimeout(() => {
+            if (!animActive) return;
+            if (digitsEl) digitsEl.textContent = "T - 00:02";
+            if (statusEl) statusEl.textContent = "MAIN ENGINE IGNITION SEQUENCE START";
+            if (progBar) progBar.style.width = "68%";
+            if (window.AudioFX) window.AudioFX.playLaunch();
+        }, 3000);
+
+        setTimeout(() => {
+            if (!animActive) return;
+            if (digitsEl) digitsEl.textContent = "T - 00:01";
+            if (statusEl) statusEl.textContent = "ALL ENGINES RUNNING · COMMENCING VEHICLE RELEASE";
+            if (progBar) progBar.style.width = "88%";
+        }, 4000);
 
         setTimeout(() => {
             if (!animActive) return;
             if (digitsEl) digitsEl.textContent = "LIFTOFF!";
             if (statusEl) statusEl.textContent = "WE HAVE LIFTOFF OF BEYOND THE ORBIT!";
             if (progBar) progBar.style.width = "100%";
-        }, 2800);
+        }, 4800);
 
         setTimeout(() => {
             if (!animActive) return;
             finishLaunch();
-        }, 3600);
+        }, 5800);
     }
 
     // =========================================================
