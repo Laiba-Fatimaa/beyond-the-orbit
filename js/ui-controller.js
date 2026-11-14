@@ -164,11 +164,22 @@ class UIController {
             document.body.classList.add("screen-landing");
         }
 
+        // Clear debrief body class when leaving debrief
+        if (this.currentScreen === "debrief" && screenId !== "debrief") {
+            document.body.classList.remove("debrief-moon", "debrief-mars", "debrief-europa");
+        }
+
         // Handle leaving flight simulation screen
         if (this.currentScreen === "simulation" && screenId !== "simulation") {
             this.flightSim.stop();
             if (this.missionTimer) clearInterval(this.missionTimer);
         }
+
+        // Animated screen transition flash
+        const flashEl = document.createElement("div");
+        flashEl.className = "screen-flash-overlay";
+        document.body.appendChild(flashEl);
+        setTimeout(() => flashEl.remove(), 700);
 
         this.currentScreen = screenId;
         document.querySelectorAll(".game-screen").forEach(el => el.classList.remove("active-screen"));
@@ -263,45 +274,52 @@ class UIController {
         if (!container) return;
 
         const missions = Object.values(GAME_DATA.missions);
+
+        // Map destination → photo asset
+        const destPhotos = {
+            "Moon":   "assets/dest_card_moon.jpg",
+            "Mars":   "assets/dest_card_mars.jpg",
+            "Europa": "assets/dest_card_europa.jpg"
+        };
+        const destGradients = {
+            "Moon":   "linear-gradient(to top, rgba(5,7,11,0.95) 0%, rgba(10,15,24,0.5) 55%, rgba(5,7,11,0.1) 100%)",
+            "Mars":   "linear-gradient(to top, rgba(10,4,2,0.95) 0%, rgba(20,8,4,0.5) 55%, rgba(5,7,11,0.1) 100%)",
+            "Europa": "linear-gradient(to top, rgba(2,5,15,0.95) 0%, rgba(4,8,20,0.5) 55%, rgba(5,7,11,0.1) 100%)"
+        };
+        const destDifficulty = {
+            "Moon":   { diff:"Easy",   challenge:"Craters & Dust",  focus:"Lunar Geology",    icon:"🌕" },
+            "Mars":   { diff:"Medium", challenge:"Dust Storms",     focus:"Signs of Life",    icon:"🔴" },
+            "Europa": { diff:"Hard",   challenge:"Extreme Cold",    focus:"Subsurface Ocean", icon:"🧊" }
+        };
+        const destNames = {
+            "Moon":   { title:"THE MOON",  subtitle:"Study our closest neighbor" },
+            "Mars":   { title:"MARS",      subtitle:"Uncover the Red Planet" },
+            "Europa": { title:"EUROPA",    subtitle:"Explore the Ocean World" }
+        };
+
         container.innerHTML = missions.map(m => {
             const isSelected = m.id === this.selectedMissionId;
-            const fact = NASA_DATA.planetaryFactSheets[m.destination];
-
-            let titleName = "THE MOON";
-            let subtitle = "Study our closest neighbor";
-            let diffStr = "Easy";
-            let challengeStr = "Craters & Dust";
-            let focusStr = "Lunar Geology";
-
-            if (m.destination === "Mars") {
-                titleName = "MARS";
-                subtitle = "Uncover the Red Planet";
-                diffStr = "Medium";
-                challengeStr = "Dust Storms";
-                focusStr = "Signs of Life";
-            } else if (m.destination === "Europa") {
-                titleName = "EUROPA";
-                subtitle = "Explore the Ocean World";
-                diffStr = "Hard";
-                challengeStr = "Extreme Cold";
-                focusStr = "Subsurface Ocean";
-            }
+            const info = destDifficulty[m.destination] || {};
+            const names = destNames[m.destination] || {};
+            const photo = destPhotos[m.destination] || "";
+            const grad = destGradients[m.destination] || "";
 
             return `
                 <div class="dest-card ${isSelected ? 'selected' : ''}" data-mission-id="${m.id}" onclick="window.app.setMission('${m.id}', false)">
-                    <div class="dest-planet-viewport">
-                        <canvas id="canvas-preview-${m.id}"></canvas>
+                    <div class="dest-planet-viewport" style="background-image: url('${photo}'); background-size:cover; background-position:center;">
+                        <div class="dest-planet-gradient" style="background: ${grad};"></div>
+                        <div class="dest-planet-label">${info.icon || ''} ${names.title || m.destination.toUpperCase()}</div>
                     </div>
 
                     <div class="dest-card-body">
-                        <div class="dest-card-name">${titleName}</div>
-                        <div class="dest-card-tagline">— ${subtitle} —</div>
+                        <div class="dest-card-name">${names.title || m.destination.toUpperCase()}</div>
+                        <div class="dest-card-tagline">— ${names.subtitle || ''} —</div>
 
                         <div class="dest-info-grid">
                             <div class="dest-info-item">
                                 <span class="icon">📊</span>
                                 <span class="label">Difficulty:</span>
-                                <span class="value">${diffStr}</span>
+                                <span class="value">${info.diff || '—'}</span>
                             </div>
                             <div class="dest-info-item">
                                 <span class="icon">💰</span>
@@ -309,14 +327,14 @@ class UIController {
                                 <span class="value" style="color:var(--accent-amber);">$${m.budgetMillion}M</span>
                             </div>
                             <div class="dest-info-item" style="grid-column: span 2;">
-                                <span class="icon">🏔</span>
+                                <span class="icon">⚠️</span>
                                 <span class="label">Key Challenge:</span>
-                                <span class="value">${challengeStr}</span>
+                                <span class="value">${info.challenge || '—'}</span>
                             </div>
                             <div class="dest-info-item" style="grid-column: span 2;">
                                 <span class="icon">🔬</span>
                                 <span class="label">Focus:</span>
-                                <span class="value" style="color:var(--accent-cyan);">${focusStr}</span>
+                                <span class="value" style="color:var(--accent-cyan);">${info.focus || '—'}</span>
                             </div>
                         </div>
 
@@ -327,15 +345,6 @@ class UIController {
                 </div>
             `;
         }).join("");
-
-        // Render planetary canvas previews
-        setTimeout(() => {
-            missions.forEach(m => {
-                if (window.spaceRenderer) {
-                    window.spaceRenderer.renderDestinationPreview(`canvas-preview-${m.id}`, m.destination);
-                }
-            });
-        }, 60);
     }
 
     // =========================================================
@@ -723,6 +732,20 @@ class UIController {
         const mission = GAME_DATA.missions[this.selectedMissionId];
         const calc = GameEngine.calculateMissionDesign(this.selectedMissionId, this.config);
         const debrief = GameEngine.evaluateMission(this.selectedMissionId, calc, this.simState);
+
+        // ── Destination-specific cinematic background ──────────────────────
+        document.body.classList.remove("debrief-moon", "debrief-mars", "debrief-europa");
+        const dest = mission ? mission.destination : "";
+        if (dest === "Moon")   document.body.classList.add("debrief-moon");
+        else if (dest === "Mars")   document.body.classList.add("debrief-mars");
+        else if (dest === "Europa") document.body.classList.add("debrief-europa");
+
+        // ── Update debrief tagline with destination name ───────────────────
+        const debriefTagline = document.querySelector(".debrief-tagline");
+        if (debriefTagline) {
+            const destEmoji = { Moon: "🌕", Mars: "🔴", Europa: "🧊" };
+            debriefTagline.textContent = `Mission to ${dest} complete — a journey beyond the orbit! ${destEmoji[dest] || "🚀"}`;
+        }
 
         // Left Summary Card
         const destVal = document.getElementById("debrief-dest-val");

@@ -8,6 +8,7 @@
  * - Dynamic orbital trajectories with animated spacecraft blips and thruster plumes
  * - 3-layer parallax starfield with variable stellar magnitudes and cosmic nebulae
  * - Scientific sensor scan cones and ground-station RF uplink beams
+ * - Phase-aware asteroid field using real sprite assets
  */
 
 class SpaceRenderer {
@@ -30,7 +31,54 @@ class SpaceRenderer {
         this.mouseX = 0;
         this.mouseY = 0;
 
+        // Preloaded image assets
+        this._imgs = {};
+        this._preloadImages();
+
+        // Asteroid field sprites state
+        this._asteroids = this._buildAsteroidField();
+
         this.init();
+    }
+
+    _preloadImages() {
+        const assets = {
+            asteroid_bennu: 'assets/asteroid_bennu.png',
+            asteroid_vesta: 'assets/asteroid_vesta.png',
+            asteroid_ryugu: 'assets/asteroid_ryugu.png',
+            asteroid_eros:  'assets/asteroid_eros.png',
+            moon_env:       'assets/moon_mission_env.jpg',
+            mars_env:       'assets/mars_mission_env.jpg',
+            europa_env:     'assets/europa_mission_env.jpg',
+            mars_panorama:  'assets/mars_panorama.jpg',
+            moon_card:      'assets/dest_card_moon.jpg',
+            europa_disk:    'assets/europa_disk.jpg',
+            hangar_wide:    'assets/hangar_wide.jpg',
+        };
+        for (const [key, src] of Object.entries(assets)) {
+            const img = new Image();
+            img.src = src;
+            this._imgs[key] = img;
+        }
+    }
+
+    _buildAsteroidField() {
+        const count = 18;
+        const field = [];
+        const types = ['asteroid_bennu', 'asteroid_vesta', 'asteroid_ryugu', 'asteroid_eros'];
+        for (let i = 0; i < count; i++) {
+            field.push({
+                x: Math.random(),       // 0–1 fractional screen position
+                y: 0.05 + Math.random() * 0.9,
+                size: 18 + Math.random() * 56,
+                speed: 0.00015 + Math.random() * 0.0004,
+                rotSpeed: (Math.random() - 0.5) * 0.025,
+                rot: Math.random() * Math.PI * 2,
+                type: types[i % types.length],
+                depth: 0.3 + Math.random() * 0.7  // 0.3 = far back, 1.0 = close
+            });
+        }
+        return field;
     }
 
     init() {
@@ -356,14 +404,188 @@ class SpaceRenderer {
      * - Moving spacecraft along orbital trajectory with glowing thruster plumes
      * - Surface Reconnaissance Viewfinder targeting box over geological target
      * - Scanning laser beam, DSN RF link, and telemetry telemetry HUD
+     * - Phase-aware rendering: asteroid field (phase 2), approach zoom (phase 3), orbit recon (phase 4)
      */
-    drawFlightDeckRadar(canvasId, destination, orbitPhase, altitudeKm, isDaylight, isGroundContact, activeTarget = null) {
+    _drawAsteroidField(ctx, w, h, t) {
+        const imgs = this._imgs || {};
+        const field = this._asteroids || [];
+        for (let i = 0; i < field.length; i++) {
+            const ast = field[i];
+            ast.x -= ast.speed;
+            if (ast.x < -0.15) ast.x = 1.15;
+            ast.rot += ast.rotSpeed;
+
+            const ax = ast.x * w;
+            const ay = ast.y * h;
+            const sz = ast.size * ast.depth;
+
+            ctx.save();
+            ctx.translate(ax, ay);
+            ctx.rotate(ast.rot);
+            ctx.globalAlpha = 0.55 + ast.depth * 0.4;
+
+            const img = imgs[ast.type];
+            if (img && img.complete && img.naturalWidth > 0) {
+                ctx.drawImage(img, -sz / 2, -sz / 2, sz, sz);
+            } else {
+                // Fallback: procedural asteroid rock
+                ctx.fillStyle = `rgba(60,55,50,${0.6 + ast.depth * 0.3})`;
+                ctx.beginPath();
+                ctx.arc(0, 0, sz / 2, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.globalAlpha = 1;
+            ctx.restore();
+        }
+    }
+
+    drawFlightDeckRadar(canvasId, destination, orbitPhase, altitudeKm, isDaylight, isGroundContact, activeTarget = null, flightPhase = 4) {
         const c = document.getElementById(canvasId);
         if (!c) return;
         const ctx = c.getContext('2d');
         const w = c.width = c.clientWidth;
         const h = c.height = c.clientHeight;
+        const t = Date.now() * 0.001;
 
+        // ── PHASE 1 & 2: Deep space with asteroid belt ──────────────────────
+        if (flightPhase <= 2) {
+            // Deep space background
+            ctx.fillStyle = '#03060E';
+            ctx.fillRect(0, 0, w, h);
+
+            // Subtle nebula glow
+            const nGrad = ctx.createRadialGradient(w * 0.7, h * 0.3, 20, w * 0.7, h * 0.3, w * 0.6);
+            nGrad.addColorStop(0, 'rgba(30,60,130,0.14)');
+            nGrad.addColorStop(1, 'rgba(3,6,14,0)');
+            ctx.fillStyle = nGrad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Static starfield
+            for (let i = 0; i < 60; i++) {
+                const sx = (i * 173.5 + 30) % w;
+                const sy = (i * 97.3 + 50) % h;
+                const br = 0.15 + (i % 7) * 0.12;
+                ctx.fillStyle = `rgba(200,225,255,${br})`;
+                ctx.beginPath();
+                ctx.arc(sx, sy, i % 4 === 0 ? 1.4 : 0.7, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Phase 2 asteroid field
+            if (flightPhase === 2) {
+                this._drawAsteroidField(ctx, w, h, t);
+
+                // Phase label
+                ctx.fillStyle = 'rgba(139,199,213,0.6)';
+                ctx.font = '700 11px "Rajdhani", sans-serif';
+                ctx.fillText('⚠ ASTEROID BELT CORRIDOR — DEBRIS FIELD DETECTED', w * 0.5 - 160, 24);
+            }
+
+            // Receding Earth in phase 1 (small and shrinking)
+            if (flightPhase === 1) {
+                const eR = 28;
+                const eGrad = ctx.createRadialGradient(w*0.12 - 8, h*0.18 - 8, eR*0.1, w*0.12, h*0.18, eR);
+                eGrad.addColorStop(0, '#4A7CB8');
+                eGrad.addColorStop(0.6, '#1A3A6A');
+                eGrad.addColorStop(1, '#040E22');
+                ctx.fillStyle = eGrad;
+                ctx.beginPath();
+                ctx.arc(w * 0.12, h * 0.18, eR, 0, Math.PI * 2);
+                ctx.fill();
+                // Atmospheric limb
+                const eAtmo = ctx.createRadialGradient(w*0.12, h*0.18, eR*0.9, w*0.12, h*0.18, eR*1.15);
+                eAtmo.addColorStop(0, 'rgba(80,160,255,0.4)');
+                eAtmo.addColorStop(1, 'rgba(0,0,0,0)');
+                ctx.fillStyle = eAtmo;
+                ctx.beginPath();
+                ctx.arc(w * 0.12, h * 0.18, eR * 1.15, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = 'rgba(139,199,213,0.5)';
+                ctx.font = '600 10px "Rajdhani", sans-serif';
+                ctx.fillText('EARTH RECEDING', w * 0.065, h * 0.18 + eR + 14);
+            }
+
+            // Spacecraft silhouette (small, center-ish)
+            const scX = w * 0.5, scY = h * 0.5;
+            ctx.save();
+            ctx.translate(scX, scY);
+            ctx.rotate(-0.1);
+            const sScale = 0.55;
+            // Body
+            ctx.fillStyle = '#1A253D';
+            ctx.strokeStyle = '#AAB8D0';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.roundRect(-28 * sScale, -18 * sScale, 56 * sScale, 36 * sScale, 3);
+            ctx.fill();
+            ctx.stroke();
+            // Panels
+            ctx.fillStyle = '#0B2355';
+            ctx.strokeStyle = '#2980D9';
+            ctx.lineWidth = 1;
+            ctx.fillRect((-28 - 70) * sScale, -10 * sScale, 65 * sScale, 20 * sScale);
+            ctx.strokeRect((-28 - 70) * sScale, -10 * sScale, 65 * sScale, 20 * sScale);
+            ctx.fillRect(28 * sScale, -10 * sScale, 65 * sScale, 20 * sScale);
+            ctx.strokeRect(28 * sScale, -10 * sScale, 65 * sScale, 20 * sScale);
+            // Thruster glow
+            const thrGrad = ctx.createRadialGradient(-28 * sScale, 0, 0, -40 * sScale, 0, 30 * sScale);
+            thrGrad.addColorStop(0, 'rgba(100,180,255,0.9)');
+            thrGrad.addColorStop(1, 'rgba(0,100,255,0)');
+            ctx.fillStyle = thrGrad;
+            ctx.fillRect(-80 * sScale, -15 * sScale, 55 * sScale, 30 * sScale);
+            ctx.restore();
+
+            return; // Don't draw planet/orbit view for phases 1 & 2
+        }
+
+        // ── PHASE 3: Destination approach — planet fills viewport ───────────────
+        if (flightPhase === 3) {
+            ctx.fillStyle = '#03060E';
+            ctx.fillRect(0, 0, w, h);
+
+            // Stars background
+            for (let i = 0; i < 50; i++) {
+                const sx = (i * 157.3) % w;
+                const sy = (i * 93.7) % h;
+                ctx.fillStyle = `rgba(200,225,255,${0.1 + (i % 6) * 0.08})`;
+                ctx.beginPath();
+                ctx.arc(sx, sy, 0.6 + (i % 3) * 0.4, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Large planet centered, filling most of screen (approach)
+            const appR = Math.min(w, h) * 0.38 + Math.sin(t * 0.3) * 4;
+            this.drawPlanetOnContext(ctx, w * 0.5, h * 0.58, appR, destination, this.planetAngle);
+
+            // Approach label
+            ctx.fillStyle = 'rgba(216,164,91,0.9)';
+            ctx.font = '700 12px "Rajdhani", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(`APPROACHING ${destination.toUpperCase()} — ORBITAL INSERTION BURN REQUIRED`, w * 0.5, h * 0.08);
+            ctx.textAlign = 'left';
+
+            // Atmosphere glow overlay
+            const atmoRad = appR * 1.08;
+            const atmoGrad = ctx.createRadialGradient(w*0.5, h*0.58, appR, w*0.5, h*0.58, atmoRad);
+            if (destination === "Mars") {
+                atmoGrad.addColorStop(0, 'rgba(255,100,50,0.2)');
+                atmoGrad.addColorStop(1, 'rgba(0,0,0,0)');
+            } else if (destination === "Moon") {
+                atmoGrad.addColorStop(0, 'rgba(200,210,230,0.1)');
+                atmoGrad.addColorStop(1, 'rgba(0,0,0,0)');
+            } else {
+                atmoGrad.addColorStop(0, 'rgba(50,130,220,0.2)');
+                atmoGrad.addColorStop(1, 'rgba(0,0,0,0)');
+            }
+            ctx.fillStyle = atmoGrad;
+            ctx.beginPath();
+            ctx.arc(w * 0.5, h * 0.58, atmoRad, 0, Math.PI * 2);
+            ctx.fill();
+
+            return;
+        }
+
+        // ── PHASE 4+: Low-orbit reconnaissance (original full view) ──────────
         ctx.fillStyle = '#030612';
         ctx.fillRect(0, 0, w, h);
 
