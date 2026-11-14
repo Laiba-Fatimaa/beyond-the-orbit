@@ -1,0 +1,828 @@
+/* 
+ * BEYOND THE ORBIT — CINEMATIC SPACE MISSION CONTROL STYLESHEET
+ * =============================================================
+ * Team Orbitera | NASA Space Apps Challenge 2026
+ * 
+ * Aesthetic: Premium aerospace game visuals combined with authentic mission control.
+ */
+
+:root {
+    --bg-space: #040814;
+    --bg-dark: #070E1E;
+    --bg-panel: #0D192E;
+    --bg-panel-light: #142442;
+    --border-dim: #1E2D4A;
+    --border-bright: #2A4374;
+    --accent-cyan: #00F0FF;
+    --accent-blue: #1E6BFF;
+    --accent-amber: #FFB800;
+    --accent-red: #FF2A55;
+    --accent-green: #00FF88;
+    --text-pure: #F4F7FF;
+    --text-dim: #9BAAC2;
+    --text-muted: #64748B;
+    --font-heading: 'Orbitron', monospace, sans-serif;
+    --font-telemetry: 'Rajdhani', sans-serif;
+    --font-body: 'Inter', -apple-system, sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--bg-space);
+    color: var(--text-pure);
+    font-family: var(--font-body);
+    line-height: 1.5;
+    overflow-x: hidden;
+    min-height: 100vh;
+}
+
+/* Background Canvas */
+#space-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -1;
+    pointer-events: none;
+}
+
+/* Scanline Overlay (Subtle HUD texture) */
+.scanline-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 1000;
+    pointer-events: none;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.28) 50%);
+    background-size: 100% 4px;
+    opacity: 0.20;
+}
+
+/* App Header & Top Bar */
+.top-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 32px;
+    background: rgba(7, 14, 30, 0.88);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border-dim);
+    position: sticky;
+    top: 0;
+    z-index: 200;
+}
+
+.brand-container {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    cursor: pointer;
+}
+
+.brand-title {
+    font-family: var(--font-heading);
+    font-size: 19px;
+    font-weight: 900;
+    letter-spacing: 2.5px;
+    color: var(--accent-cyan);
+    text-shadow: 0 0 20px rgba(0, 240, 255, 0.5);
+}
+
+.brand-subtitle {
+    font-family: var(--font-telemetry);
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 1.2px;
+    font-weight: 700;
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.nav-step-btn {
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--text-dim);
+    font-family: var(--font-telemetry);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.nav-step-btn:hover {
+    color: var(--text-pure);
+    border-color: var(--border-bright);
+    background: rgba(13, 25, 46, 0.8);
+}
+
+.nav-step-btn.active {
+    color: var(--bg-space);
+    background: var(--accent-cyan);
+    border-color: var(--accent-cyan);
+    box-shadow: 0 0 18px rgba(0, 240, 255, 0.5);
+}
+
+.top-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.control-btn {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-dim);
+    color: var(--text-dim);
+    font-family: var(--font-telemetry);
+    font-size: 12px;
+    font-weight: 700;
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.control-btn:hover {
+    border-color: var(--accent-cyan);
+    color: var(--accent-cyan);
+}
+
+/* Main Container Layout */
+.main-wrapper {
+    max-width: 1380px;
+    margin: 0 auto;
+    padding: 24px 32px 64px 32px;
+}
+
+.game-screen {
+    display: none;
+    animation: screenFadeIn 0.35s ease forwards;
+}
+
+.game-screen.active-screen {
+    display: block;
+}
+
+@keyframes screenFadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* =========================================================
+   CARDS & PANELS
+   ========================================================= */
+.hud-panel {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-dim);
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    position: relative;
+}
+
+.hud-panel:hover {
+    border-color: var(--border-bright);
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border-dim);
+}
+
+.section-title {
+    font-family: var(--font-heading);
+    font-size: 16px;
+    letter-spacing: 1.5px;
+    color: var(--accent-cyan);
+    text-transform: uppercase;
+}
+
+.section-subtitle {
+    font-family: var(--font-telemetry);
+    font-size: 12px;
+    color: var(--text-dim);
+    letter-spacing: 0.8px;
+}
+
+/* Status Badges */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 6px;
+    font-family: var(--font-heading);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.badge-ready {
+    background: rgba(0, 240, 255, 0.12);
+    border: 1px solid var(--accent-cyan);
+    color: var(--accent-cyan);
+    box-shadow: 0 0 14px rgba(0, 240, 255, 0.25);
+}
+
+.badge-attention {
+    background: rgba(255, 184, 0, 0.12);
+    border: 1px solid var(--accent-amber);
+    color: var(--accent-amber);
+    box-shadow: 0 0 14px rgba(255, 184, 0, 0.25);
+}
+
+.badge-blocked {
+    background: rgba(255, 42, 85, 0.12);
+    border: 1px solid var(--accent-red);
+    color: var(--accent-red);
+    box-shadow: 0 0 14px rgba(255, 42, 85, 0.25);
+}
+
+.nasa-callout {
+    background: linear-gradient(90deg, rgba(30, 107, 255, 0.2) 0%, rgba(13, 25, 46, 0.7) 100%);
+    border-left: 3px solid var(--accent-blue);
+    border-radius: 0 8px 8px 0;
+    padding: 10px 16px;
+    margin: 12px 0;
+    font-size: 12.5px;
+    color: #CAD5E8;
+    line-height: 1.5;
+}
+
+.nasa-callout strong {
+    color: var(--accent-cyan);
+}
+
+/* Buttons */
+.btn-primary {
+    background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-cyan) 100%);
+    color: #040814;
+    border: none;
+    border-radius: 6px;
+    font-family: var(--font-heading);
+    font-size: 13px;
+    font-weight: 900;
+    letter-spacing: 1.2px;
+    padding: 12px 28px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    box-shadow: 0 0 24px rgba(0, 240, 255, 0.45);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 34px rgba(0, 240, 255, 0.8);
+    filter: brightness(1.15);
+}
+
+.btn-secondary {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-dim);
+    color: var(--text-pure);
+    border-radius: 6px;
+    font-family: var(--font-heading);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    padding: 10px 22px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+    border-color: var(--accent-cyan);
+    color: var(--accent-cyan);
+    background: var(--bg-panel-light);
+}
+
+.btn-disabled {
+    opacity: 0.45;
+    cursor: not-allowed !important;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* =========================================================
+   SCREEN 1 — CINEMATIC LANDING HERO
+   ========================================================= */
+.cinematic-hero-wrapper {
+    position: relative;
+    padding: 80px 20px 60px 20px;
+    text-align: center;
+}
+
+.hero-badge-tag {
+    font-family: var(--font-telemetry);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: var(--accent-blue);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+}
+
+.hero-main-title {
+    font-family: var(--font-heading);
+    font-size: 64px;
+    font-weight: 900;
+    letter-spacing: 4px;
+    color: var(--text-pure);
+    text-shadow: 0 0 45px rgba(0, 240, 255, 0.4);
+    margin-bottom: 8px;
+}
+
+.hero-main-title span {
+    color: var(--accent-cyan);
+}
+
+.hero-tagline-text {
+    font-family: var(--font-heading);
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: var(--accent-amber);
+    margin-bottom: 24px;
+}
+
+.hero-lead-text {
+    max-width: 840px;
+    margin: 0 auto 40px auto;
+    font-size: 16.5px;
+    color: #CAD5E8;
+    line-height: 1.7;
+}
+
+.hero-canvas-viewport {
+    width: 100%;
+    max-width: 900px;
+    height: 320px;
+    margin: 0 auto 36px auto;
+    border-radius: 12px;
+    border: 1px solid var(--border-bright);
+    background: #060B18;
+    box-shadow: 0 0 40px rgba(0, 240, 255, 0.15);
+    overflow: hidden;
+    position: relative;
+}
+
+/* =========================================================
+   SCREEN 2 — RECONNAISSANCE DESTINATION GRID
+   ========================================================= */
+.destination-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 26px;
+    margin-top: 20px;
+}
+
+.dest-card {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-dim);
+    border-radius: 12px;
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.dest-card:hover {
+    transform: translateY(-6px);
+    border-color: var(--accent-cyan);
+    box-shadow: 0 12px 36px rgba(0, 240, 255, 0.2);
+}
+
+.dest-card.selected {
+    border-color: var(--accent-cyan);
+    box-shadow: 0 0 32px rgba(0, 240, 255, 0.35);
+    background: linear-gradient(180deg, rgba(20, 36, 66, 0.9) 0%, rgba(13, 25, 46, 0.95) 100%);
+}
+
+.dest-badge {
+    font-family: var(--font-telemetry);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: var(--accent-amber);
+}
+
+.dest-title {
+    font-family: var(--font-heading);
+    font-size: 21px;
+    font-weight: 800;
+    letter-spacing: 1.2px;
+    color: var(--text-pure);
+    margin: 6px 0;
+}
+
+.dest-planet-canvas-box {
+    width: 100%;
+    height: 180px;
+    margin: 12px 0;
+    border-radius: 8px;
+    background: #060B18;
+    border: 1px solid var(--border-dim);
+    overflow: hidden;
+}
+
+.dest-stat-pills {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin: 14px 0;
+}
+
+.dest-pill {
+    background: var(--bg-dark);
+    border: 1px solid var(--border-dim);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 11px;
+}
+
+.dest-pill span {
+    display: block;
+    font-family: var(--font-telemetry);
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--text-pure);
+}
+
+/* =========================================================
+   SCREEN 3 — CAD CLEANROOM SPACECRAFT LAB
+   ========================================================= */
+.telemetry-row {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 14px;
+    margin-bottom: 24px;
+}
+
+.telemetry-gauge {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-dim);
+    border-radius: 8px;
+    padding: 14px 16px;
+    text-align: center;
+}
+
+.telemetry-val {
+    font-family: var(--font-heading);
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--accent-cyan);
+}
+
+.telemetry-label {
+    font-family: var(--font-telemetry);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-top: 4px;
+}
+
+.telemetry-sub {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+.hangar-grid {
+    display: grid;
+    grid-template-columns: 1.15fr 1.35fr;
+    gap: 24px;
+}
+
+.blueprint-viewport {
+    width: 100%;
+    min-height: 280px;
+    background: #070E1E;
+    border: 1px solid var(--border-bright);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 14px;
+    position: relative;
+    overflow: hidden;
+}
+
+.subsystem-tabs {
+    display: flex;
+    gap: 8px;
+    background: var(--bg-dark);
+    border: 1px solid var(--border-dim);
+    border-radius: 8px;
+    padding: 6px;
+    margin-bottom: 18px;
+}
+
+.tab-btn {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    font-family: var(--font-telemetry);
+    font-size: 13px;
+    font-weight: 700;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s ease;
+}
+
+.tab-btn:hover {
+    color: var(--text-pure);
+    background: rgba(13, 25, 46, 0.8);
+}
+
+.tab-btn.active {
+    background: var(--accent-cyan);
+    color: var(--bg-space);
+    box-shadow: 0 0 16px rgba(0, 240, 255, 0.45);
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.comp-card {
+    background: var(--bg-dark);
+    border: 1px solid var(--border-dim);
+    border-radius: 8px;
+    padding: 12px 16px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    transition: all 0.2s ease;
+}
+
+.comp-card:hover {
+    border-color: var(--accent-blue);
+    background: var(--bg-panel-light);
+}
+
+.comp-card.active {
+    border-color: var(--accent-cyan);
+    background: rgba(0, 240, 255, 0.08);
+    box-shadow: 0 0 16px rgba(0, 240, 255, 0.15);
+}
+
+/* =========================================================
+   SCREEN 4 — FLIGHT OPERATIONS REAL GAMEPLAY DECK
+   ========================================================= */
+.flight-operations-grid {
+    display: grid;
+    grid-template-columns: 1.6fr 1.1fr;
+    gap: 24px;
+}
+
+.radar-display-panel {
+    background: #060B18;
+    border: 1px solid var(--border-bright);
+    border-radius: 12px;
+    padding: 16px;
+    height: 380px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 0 35px rgba(0, 240, 255, 0.1);
+}
+
+#flight-deck-radar-canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+/* Time Warp Controller Bar */
+.warp-control-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg-dark);
+    border: 1px solid var(--border-dim);
+    border-radius: 8px;
+    padding: 8px 14px;
+    margin-bottom: 16px;
+}
+
+.warp-btn {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-dim);
+    color: var(--text-dim);
+    font-family: var(--font-telemetry);
+    font-size: 12px;
+    font-weight: 700;
+    padding: 5px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.warp-btn.active {
+    background: var(--accent-cyan);
+    color: var(--bg-space);
+    border-color: var(--accent-cyan);
+}
+
+/* Flight Action Console */
+.flight-action-deck {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.action-card-btn {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-dim);
+    border-radius: 8px;
+    padding: 14px;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.action-card-btn:hover {
+    border-color: var(--accent-cyan);
+    transform: translateY(-2px);
+    box-shadow: 0 0 18px rgba(0, 240, 255, 0.25);
+}
+
+.action-card-btn.action-ready {
+    border-color: var(--accent-cyan);
+    background: rgba(0, 240, 255, 0.08);
+}
+
+.action-card-btn-title {
+    font-family: var(--font-heading);
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--accent-cyan);
+    margin-bottom: 4px;
+}
+
+.action-card-btn-sub {
+    font-family: var(--font-telemetry);
+    font-size: 11.5px;
+    color: var(--text-dim);
+}
+
+/* Dynamic Anomaly Alert Modal */
+.anomaly-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(4, 8, 20, 0.85);
+    backdrop-filter: blur(10px);
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.anomaly-modal-box {
+    background: #0B1324;
+    border: 2px solid var(--accent-red);
+    border-radius: 12px;
+    max-width: 680px;
+    width: 100%;
+    padding: 28px;
+    box-shadow: 0 0 45px rgba(255, 42, 85, 0.5);
+    animation: modalPop 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes modalPop {
+    from { opacity: 0; transform: scale(0.92); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.choices-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 18px;
+}
+
+.choice-btn {
+    background: var(--bg-dark);
+    border: 1px solid var(--border-dim);
+    border-radius: 8px;
+    padding: 14px 18px;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.2s ease;
+}
+
+.choice-btn:hover {
+    border-color: var(--accent-cyan);
+    background: var(--bg-panel-light);
+    transform: translateX(4px);
+}
+
+.choice-btn-title {
+    font-family: var(--font-telemetry);
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--accent-cyan);
+    margin-bottom: 4px;
+}
+
+.choice-btn-desc {
+    font-size: 12.5px;
+    color: var(--text-dim);
+}
+
+.flight-log-feed {
+    height: 240px;
+    overflow-y: auto;
+    background: #060B18;
+    border: 1px solid var(--border-dim);
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 12px;
+}
+
+.log-entry {
+    padding: 6px 0;
+    border-bottom: 1px solid #16243E;
+}
+
+.log-entry:last-child {
+    border-bottom: none;
+}
+
+/* =========================================================
+   SCREEN 5 — DEBRIEF & PRINT REPORT
+   ========================================================= */
+.score-progress-track {
+    background: var(--bg-dark);
+    border: 1px solid var(--border-dim);
+    height: 8px;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.score-progress-fill {
+    height: 100%;
+    background: var(--accent-cyan);
+    transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media print {
+    body { background: #FFFFFF !important; color: #000000 !important; }
+    #space-canvas, .scanline-overlay, .top-nav, .btn-primary, .btn-secondary, .top-controls {
+        display: none !important;
+    }
+    .hud-panel { background: #FFF !important; border: 1px solid #999 !important; color: #000 !important; box-shadow: none !important; }
+    .telemetry-val { color: #000 !important; }
+}
+
+@media (max-width: 1024px) {
+    .destination-grid, .hangar-grid, .flight-operations-grid {
+        grid-template-columns: 1fr !important;
+    }
+    .telemetry-row {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}

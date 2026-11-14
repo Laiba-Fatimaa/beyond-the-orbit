@@ -1,0 +1,465 @@
+/**
+ * BEYOND THE ORBIT — PROCEDURAL SPACE & PLANET CANVAS RENDERER
+ * ============================================================
+ * Team Orbitera | NASA Space Apps Challenge 2026
+ * 
+ * High-performance 60 FPS Canvas visualizer:
+ * - Procedural planetary spheres with spherical illumination, craters, and limb glow
+ * - Dynamic orbital trajectories with animated spacecraft blips and thruster plumes
+ * - 3-layer parallax starfield with variable stellar magnitudes and cosmic nebulae
+ * - Scientific sensor scan cones and ground-station RF uplink beams
+ */
+
+class SpaceRenderer {
+    constructor(canvasId) {
+        this.canvas = document.getElementById(canvasId);
+        if (!this.canvas) return;
+        this.ctx = this.canvas.getContext('2d');
+        this.width = window.innerWidth;
+        this.height = window.innerHeight;
+        this.stars = [];
+        this.planetAngle = 0;
+        this.craftOrbitAngle = 0;
+        this.orbitSpeed = 0.008;
+        this.isWarping = false;
+        this.warpSpeed = 0;
+        this.activeDestination = "Moon";
+        this.thrusterActive = false;
+        this.scanningActive = false;
+        this.downlinkActive = false;
+
+        this.init();
+    }
+
+    init() {
+        this.resize();
+        window.addEventListener('resize', () => this.resize());
+        this.generateStars();
+        this.animate();
+    }
+
+    resize() {
+        this.width = window.innerWidth;
+        this.height = window.innerHeight;
+        this.canvas.width = this.width;
+        this.canvas.height = this.height;
+    }
+
+    generateStars() {
+        this.stars = [];
+        for (let i = 0; i < 280; i++) {
+            this.stars.push({
+                x: Math.random() * this.width - this.width / 2,
+                y: Math.random() * this.height - this.height / 2,
+                z: Math.random() * this.width,
+                radius: Math.random() * 1.6 + 0.4,
+                twinklePhase: Math.random() * Math.PI * 2,
+                twinkleSpeed: Math.random() * 0.04 + 0.01,
+                color: this.getStellarColor()
+            });
+        }
+    }
+
+    getStellarColor() {
+        const types = [
+            'rgba(244, 247, 255, ',  // Class A/F White
+            'rgba(180, 220, 255, ',  // Class B Blue
+            'rgba(255, 220, 150, ',  // Class G Yellow (Solar)
+            'rgba(255, 160, 100, '   // Class M Red Giant
+        ];
+        return types[Math.floor(Math.random() * types.length)];
+    }
+
+    setDestination(dest) {
+        this.activeDestination = dest;
+    }
+
+    setWarp(enabled) {
+        this.isWarping = enabled;
+    }
+
+    setThruster(active) {
+        this.thrusterActive = active;
+    }
+
+    setScanning(active) {
+        this.scanningActive = active;
+    }
+
+    setDownlink(active) {
+        this.downlinkActive = active;
+    }
+
+    animate() {
+        this.ctx.fillStyle = '#040814';
+        this.ctx.fillRect(0, 0, this.width, this.height);
+
+        // Draw deep cosmic nebula dust
+        this.drawNebula();
+
+        // Draw starfield
+        this.drawStars();
+
+        this.planetAngle += 0.003;
+        this.craftOrbitAngle += this.orbitSpeed;
+
+        requestAnimationFrame(() => this.animate());
+    }
+
+    drawNebula() {
+        const cx = this.width * 0.8;
+        const cy = this.height * 0.25;
+        const grad = this.ctx.createRadialGradient(cx, cy, 30, cx, cy, this.width * 0.6);
+        grad.addColorStop(0, 'rgba(30, 60, 130, 0.12)');
+        grad.addColorStop(0.5, 'rgba(67, 217, 255, 0.04)');
+        grad.addColorStop(1, 'rgba(4, 8, 20, 0)');
+        this.ctx.fillStyle = grad;
+        this.ctx.fillRect(0, 0, this.width, this.height);
+
+        const grad2 = this.ctx.createRadialGradient(this.width * 0.15, this.height * 0.75, 40, this.width * 0.15, this.height * 0.75, this.width * 0.5);
+        grad2.addColorStop(0, 'rgba(255, 110, 50, 0.06)');
+        grad2.addColorStop(1, 'rgba(4, 8, 20, 0)');
+        this.ctx.fillStyle = grad2;
+        this.ctx.fillRect(0, 0, this.width, this.height);
+    }
+
+    drawStars() {
+        const targetSpeed = this.isWarping ? 32 : 0.6;
+        this.warpSpeed += (targetSpeed - this.warpSpeed) * 0.05;
+
+        const cx = this.width / 2;
+        const cy = this.height / 2;
+
+        for (let i = 0; i < this.stars.length; i++) {
+            const s = this.stars[i];
+            s.z -= this.warpSpeed;
+            if (s.z <= 0) {
+                s.z = this.width;
+                s.x = Math.random() * this.width - this.width / 2;
+                s.y = Math.random() * this.height - this.height / 2;
+            }
+
+            const k = 260 / s.z;
+            const px = s.x * k + cx;
+            const py = s.y * k + cy;
+
+            if (px >= 0 && px <= this.width && py >= 0 && py <= this.height) {
+                s.twinklePhase += s.twinkleSpeed;
+                const alpha = (Math.min(1.0, (1 - s.z / this.width) * 1.3) * (0.6 + 0.4 * Math.sin(s.twinklePhase))).toFixed(2);
+
+                if (this.warpSpeed > 6) {
+                    const prevK = 260 / (s.z + this.warpSpeed * 2.2);
+                    const prevX = s.x * prevK + cx;
+                    const prevY = s.y * prevK + cy;
+
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(prevX, prevY);
+                    this.ctx.lineTo(px, py);
+                    this.ctx.strokeStyle = `${s.color}${alpha})`;
+                    this.ctx.lineWidth = s.radius * k * 0.8;
+                    this.ctx.stroke();
+                } else {
+                    this.ctx.beginPath();
+                    this.ctx.arc(px, py, Math.max(0.7, s.radius * k), 0, Math.PI * 2);
+                    this.ctx.fillStyle = `${s.color}${alpha})`;
+                    this.ctx.fill();
+                }
+            }
+        }
+    }
+
+    /**
+     * Renders a photorealistic procedurally shaded celestial body on any 2D canvas context.
+     */
+    drawPlanetOnContext(ctx, x, y, radius, destination, rotAngle = 0) {
+        ctx.save();
+        ctx.translate(x, y);
+
+        if (destination === "Moon") {
+            // Moon - Basaltic regolith & rayed craters
+            const grad = ctx.createRadialGradient(-radius * 0.35, -radius * 0.35, radius * 0.1, 0, 0, radius);
+            grad.addColorStop(0, '#D6DCE5');
+            grad.addColorStop(0.55, '#8C96A5');
+            grad.addColorStop(0.85, '#4F5866');
+            grad.addColorStop(1, '#1E232B');
+
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.arc(0, 0, radius, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Craters & Maria
+            ctx.save();
+            ctx.clip();
+            ctx.rotate(rotAngle);
+
+            // Oceanus Procellarum / Maria patches
+            ctx.fillStyle = 'rgba(45, 52, 64, 0.45)';
+            ctx.beginPath();
+            ctx.arc(-radius * 0.2, -radius * 0.1, radius * 0.38, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.arc(radius * 0.25, radius * 0.2, radius * 0.28, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Tycho rayed crater
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
+            ctx.lineWidth = 1;
+            for (let a = 0; a < Math.PI * 2; a += Math.PI / 4) {
+                ctx.beginPath();
+                ctx.moveTo(-radius * 0.1, radius * 0.45);
+                ctx.lineTo(-radius * 0.1 + Math.cos(a) * radius * 0.4, radius * 0.45 + Math.sin(a) * radius * 0.4);
+                ctx.stroke();
+            }
+
+            // South Pole cold trap indicator
+            ctx.fillStyle = '#0B0D12';
+            ctx.beginPath();
+            ctx.ellipse(0, radius * 0.88, radius * 0.35, radius * 0.1, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.restore();
+
+            // Terminator night shadow
+            const shadow = ctx.createRadialGradient(radius * 0.5, radius * 0.2, radius * 0.2, 0, 0, radius);
+            shadow.addColorStop(0, 'rgba(0,0,0,0)');
+            shadow.addColorStop(0.8, 'rgba(4,8,16,0.6)');
+            shadow.addColorStop(1, 'rgba(4,8,16,0.95)');
+            ctx.fillStyle = shadow;
+            ctx.beginPath();
+            ctx.arc(0, 0, radius, 0, Math.PI * 2);
+            ctx.fill();
+
+        } else if (destination === "Mars") {
+            // Mars - Iron oxide red planet with atmosphere limb
+            const grad = ctx.createRadialGradient(-radius * 0.35, -radius * 0.35, radius * 0.1, 0, 0, radius);
+            grad.addColorStop(0, '#F56B42');
+            grad.addColorStop(0.5, '#C44623');
+            grad.addColorStop(0.85, '#872B12');
+            grad.addColorStop(1, '#330D05');
+
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.arc(0, 0, radius, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.save();
+            ctx.clip();
+            ctx.rotate(rotAngle);
+
+            // Dark albedo features (Syrtis Major)
+            ctx.fillStyle = 'rgba(70, 25, 15, 0.5)';
+            ctx.beginPath();
+            ctx.moveTo(-radius * 0.3, -radius * 0.1);
+            ctx.quadraticCurveTo(0, radius * 0.3, radius * 0.4, 0);
+            ctx.quadraticCurveTo(radius * 0.2, -radius * 0.4, -radius * 0.3, -radius * 0.1);
+            ctx.fill();
+
+            // Valles Marineris canyon rift
+            ctx.strokeStyle = '#381007';
+            ctx.lineWidth = Math.max(2, radius * 0.04);
+            ctx.beginPath();
+            ctx.moveTo(-radius * 0.4, radius * 0.05);
+            ctx.quadraticCurveTo(0, radius * 0.15, radius * 0.35, radius * 0.08);
+            ctx.stroke();
+
+            // North Polar Ice Cap (CO2 / H2O ice)
+            ctx.fillStyle = '#FFFFFF';
+            ctx.beginPath();
+            ctx.ellipse(0, -radius * 0.85, radius * 0.32, radius * 0.12, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.restore();
+
+            // Thin blue atmospheric limb scattering
+            ctx.strokeStyle = 'rgba(100, 180, 255, 0.35)';
+            ctx.lineWidth = Math.max(2, radius * 0.06);
+            ctx.beginPath();
+            ctx.arc(0, 0, radius + 1, -Math.PI * 0.8, Math.PI * 0.3);
+            ctx.stroke();
+
+        } else {
+            // Europa - Jovian ice moon with fractured lineae & Jupiter backdrop
+            const grad = ctx.createRadialGradient(-radius * 0.35, -radius * 0.35, radius * 0.1, 0, 0, radius);
+            grad.addColorStop(0, '#FFFFFF');
+            grad.addColorStop(0.45, '#DCE4ED');
+            grad.addColorStop(0.85, '#8CA0B8');
+            grad.addColorStop(1, '#253545');
+
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.arc(0, 0, radius, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.save();
+            ctx.clip();
+            ctx.rotate(rotAngle);
+
+            // Reddish-brown chaos terrain cracks (salts & mineral lineae)
+            ctx.strokeStyle = 'rgba(180, 75, 45, 0.7)';
+            ctx.lineWidth = Math.max(1.2, radius * 0.025);
+
+            ctx.beginPath();
+            ctx.moveTo(-radius * 0.6, -radius * 0.3);
+            ctx.quadraticCurveTo(0, -radius * 0.1, radius * 0.6, -radius * 0.4);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(-radius * 0.5, radius * 0.2);
+            ctx.quadraticCurveTo(-radius * 0.1, 0, radius * 0.5, radius * 0.35);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(-radius * 0.2, -radius * 0.6);
+            ctx.quadraticCurveTo(0, 0, -radius * 0.1, radius * 0.6);
+            ctx.stroke();
+
+            // Chaos patch (Conamara Chaos)
+            ctx.fillStyle = 'rgba(180, 80, 50, 0.4)';
+            ctx.beginPath();
+            ctx.arc(radius * 0.2, radius * 0.1, radius * 0.25, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.restore();
+
+            // Plume vapor venting (Thrace Macula)
+            ctx.strokeStyle = 'rgba(67, 217, 255, 0.8)';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(radius * 0.8, -radius * 0.4);
+            ctx.quadraticCurveTo(radius * 1.25, -radius * 0.7, radius * 1.35, -radius * 0.95);
+            ctx.stroke();
+
+            ctx.fillStyle = 'rgba(67, 217, 255, 0.4)';
+            ctx.beginPath();
+            ctx.arc(radius * 1.35, -radius * 0.95, radius * 0.15, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        ctx.restore();
+    }
+
+    /**
+     * Draws the orbital radar view on the mission operations deck.
+     */
+    drawFlightDeckRadar(canvasId, destination, orbitPhase, altitudeKm, isDaylight, isGroundContact) {
+        const c = document.getElementById(canvasId);
+        if (!c) return;
+        const ctx = c.getContext('2d');
+        const w = c.width = c.clientWidth;
+        const h = c.height = c.clientHeight;
+
+        ctx.fillStyle = '#060B18';
+        ctx.fillRect(0, 0, w, h);
+
+        const cx = w / 2;
+        const cy = h / 2;
+        const planetR = Math.min(w, h) * 0.22;
+        const orbitRx = Math.min(w, h) * 0.42;
+        const orbitRy = orbitRx * 0.55;
+
+        // Draw orbital plane
+        ctx.strokeStyle = 'rgba(67, 217, 255, 0.25)';
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.ellipse(cx, cy, orbitRx, orbitRy, -Math.PI * 0.08, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Ground station uplink cone (when in contact)
+        if (isGroundContact) {
+            ctx.strokeStyle = 'rgba(0, 240, 255, 0.6)';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(w * 0.15, h * 0.85);
+            ctx.lineTo(cx + Math.cos(orbitPhase) * orbitRx, cy + Math.sin(orbitPhase) * orbitRy);
+            ctx.stroke();
+
+            ctx.fillStyle = '#00F0FF';
+            ctx.font = '10px "Rajdhani", sans-serif';
+            ctx.fillText('📡 DSN CARRIER LOCK', w * 0.05, h * 0.85);
+        }
+
+        // Draw central planet
+        this.drawPlanetOnContext(ctx, cx, cy, planetR, destination, this.planetAngle);
+
+        // Calculate spacecraft position on orbit
+        const craftX = cx + Math.cos(orbitPhase) * orbitRx;
+        const craftY = cy + Math.sin(orbitPhase) * orbitRy;
+
+        // Sensor scanning cone
+        if (this.scanningActive) {
+            ctx.fillStyle = 'rgba(67, 217, 255, 0.2)';
+            ctx.beginPath();
+            ctx.moveTo(craftX, craftY);
+            ctx.lineTo(craftX - 35, craftY + 50);
+            ctx.lineTo(craftX + 35, craftY + 50);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.strokeStyle = '#43D9FF';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        }
+
+        // Spacecraft icon & thruster plume
+        ctx.save();
+        ctx.translate(craftX, craftY);
+
+        if (this.thrusterActive) {
+            // Thruster fire exhaust plume
+            ctx.fillStyle = 'rgba(255, 120, 40, 0.85)';
+            ctx.beginPath();
+            ctx.moveTo(-4, 6);
+            ctx.lineTo(0, 22);
+            ctx.lineTo(4, 6);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.fillStyle = '#FFE600';
+            ctx.beginPath();
+            ctx.moveTo(-2, 6);
+            ctx.lineTo(0, 14);
+            ctx.lineTo(2, 6);
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        // Spacecraft bus
+        ctx.fillStyle = isDaylight ? '#43D9FF' : '#9BAAC2';
+        ctx.fillRect(-6, -4, 12, 8);
+        ctx.strokeStyle = '#FFFFFF';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(-6, -4, 12, 8);
+
+        // Solar panels wings
+        ctx.fillStyle = '#0B2046';
+        ctx.strokeStyle = '#38BDF8';
+        ctx.fillRect(-18, -3, 11, 6);
+        ctx.strokeRect(-18, -3, 11, 6);
+        ctx.fillRect(7, -3, 11, 6);
+        ctx.strokeRect(7, -3, 11, 6);
+
+        // Blinking telemetry beacon
+        const beaconOn = Math.floor(Date.now() / 350) % 2 === 0;
+        if (beaconOn) {
+            ctx.fillStyle = '#00FF88';
+            ctx.beginPath();
+            ctx.arc(0, 0, 2.5, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        ctx.restore();
+
+        // Overlay status text
+        ctx.fillStyle = '#9BAAC2';
+        ctx.font = '11px "Orbitron", sans-serif';
+        ctx.fillText(`ORBIT ALT: ${altitudeKm.toFixed(0)} KM`, 14, 22);
+        ctx.fillStyle = isDaylight ? '#FFB547' : '#64748B';
+        ctx.fillText(isDaylight ? '☀ SUNLIT PASS' : '🌑 ECLIPSE SHADOW', 14, 38);
+    }
+}
+
+window.SpaceRenderer = SpaceRenderer;
