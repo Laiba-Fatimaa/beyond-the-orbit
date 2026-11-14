@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BEYOND THE ORBIT | Space Mission Design Game</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Orbitron:wght@500;700;800;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/animations.css">
+</head>
+<body>
+    <!-- 60 FPS Parallax Starfield Canvas -->
+    <canvas id="space-canvas"></canvas>
+    <div class="scanline-overlay"></div>
+
+    <!-- Top Navigation Bar -->
+    <header class="top-nav">
+        <div class="brand-container" data-nav-target="landing">
+            <svg class="brand-logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="9"/>
+                <path d="M3.6 9h16.8"/>
+                <path d="M3.6 15h16.8"/>
+                <path d="M12 3a15.3 15.3 0 0 1 4 9 15.3 15.3 0 0 1-4 9 15.3 15.3 0 0 1-4-9 15.3 15.3 0 0 1 4-9z"/>
+            </svg>
+            <div>
+                <div class="brand-title">BEYOND THE ORBIT</div>
+                <div class="brand-subtitle">NASA SPACE APPS 2026 · TEAM ORBITERA</div>
+            </div>
+        </div>
+
+        <nav class="nav-links">
+            <button class="nav-step-btn active" data-nav-target="landing">1. BRIEFING</button>
+            <button class="nav-step-btn" data-nav-target="selection">2. DESTINATION</button>
+            <button class="nav-step-btn" data-nav-target="planning">3. SPACECRAFT LAB</button>
+            <button class="nav-step-btn" data-nav-target="simulation">4. FLIGHT OPS</button>
+            <button class="nav-step-btn" data-nav-target="debrief">5. DEBRIEF</button>
+        </nav>
+
+        <div class="top-controls">
+            <button class="audio-btn" id="audio-toggle-btn">🔊 AUDIO: ACTIVE</button>
+            <button class="reset-btn" id="reset-btn">🔄 RESET</button>
+        </div>
+    </header>
+
+    <!-- Main Content Wrapper -->
+    <main class="main-wrapper">
+
+        <!-- =========================================================
+             SCREEN 1 — CINEMATIC LANDING PAGE
+             ========================================================= -->
+        <section id="screen-landing" class="game-screen active-screen">
+            <div class="hero-container">
+                <div class="hero-tag">NASA Space Apps Challenge 2026 · Faisalabad Local Event</div>
+                <h1 class="hero-title">BEYOND THE <span>ORBIT</span></h1>
+                <div class="hero-tagline">YOUR NEXT FRONTIER IS UNKNOWN.</div>
+                <p class="hero-desc">
+                    Step into the shoes of a NASA Flight Director and Chief Systems Engineer. 
+                    Experience the authentic trade-offs of designing, building, and operating deep-space exploration missions. 
+                    Balance payload mass, electrical power margins, link budgets, and radiation hardening against the uncompromising physics of the Solar System.
+                </p>
+                <div class="hero-cta-group">
+                    <button class="btn-primary" data-nav-target="selection" style="font-size: 15px; padding: 16px 36px;">
+                        🚀 INITIALIZE MISSION DESIGN
+                    </button>
+                </div>
+            </div>
+
+            <div class="hero-features-grid">
+                <div class="feature-card">
+                    <div class="feature-number">01</div>
+                    <div class="feature-title">FOUR-SEGMENT ARCHITECTURE</div>
+                    <p class="feature-text">
+                        Modeled directly on the <strong>NASA Science Mission Directorate (SMD)</strong> standard: configure Launch, Spacecraft Bus, Ground Stations, and Science Pipelines as one unified flight system.
+                    </p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-number">02</div>
+                    <div class="feature-title">AUTHENTIC PLANETARY PHYSICS</div>
+                    <p class="feature-text">
+                        Grounded in <strong>NASA Goddard Planetary Fact Sheets</strong>. Experience genuine inverse-square solar decay (only 50 W/m² at Europa), 42-minute light travel delays, and lethal Jovian radiation belts.
+                    </p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-number">03</div>
+                    <div class="feature-title">HARDWARE-CONNECTED SIMULATION</div>
+                    <p class="feature-text">
+                        Navigate 5–8 in-flight operational crises where your choices directly interact with your installed hardware (MMRTGs, Titanium Vaults, RAD750, Ka-Band dishes) and receive a transparent 100-point aerospace debrief.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- =========================================================
+             SCREEN 2 — MISSION SELECTION
+             ========================================================= -->
+        <section id="screen-selection" class="game-screen">
+            <div class="section-header">
+                <div>
+                    <h2 class="section-title">MISSION ARCHITECTURE SELECTION</h2>
+                    <div class="section-subtitle">CHOOSE AN EXPLORATION TARGET DESTINATION</div>
+                </div>
+                <span class="badge badge-ready">PHASE: TARGET SELECTION</span>
+            </div>
+
+            <div class="missions-grid" id="missions-card-grid">
+                <!-- Dynamically populated by UIController -->
+            </div>
+        </section>
+
+        <!-- =========================================================
+             SCREEN 3 — SPACECRAFT ENGINEERING LAB
+             ========================================================= -->
+        <section id="screen-planning" class="game-screen">
+            <div class="section-header">
+                <div>
+                    <h2 class="section-title" id="planning-mission-title">SPACECRAFT ENGINEERING & INTEGRATION</h2>
+                    <div class="section-subtitle">NASA SCIENCE MISSION DIRECTORATE (SMD) FOUR-SEGMENT FORMULATION</div>
+                </div>
+                <span class="badge badge-ready" id="planning-status-badge">READY FOR LAUNCH</span>
+            </div>
+
+            <!-- Live Telemetry Banner -->
+            <div class="telemetry-row">
+                <div class="telemetry-gauge">
+                    <div class="telemetry-val" id="tel-mass-val">0 kg</div>
+                    <div class="telemetry-label">MASS / CAPACITY</div>
+                    <div class="telemetry-sub" id="tel-mass-sub">Margin: 0%</div>
+                </div>
+                <div class="telemetry-gauge">
+                    <div class="telemetry-val" id="tel-cost-val">$0M</div>
+                    <div class="telemetry-label">COST / BUDGET</div>
+                    <div class="telemetry-sub" id="tel-cost-sub">Reserve: $0M</div>
+                </div>
+                <div class="telemetry-gauge">
+                    <div class="telemetry-val" id="tel-pwr-val">+0 W</div>
+                    <div class="telemetry-label">POWER BALANCE</div>
+                    <div class="telemetry-sub" id="tel-pwr-sub">Gen vs Load</div>
+                </div>
+                <div class="telemetry-gauge">
+                    <div class="telemetry-val" id="tel-data-val">0 MB/d</div>
+                    <div class="telemetry-label">DOWNLINK CAPACITY</div>
+                    <div class="telemetry-sub" id="tel-data-sub">Daily Throughput</div>
+                </div>
+                <div class="telemetry-gauge">
+                    <div class="telemetry-val" id="tel-rel-val">0%</div>
+                    <div class="telemetry-label">SYSTEM RELIABILITY</div>
+                    <div class="telemetry-sub" id="tel-rel-sub">Science Potential</div>
+                </div>
+            </div>
+
+            <!-- Engineering Workspace -->
+            <div class="engineering-grid">
+                <!-- Left: Interactive Spacecraft Schematic & Readiness Critique -->
+                <div class="schematic-card">
+                    <div class="section-subtitle" style="color:#43D9FF; font-weight:bold; margin-bottom:8px;">ACTIVE VEHICLE BLUEPRINT</div>
+                    <div class="schematic-viewport" id="schematic-viewport">
+                        <!-- Spacecraft SVG injected here -->
+                    </div>
+
+                    <div class="hud-panel" style="margin-top:12px; min-height: 140px;">
+                        <div class="section-subtitle" style="color:#43D9FF; font-weight:bold; margin-bottom:8px;">SYSTEMS CRITIQUE & FLIGHT READINESS</div>
+                        <div id="validation-critique-box">
+                            <!-- Blockers / Warnings / Confirmations -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Four-Segment Configuration Tabs -->
+                <div class="hud-panel">
+                    <div class="subsystem-tabs">
+                        <button class="tab-btn active" data-tab="launch">A. LAUNCH</button>
+                        <button class="tab-btn" data-tab="space">B. SPACE SEGMENT</button>
+                        <button class="tab-btn" data-tab="orbit">C. ORBIT & ARCH</button>
+                        <button class="tab-btn" data-tab="ground">D. GROUND & USER</button>
+                    </div>
+
+                    <div id="tab-launch" class="tab-content active"></div>
+                    <div id="tab-space" class="tab-content"></div>
+                    <div id="tab-orbit" class="tab-content"></div>
+                    <div id="tab-ground" class="tab-content"></div>
+
+                    <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                        <button class="btn-secondary" data-nav-target="selection">
+                            ⬅ CHANGE TARGET
+                        </button>
+                        <button class="btn-primary" id="launch-action-btn">
+                            🚀 LAUNCH MISSION INTO FLIGHT
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =========================================================
+             SCREEN 4 — MISSION SIMULATION FLIGHT DECK
+             ========================================================= -->
+        <section id="screen-simulation" class="game-screen">
+            <div class="section-header">
+                <div>
+                    <h2 class="section-title">MISSION CONTROL CENTER — LIVE TELEMETRY</h2>
+                    <div class="section-subtitle">INTERACTIVE OPERATIONAL SIMULATION & DECISION ENGINE</div>
+                </div>
+                <span class="badge badge-ready">LINK STATUS: CARRIER LOCK</span>
+            </div>
+
+            <!-- Real-Time Telemetry HUD -->
+            <div class="telemetry-row">
+                <div class="telemetry-gauge">
+                    <div class="telemetry-val" id="hud-health-val">100%</div>
+                    <div class="telemetry-label">SPACECRAFT HEALTH</div>
+                </div>
+                <div class="telemetry-gauge">
+                    <div class="telemetry-val" id="hud-power-val">100%</div>
+                    <div class="telemetry-label">POWER RESERVE</div>
+                </div>
+                <div class="telemetry-gauge">
+                    <div class="telemetry-val" id="hud-datacol-val">0 MB</div>
+                    <div class="telemetry-label">DATA BUFFERED</div>
+                </div>
+                <div class="telemetry-gauge">
+                    <div class="telemetry-val" id="hud-datatx-val" style="color:var(--accent-blue);">0 MB</div>
+                    <div class="telemetry-label">DATA DOWNLINKED</div>
+                </div>
+                <div class="telemetry-gauge">
+                    <div class="telemetry-val" id="hud-science-val" style="color:var(--accent-amber);">0</div>
+                    <div class="telemetry-label">SCIENCE POINTS</div>
+                </div>
+            </div>
+
+            <!-- Mission Control Operations Layout -->
+            <div class="mission-control-layout">
+                <!-- Left: Crisis Event & Player Decision -->
+                <div id="crisis-event-container">
+                    <!-- Injected dynamically -->
+                </div>
+
+                <!-- Right: Visual Feeds & Telemetry Log -->
+                <div style="display:flex; flex-direction:column; gap:16px;">
+                    <div class="hud-panel" style="padding:14px;">
+                        <div class="section-subtitle" style="color:#43D9FF; font-weight:bold; margin-bottom:8px;">TARGET ORBITAL SENSORS</div>
+                        <div style="height:140px; background:#080E1E; border-radius:6px; overflow:hidden;" id="sim-planet-viewport"></div>
+                    </div>
+                    <div class="hud-panel" style="padding:14px;">
+                        <div class="section-subtitle" style="color:#43D9FF; font-weight:bold; margin-bottom:8px;">SPACECRAFT STATUS MONITOR</div>
+                        <div style="height:140px; background:#080E1E; border-radius:6px; overflow:hidden;" id="sim-spacecraft-viewport"></div>
+                    </div>
+                    <div class="hud-panel" style="padding:14px; flex:1;">
+                        <div class="section-subtitle" style="color:#43D9FF; font-weight:bold; margin-bottom:8px;">COMMAND LOG & EVENT FEED</div>
+                        <div class="flight-log-feed" id="flight-log-feed"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =========================================================
+             SCREEN 5 — MISSION DEBRIEF & SCORING
+             ========================================================= -->
+        <section id="screen-debrief" class="game-screen">
+            <div class="debrief-header">
+                <div>
+                    <div class="hero-tag">AEROSPACE SYSTEMS EVALUATION REPORT</div>
+                    <h2 class="hero-title" style="font-size:32px; text-align:left;">FLIGHT DEBRIEF</h2>
+                    <div class="brand-subtitle">NASA SPACE APPS CHALLENGE 2026 · TEAM ORBITERA</div>
+                </div>
+                <div class="final-score-display">
+                    <div class="final-score-num" id="debrief-score-num" style="color:var(--accent-cyan);">0 / 100</div>
+                    <div class="badge badge-ready" id="debrief-score-badge">OUTCOME</div>
+                </div>
+            </div>
+
+            <div class="hud-panel" style="margin-bottom: 24px;">
+                <div class="section-subtitle" style="color:#43D9FF; font-weight:bold; margin-bottom:6px;">EXECUTIVE MISSION SUMMARY</div>
+                <p id="debrief-summary-text" style="color:#CAD5E8; font-size:14.5px; line-height:1.6;"></p>
+            </div>
+
+            <div class="debrief-grid">
+                <!-- 6 Category Score Breakdown -->
+                <div class="hud-panel">
+                    <div class="section-subtitle" style="color:#43D9FF; font-weight:bold; margin-bottom:14px;">SYSTEMS ENGINEERING 100-POINT SCORECARD</div>
+                    <div id="debrief-categories-container"></div>
+                </div>
+
+                <!-- Scientific Objectives Milestones -->
+                <div class="hud-panel">
+                    <div class="section-subtitle" style="color:#43D9FF; font-weight:bold; margin-bottom:14px;">SCIENTIFIC OBJECTIVES COMPLETED</div>
+                    <ul id="debrief-objectives-list" style="padding-left: 20px;"></ul>
+                </div>
+            </div>
+
+            <div class="debrief-grid">
+                <div class="hud-panel">
+                    <div class="section-subtitle" style="color:#FFB547; font-weight:bold; margin-bottom:10px;">SYSTEMS LESSONS LEARNED</div>
+                    <ul id="debrief-lessons-list" style="padding-left: 20px;"></ul>
+                </div>
+                <div class="hud-panel">
+                    <div class="section-subtitle" style="color:#43D9FF; font-weight:bold; margin-bottom:10px;">FLIGHT RECOMMENDATIONS FOR NEXT MISSION</div>
+                    <ul id="debrief-suggestions-list" style="padding-left: 20px; list-style:none;"></ul>
+                </div>
+            </div>
+
+            <!-- Export & Navigation Controls -->
+            <div style="margin-top: 32px; display: flex; justify-content: space-between; align-items: center; padding-top: 20px; border-top: 1px solid var(--border-color);">
+                <div>
+                    <button class="btn-primary" onclick="window.app.printReport()">
+                        📄 PRINT / SAVE DEBRIEF REPORT (PDF)
+                    </button>
+                </div>
+                <div style="display:flex; gap:12px;">
+                    <button class="btn-secondary" data-nav-target="planning">
+                        🔧 REDESIGN SPACECRAFT
+                    </button>
+                    <button class="btn-primary" data-nav-target="selection">
+                        🪐 SELECT NEW DESTINATION
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Scripts -->
+    <script src="js/nasa-data.js"></script>
+    <script src="js/game-data.js"></script>
+    <script src="js/game-engine.js"></script>
+    <script src="js/events-engine.js"></script>
+    <script src="js/space-canvas.js"></script>
+    <script src="js/audio-fx.js"></script>
+    <script src="js/ui-controller.js"></script>
+</body>
+</html>
+

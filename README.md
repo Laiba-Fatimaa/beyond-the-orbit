@@ -52,34 +52,33 @@ For full details, see [NASA_DATA_RECORD.md](NASA_DATA_RECORD.md).
 
 ---
 
-## Installation & Quickstart
+## How to Play & Deploy
 
-### Prerequisites
-- Python 3.10+ (Tested on Python 3.11.9)
-- Git
+### Option 1: Instant Browser Play (Recommended for Judges)
+The main product is a zero-dependency, high-performance browser web application:
+1. Simply double-click [`index.html`](index.html) to launch it in any modern browser (Chrome, Edge, Firefox, Safari).
+2. Or serve it locally with Python:
+   ```bash
+   python -m http.server 8000
+   ```
+   Open `http://localhost:8000`.
+3. **GitHub Pages Deployment:** Enable GitHub Pages under Repository Settings -> Pages -> Source: `main` branch. The game will be immediately playable live at:
+   `https://laiba-fatimaa.github.io/beyond-the-orbit/`
 
-### 1. Clone the Repository
+---
+
+### Option 2: Python Backend & Streamlit Lab
+For judges reviewing the Python mathematical modeling and systems architecture:
 ```bash
-git clone https://github.com/Laiba-Fatimaa/beyond-the-orbit.git
-cd beyond-the-orbit
-```
-
-### 2. Install Dependencies
-```bash
+# 1. Install dependencies
 pip install -r requirements.txt
-```
 
-### 3. Run the Automated Test Suite
-Verify that all 11 test suites pass with 100% success:
-```bash
+# 2. Run the 11-part automated physics & systems test suite
 python test_game.py
-```
 
-### 4. Launch the Game
-```bash
+# 3. Launch the Python Streamlit application
 streamlit run app.py
 ```
-Open your browser to `http://localhost:8501`.
 
 ---
 
@@ -109,3 +108,4 @@ beyond-the-orbit/
 ## Team Orbitera — NASA Space Apps 2026
 
 *Dedicated to inspiring the next generation of space explorers and mission architects.*
+

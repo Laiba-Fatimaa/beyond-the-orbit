@@ -1007,3 +1007,4 @@ elif st.session_state.screen == "debrief":
             reset_simulation()
             st.session_state.screen = "selection"
             st.rerun()
+
