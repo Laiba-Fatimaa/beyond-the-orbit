@@ -228,6 +228,40 @@ class FlightSimulator {
 
         // 7. Render Updates
         this.updateHUD(powerGenerationW, powerConsumptionW, netPowerW);
+
+        // 8. Automatic Continuous Mission Win & Loss Evaluation (No manual finalize button required)
+        if (!this._missionCompletedTriggered && this.flightPhase === 4) {
+            const mission = GAME_DATA.missions[this.missionId];
+            const allObjectivesCompleted = mission.scientificObjectives.every(
+                obj => (this.objectiveProgress[obj.id] || 0) >= 80
+            );
+
+            // Win condition: All scientific objectives fulfilled & telemetry downlinked (or high science yield achieved)
+            if ((allObjectivesCompleted && this.dataDownlinkedMb > 1200) || this.scienceScore >= 80) {
+                this._missionCompletedTriggered = true;
+                this.postTelemetryLog("🌟 MISSION OBJECTIVES ACHIEVED: All primary scientific exploration milestones complete. Telemetry archived.");
+                this.postTelemetryLog("COMMENCING AUTOMATIC TRANSITION TO MISSION DEBRIEF...");
+                if (window.AudioFX) window.AudioFX.playSuccess();
+                setTimeout(() => {
+                    if (this.ui && typeof this.ui.showScreen === 'function') {
+                        this.ui.showScreen("debrief");
+                    }
+                }, 2800);
+            }
+        }
+
+        // Loss condition: Vehicle destruction or critical unrecoverable failure
+        if (!this._missionCompletedTriggered && (this.healthPct <= 0 || (this.batteryCurrentWh <= 0 && this.isDaylight === false && this.healthPct < 15))) {
+            this._missionCompletedTriggered = true;
+            this.postTelemetryLog("🚨 CRITICAL MISSION LOSS: Spacecraft structural integrity compromised. Vehicle lost.");
+            this.postTelemetryLog("COMMENCING MISSION FAILURE INQUEST...");
+            if (window.AudioFX) window.AudioFX.playFailure();
+            setTimeout(() => {
+                if (this.ui && typeof this.ui.showScreen === 'function') {
+                    this.ui.showScreen("debrief");
+                }
+            }, 2500);
+        }
     }
 
     triggerAnomaly(anom) {
@@ -299,7 +333,7 @@ class FlightSimulator {
             setTimeout(() => window.spaceRenderer.setScanning(false), 800);
         }
 
-        if (window.AudioFX) window.AudioFX.playClick();
+        if (window.AudioFX) window.AudioFX.playScan();
 
         if (this.activeTargetInSight) {
             const tgt = this.activeTargetInSight;
@@ -358,7 +392,7 @@ class FlightSimulator {
             setTimeout(() => window.spaceRenderer.setDownlink(false), 900);
         }
 
-        if (window.AudioFX) window.AudioFX.playClick();
+        if (window.AudioFX) window.AudioFX.playDownlink();
 
         // Calculate packet transmission chunk
         const rateChunk = Math.min(this.dataBufferMb, (comm.maxDataRateMbDay * ground.downlinkEfficiency) / 8);

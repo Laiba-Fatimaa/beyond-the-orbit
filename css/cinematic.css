@@ -2118,3 +2118,136 @@ body.debrief-europa #screen-debrief {
     box-shadow: 0 0 12px var(--accent-cyan);
     transition: width 0.1s linear;
 }
+
+/* =========================================================
+   AUDIO CONTROLS CLUSTER
+   ========================================================= */
+.audio-control-cluster {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(16, 25, 35, 0.7);
+    border: 1px solid rgba(139, 199, 213, 0.25);
+    border-radius: 8px;
+    padding: 2px 8px;
+}
+
+.volume-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 70px;
+    height: 4px;
+    background: rgba(139, 199, 213, 0.3);
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.volume-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--accent-cyan);
+    box-shadow: 0 0 8px var(--accent-cyan);
+    cursor: pointer;
+}
+
+.volume-slider::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--accent-cyan);
+    box-shadow: 0 0 8px var(--accent-cyan);
+    cursor: pointer;
+    border: none;
+}
+
+/* =========================================================
+   COCKPIT FOREGROUND & ANIMATED STARFIELD VIDEO
+   ========================================================= */
+.flight-viewport-container {
+    position: relative;
+    width: 100%;
+    height: 520px;
+    background: #02040A;
+    border: 1.5px solid rgba(139, 199, 213, 0.35);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9), inset 0 0 30px rgba(0, 0, 0, 0.8);
+}
+
+.flight-starfield-video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 1;
+    pointer-events: none;
+    opacity: 0.65;
+    mix-blend-mode: screen;
+}
+
+#flight-deck-radar-canvas {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: block;
+    z-index: 2;
+    background: transparent;
+}
+
+/* Realistic Space Shuttle Cockpit Foreground Overlay (User Reference Pic 4) */
+.cockpit-foreground-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.cockpit-frame-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+    filter: drop-shadow(0 15px 35px rgba(0,0,0,0.95));
+}
+
+/* Position HUD overlays over cockpit consoles with high z-index */
+.flight-overlay-objectives {
+    position: absolute;
+    top: 14px;
+    left: 18px;
+    z-index: 6;
+}
+
+.flight-overlay-resources {
+    position: absolute;
+    bottom: 22px;
+    left: 18px;
+    z-index: 6;
+}
+
+.flight-discovery-banner {
+    position: absolute;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 6;
+}
+
+.flight-action-cluster {
+    position: absolute;
+    bottom: 20px;
+    right: 18px;
+    z-index: 6;
+}

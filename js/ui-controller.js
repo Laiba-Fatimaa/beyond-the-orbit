@@ -77,6 +77,25 @@ class UIController {
             });
         }
 
+        // Audio volume slider
+        const volSlider = document.getElementById("audio-volume-slider");
+        if (volSlider) {
+            volSlider.addEventListener("input", (e) => {
+                if (window.AudioFX) window.AudioFX.setVolume(e.target.value);
+            });
+        }
+
+        // Start mission button from landing page (activates ambience & systems chime)
+        const startHeroBtn = document.querySelector("#screen-landing [data-nav-target='selection']");
+        if (startHeroBtn) {
+            startHeroBtn.addEventListener("click", () => {
+                if (window.AudioFX) {
+                    window.AudioFX.playStartup();
+                    window.AudioFX.startAmbience();
+                }
+            });
+        }
+
         // Reset button
         const resetBtn = document.getElementById("reset-btn");
         if (resetBtn) {
@@ -784,6 +803,15 @@ class UIController {
             outcomeIcon.style.color = debrief.outcomeColor;
         }
         if (outcomeSummary) outcomeSummary.textContent = debrief.summaryText;
+
+        // Play appropriate mission debrief resolution sound
+        if (window.AudioFX) {
+            if (debrief.totalScore >= 60 || (debrief.outcomeBadge && debrief.outcomeBadge.includes("SUCCESS"))) {
+                window.AudioFX.playSuccess();
+            } else {
+                window.AudioFX.playFailure();
+            }
+        }
 
         // 100-Point Category Breakdown
         const catContainer = document.getElementById("debrief-categories-container");

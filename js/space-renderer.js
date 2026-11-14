@@ -465,13 +465,14 @@ class SpaceRenderer {
 
         // ── PHASE 1 & 2: Deep space with asteroid belt ──────────────────────
         if (flightPhase <= 2) {
-            // Deep space background
-            ctx.fillStyle = '#03060E';
+            // Clear canvas to reveal moving starfield video underneath
+            ctx.clearRect(0, 0, w, h);
+            ctx.fillStyle = 'rgba(3, 6, 14, 0.28)';
             ctx.fillRect(0, 0, w, h);
 
             // Subtle nebula glow
             const nGrad = ctx.createRadialGradient(w * 0.7, h * 0.3, 20, w * 0.7, h * 0.3, w * 0.6);
-            nGrad.addColorStop(0, 'rgba(30,60,130,0.14)');
+            nGrad.addColorStop(0, 'rgba(30,60,130,0.18)');
             nGrad.addColorStop(1, 'rgba(3,6,14,0)');
             ctx.fillStyle = nGrad;
             ctx.fillRect(0, 0, w, h);
@@ -556,7 +557,8 @@ class SpaceRenderer {
 
         // ── PHASE 3: Destination approach — planet fills viewport ───────────────
         if (flightPhase === 3) {
-            ctx.fillStyle = '#03060E';
+            ctx.clearRect(0, 0, w, h);
+            ctx.fillStyle = 'rgba(3, 6, 14, 0.25)';
             ctx.fillRect(0, 0, w, h);
 
             // Stars background
@@ -694,7 +696,8 @@ class SpaceRenderer {
         }
 
         // ── PHASE 4+: Low-orbit reconnaissance (original full view) ──────────
-        ctx.fillStyle = '#030612';
+        ctx.clearRect(0, 0, w, h);
+        ctx.fillStyle = 'rgba(3, 6, 18, 0.25)';
         ctx.fillRect(0, 0, w, h);
 
         // Destination atmospheric environment backdrop subtle texture

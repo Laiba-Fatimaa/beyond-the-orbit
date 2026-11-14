@@ -44,7 +44,10 @@
         </nav>
 
         <div class="top-controls">
-            <button class="control-btn" id="audio-toggle-btn">🔊 AUDIO</button>
+            <div class="audio-control-cluster">
+                <button class="control-btn" id="audio-toggle-btn" title="Toggle Audio Ambience &amp; Sound FX">🔊 AUDIO</button>
+                <input type="range" id="audio-volume-slider" class="volume-slider" min="0" max="1" step="0.05" value="0.75" title="Audio Volume">
+            </div>
             <button class="control-btn" id="reset-btn">↺ RESET</button>
         </div>
     </header>
@@ -329,7 +332,16 @@
 
             <!-- Main Flight Viewport with Overlays -->
             <div class="flight-viewport-container">
+                <!-- Looping Dark Moving Starfield Video -->
+                <video id="flight-starfield-video" class="flight-starfield-video" src="assets/starfield_loop.mp4" autoplay loop muted playsinline></video>
+
+                <!-- Dynamic Orbital Space & Viewfinder Canvas -->
                 <canvas id="flight-deck-radar-canvas"></canvas>
+
+                <!-- Spacecraft Realistic Cockpit Foreground Frame (User Reference) -->
+                <div class="cockpit-foreground-overlay" id="cockpit-foreground-overlay">
+                    <img src="assets/cockpit_overlay.png" class="cockpit-frame-img" alt="Flight Deck Cockpit" draggable="false">
+                </div>
 
                 <!-- Floating Objectives Box (Top-Left) -->
                 <div class="flight-overlay-objectives">
