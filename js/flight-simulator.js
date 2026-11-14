@@ -233,14 +233,22 @@ class FlightSimulator {
         this.updateHUD(powerGenerationW, powerConsumptionW, netPowerW);
 
         // 8. Automatic Continuous Mission Win & Loss Evaluation (No manual finalize button required)
-        if (!this._missionCompletedTriggered && this.flightPhase === 4) {
+        if (!this._missionCompletedTriggered) {
             const mission = GAME_DATA.missions[this.missionId];
-            const allObjectivesCompleted = mission.scientificObjectives.every(
+            const allObjectivesCompleted = mission && mission.scientificObjectives.every(
                 obj => (this.objectiveProgress[obj.id] || 0) >= 80
             );
 
-            // Win condition: All scientific objectives fulfilled & telemetry downlinked (or high science yield achieved)
-            if ((allObjectivesCompleted && this.dataDownlinkedMb > 800) || this.scienceScore >= 75) {
+            // WIN CONDITION:
+            // In Phase 4 (orbital reconnaissance):
+            // - All scientific exploration targets mapped / objectives >= 80% and significant data downlinked
+            // - OR substantial scientific score (>= 75 pts) achieved with healthy craft
+            const isMissionWon = this.flightPhase === 4 && (
+                (allObjectivesCompleted && this.dataDownlinkedMb >= 600) ||
+                (this.scienceScore >= 75 && this.healthPct > 20)
+            );
+
+            if (isMissionWon) {
                 this._missionCompletedTriggered = true;
                 this.postTelemetryLog("🌟 MISSION OBJECTIVES ACHIEVED: All primary scientific exploration milestones complete. Telemetry archived.");
                 this.postTelemetryLog("COMMENCING AUTOMATIC TRANSITION TO MISSION DEBRIEF...");
@@ -251,19 +259,34 @@ class FlightSimulator {
                     }
                 }, 2800);
             }
-        }
 
-        // Loss condition: Vehicle destruction or critical unrecoverable failure
-        if (!this._missionCompletedTriggered && (this.healthPct <= 0 || (this.batteryCurrentWh <= 0 && this.isDaylight === false && this.healthPct < 15))) {
-            this._missionCompletedTriggered = true;
-            this.postTelemetryLog("🚨 CRITICAL MISSION LOSS: Spacecraft structural integrity compromised. Vehicle lost.");
-            this.postTelemetryLog("COMMENCING MISSION FAILURE INQUEST...");
-            if (window.AudioFX) window.AudioFX.playFailure();
-            setTimeout(() => {
-                if (this.ui && typeof this.ui.showScreen === 'function') {
-                    this.ui.showScreen("debrief");
+            // LOSS / CRITICAL FAILURE CONDITIONS:
+            // 1. Vehicle structural integrity reaches 0% (hull loss / impact)
+            // 2. Total power blackout (battery exhausted in eclipse with health decaying)
+            // 3. Complete propellant exhaustion during cruise/insertion preventing arrival
+            // 4. Critical subsystem loss where objectives can no longer be completed
+            const isHullDestroyed = this.healthPct <= 0;
+            const isPowerBlackout = this.batteryCurrentWh <= 0 && this.isDaylight === false && this.healthPct < 25;
+            const isStrandedNoFuel = this.propellantKg <= 0 && this.flightPhase < 4 && this.distanceRemainingKm > 5000;
+            const isMissionFailed = isHullDestroyed || isPowerBlackout || isStrandedNoFuel;
+
+            if (isMissionFailed) {
+                this._missionCompletedTriggered = true;
+                if (isHullDestroyed) {
+                    this.postTelemetryLog("🚨 CRITICAL MISSION LOSS: Spacecraft structural integrity compromised. Vehicle lost.");
+                } else if (isPowerBlackout) {
+                    this.postTelemetryLog("🚨 CRITICAL MISSION LOSS: Total bus electrical blackout. Battery depleted in eclipse shadow.");
+                } else if (isStrandedNoFuel) {
+                    this.postTelemetryLog("🚨 CRITICAL MISSION LOSS: Propellant depleted prior to orbit insertion. Vehicle stranded on flyby trajectory.");
                 }
-            }, 2500);
+                this.postTelemetryLog("COMMENCING MISSION FAILURE INQUEST...");
+                if (window.AudioFX) window.AudioFX.playFailure();
+                setTimeout(() => {
+                    if (this.ui && typeof this.ui.showScreen === 'function') {
+                        this.ui.showScreen("debrief");
+                    }
+                }, 2500);
+            }
         }
     }
 
@@ -558,6 +581,26 @@ class FlightSimulator {
                 4: "Phase 4/4: Low-Orbit Scientific Reconnaissance"
             };
             phaseSub.textContent = phaseNames[this.flightPhase] || "Phase: Orbital Reconnaissance";
+        }
+
+        // Live update objectives checklist status in HUD
+        const mission = GAME_DATA.missions[this.missionId];
+        if (mission && mission.scientificObjectives) {
+            mission.scientificObjectives.forEach(obj => {
+                const el = document.getElementById(`hud-obj-${obj.id}`);
+                const isComplete = (this.objectiveProgress[obj.id] || 0) >= 80;
+                if (el) {
+                    if (isComplete && !el.classList.contains("done")) {
+                        el.classList.add("done");
+                        el.innerHTML = `✔ ${obj.title.slice(0, 24)}...`;
+                    }
+                }
+            });
+            const dlEl = document.getElementById("hud-obj-downlink");
+            if (dlEl && this.dataDownlinkedMb >= 600 && !dlEl.classList.contains("done")) {
+                dlEl.classList.add("done");
+                dlEl.innerHTML = `✔ Transmit Telemetry`;
+            }
         }
 
         // Draw orbital flight deck with surface viewfinder

@@ -251,8 +251,8 @@ class HangarBuilder {
             <g class="real-spacecraft-focus" transform="translate(240, 175)">
                 <!-- Ambient pedestal shadow -->
                 <ellipse cx="0" cy="72" rx="90" ry="18" fill="rgba(0,0,0,0.65)" filter="blur(6px)"/>
-                <!-- Real high-detail spacecraft image -->
-                <image href="assets/spacecraft_pedestal.png" x="-135" y="-105" width="270" height="195" preserveAspectRatio="xMidYMid meet" style="filter: drop-shadow(0 12px 28px rgba(0,0,0,0.85));"/>
+                <!-- Real high-detail NASA spacecraft reference (NASA 0701891) -->
+                <image href="assets/spacecraft_cleanroom_nasa.png" x="-145" y="-105" width="290" height="185" preserveAspectRatio="xMidYMid meet" style="filter: drop-shadow(0 12px 28px rgba(0,0,0,0.85)); border-radius: 6px;"/>
             </g>
 
             <!-- Active Hardware Telemetry Callout Pins Over Real Spacecraft -->

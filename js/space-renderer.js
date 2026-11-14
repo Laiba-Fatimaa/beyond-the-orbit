@@ -71,6 +71,8 @@ class SpaceRenderer {
             europa_disk:    'assets/europa_disk.jpg',
             hangar_wide:    'assets/hangar_wide.jpg',
             spacecraft_pedestal: 'assets/spacecraft_pedestal.png',
+            artemis_orion_earth: 'assets/artemis_orion_earth.png',
+            spacecraft_cleanroom_nasa: 'assets/spacecraft_cleanroom_nasa.png',
         };
         for (const [key, src] of Object.entries(assets)) {
             const img = new Image();
@@ -499,28 +501,48 @@ class SpaceRenderer {
                 ctx.fillText('⚠ ASTEROID BELT CORRIDOR — DEBRIS FIELD DETECTED', w * 0.5 - 160, 24);
             }
 
-            // Receding Earth in phase 1 (small and shrinking)
+            // Receding Earth & Deep Space Horizon in Phase 1 (Authentic Artemis II art002e000192 reference)
             if (flightPhase === 1) {
-                const eR = 28;
-                const eGrad = ctx.createRadialGradient(w*0.12 - 8, h*0.18 - 8, eR*0.1, w*0.12, h*0.18, eR);
-                eGrad.addColorStop(0, '#4A7CB8');
-                eGrad.addColorStop(0.6, '#1A3A6A');
-                eGrad.addColorStop(1, '#040E22');
-                ctx.fillStyle = eGrad;
-                ctx.beginPath();
-                ctx.arc(w * 0.12, h * 0.18, eR, 0, Math.PI * 2);
-                ctx.fill();
-                // Atmospheric limb
-                const eAtmo = ctx.createRadialGradient(w*0.12, h*0.18, eR*0.9, w*0.12, h*0.18, eR*1.15);
-                eAtmo.addColorStop(0, 'rgba(80,160,255,0.4)');
-                eAtmo.addColorStop(1, 'rgba(0,0,0,0)');
-                ctx.fillStyle = eAtmo;
-                ctx.beginPath();
-                ctx.arc(w * 0.12, h * 0.18, eR * 1.15, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.fillStyle = 'rgba(139,199,213,0.5)';
-                ctx.font = '600 10px "Rajdhani", sans-serif';
-                ctx.fillText('EARTH RECEDING', w * 0.065, h * 0.18 + eR + 14);
+                const earthImg = this._imgs ? this._imgs.artemis_orion_earth : null;
+                if (earthImg && earthImg.complete && earthImg.naturalWidth > 0) {
+                    ctx.save();
+                    // Draw authentic Earth limb with auroras and deep space background (NASA art002e000192)
+                    const ew = Math.min(w * 0.45, 340);
+                    const eh = (ew / earthImg.naturalWidth) * earthImg.naturalHeight;
+                    ctx.globalAlpha = 0.85;
+                    ctx.drawImage(earthImg, w * 0.04, h * 0.06, ew, eh);
+
+                    // Subtle cyan coordinate overlay border
+                    ctx.strokeStyle = 'rgba(0, 212, 255, 0.4)';
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(w * 0.04, h * 0.06, ew, eh);
+
+                    ctx.fillStyle = 'rgba(169, 220, 232, 0.9)';
+                    ctx.font = '700 10.5px "Rajdhani", sans-serif';
+                    ctx.fillText('EARTH RECEDING · TRANSLUNAR INJECTION [NASA ARTEMIS II art002e000192]', w * 0.04 + 6, h * 0.06 + eh + 14);
+                    ctx.restore();
+                } else {
+                    const eR = 28;
+                    const eGrad = ctx.createRadialGradient(w*0.12 - 8, h*0.18 - 8, eR*0.1, w*0.12, h*0.18, eR);
+                    eGrad.addColorStop(0, '#4A7CB8');
+                    eGrad.addColorStop(0.6, '#1A3A6A');
+                    eGrad.addColorStop(1, '#040E22');
+                    ctx.fillStyle = eGrad;
+                    ctx.beginPath();
+                    ctx.arc(w * 0.12, h * 0.18, eR, 0, Math.PI * 2);
+                    ctx.fill();
+                    // Atmospheric limb
+                    const eAtmo = ctx.createRadialGradient(w*0.12, h*0.18, eR*0.9, w*0.12, h*0.18, eR*1.15);
+                    eAtmo.addColorStop(0, 'rgba(80,160,255,0.4)');
+                    eAtmo.addColorStop(1, 'rgba(0,0,0,0)');
+                    ctx.fillStyle = eAtmo;
+                    ctx.beginPath();
+                    ctx.arc(w * 0.12, h * 0.18, eR * 1.15, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.fillStyle = 'rgba(139,199,213,0.5)';
+                    ctx.font = '600 10px "Rajdhani", sans-serif';
+                    ctx.fillText('EARTH RECEDING', w * 0.065, h * 0.18 + eR + 14);
+                }
             }
 
             // Realistic High-Fidelity Spacecraft Probe

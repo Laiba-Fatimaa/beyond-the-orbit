@@ -162,14 +162,7 @@ class UIController {
 
         const endMissionBtn = document.getElementById("action-end-mission-btn");
         if (endMissionBtn) {
-            // Hide the manual finalize button — it's emergency-only, revealed after 3 mins
             endMissionBtn.style.display = "none";
-            endMissionBtn.addEventListener("click", () => {
-                if (window.AudioFX) window.AudioFX.playSuccess();
-                this.flightSim.stop();
-                if (this.missionTimer) clearInterval(this.missionTimer);
-                this.showScreen("debrief");
-            });
         }
     }
 
@@ -739,20 +732,6 @@ class UIController {
 
         // Render Objectives Checklist on HUD
         this.renderFlightObjectivesList(mission);
-
-        // Reveal the emergency manual debrief button after 3 minutes (safety net)
-        const endMissionBtn = document.getElementById("action-end-mission-btn");
-        if (endMissionBtn) {
-            endMissionBtn.style.display = "none";
-            clearTimeout(this._endBtnRevealTimer);
-            this._endBtnRevealTimer = setTimeout(() => {
-                if (endMissionBtn && this.currentScreen === "simulation") {
-                    endMissionBtn.style.display = "block";
-                    endMissionBtn.textContent = "⏹ END MISSION EARLY";
-                    endMissionBtn.title = "Emergency: Manually end the mission and go to debrief";
-                }
-            }, 180000); // 3 minutes
-        }
     }
 
     renderFlightObjectivesList(mission) {
@@ -791,11 +770,26 @@ class UIController {
         else if (dest === "Mars")   document.body.classList.add("debrief-mars");
         else if (dest === "Europa") document.body.classList.add("debrief-europa");
 
-        // ── Update debrief tagline with destination name ───────────────────
+        // ── Update debrief tagline & title with outcome & destination ───────
+        const debriefTitle = document.querySelector(".debrief-title");
         const debriefTagline = document.querySelector(".debrief-tagline");
+        const laurelIcon = document.querySelector(".laurel-wreath-icon");
+        const isSuccess = debrief.totalScore >= 60 && !debrief.outcomeBadge.includes("FAILURE");
+
+        if (debriefTitle) {
+            debriefTitle.textContent = isSuccess ? "MISSION SUCCESS" : "MISSION FAILED";
+            debriefTitle.style.color = isSuccess ? "var(--accent-cyan)" : "#FF5263";
+        }
+        if (laurelIcon) {
+            laurelIcon.textContent = isSuccess ? "🏆" : "🚨";
+        }
         if (debriefTagline) {
             const destEmoji = { Moon: "🌕", Mars: "🔴", Europa: "🧊" };
-            debriefTagline.textContent = `Mission to ${dest} complete — a journey beyond the orbit! ${destEmoji[dest] || "🚀"}`;
+            if (isSuccess) {
+                debriefTagline.textContent = `Mission to ${dest} achieved flight milestones — journey beyond the orbit complete! ${destEmoji[dest] || "🚀"}`;
+            } else {
+                debriefTagline.textContent = `Mission to ${dest} encountered fatal operational breakdown. Telemetry inquest initiated.`;
+            }
         }
 
         // Left Summary Card

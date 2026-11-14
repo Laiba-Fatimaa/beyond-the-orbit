@@ -405,17 +405,15 @@
 
             <!-- Lower Telemetry & Flight Log Row -->
             <div class="flight-bottom-log-row">
-                <div class="flight-log-panel">
+                <div class="flight-log-panel" style="grid-column: 1 / -1;">
                     <div class="hud-panel-header" style="display:flex; justify-content:space-between;">
                         <span>REAL-TIME TELEMETRY LOG</span>
                         <span style="color:var(--accent-cyan); font-size:11px;">BUFFER: <span id="hud-datacol-val">0 / 16000 MB</span> · SCORE: <span id="hud-science-val">0</span> PTS</span>
                     </div>
                     <div class="flight-log-feed" id="flight-log-feed"></div>
                 </div>
-                <div>
-                    <button class="btn-primary" id="action-end-mission-btn" style="width:100%; height:100%; font-size:14px;">
-                        📊 FINALIZE MISSION & COMMENCE DEBRIEF
-                    </button>
+                <div style="display:none;">
+                    <button class="btn-primary" id="action-end-mission-btn" style="display:none;" aria-hidden="true"></button>
                 </div>
             </div>
 

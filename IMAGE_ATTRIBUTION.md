@@ -35,10 +35,18 @@ This project uses authentic NASA, ESA, JAXA, and mission archive photographic im
 * **Assembly Bay Environment:** NASA Jet Propulsion Laboratory Spacecraft Assembly Facility (SAF) High Bay 1 (`File:PIA23519-Mars2020-AssemblyRoom-20191112.jpg`).
   * *Agency/Credit:* NASA / JPL-Caltech.
   * *License:* Public Domain.
+* **Realistic Flight Spacecraft Hardware (`assets/spacecraft_cleanroom_nasa.png` / `assets/nasa_iss_spacecraft.jpg`):**
+  * *Source:* NASA Image ID `0701891` — International Space Station / Space Shuttle Discovery relative separation showing Harmony Node 2, solar arrays, and deep space Earth backdrop (`https://images.nasa.gov/details/0701891`).
+  * *Agency/Credit:* NASA / Marshall Space Flight Center.
+  * *License:* Public Domain.
 
 ---
 
 ### 4. Flight Operations & Reconnaissance Environments
+* **Deep Space Earth & Auroral Horizon (`assets/artemis_orion_earth.png` / `assets/artemis_orion_earth.jpg`):**
+  * *Source:* NASA Image ID `art002e000192` — Nighttime Earth photographed by Artemis II crew aiming through Orion spacecraft window following translunar injection burn, showing Earth lit by moonlight with green auroras (`https://images.nasa.gov/details/art002e000192`).
+  * *Agency/Credit:* NASA / Johnson Space Center.
+  * *License:* Public Domain.
 * **Rocky Asteroid Sprites:**
   * *Bennu:* NASA OSIRIS-REx PolyCam global mosaic (`File:Bennu_mosaic_OSIRIS-REx.jpg`). NASA / Goddard / University of Arizona (Public Domain).
   * *Vesta:* NASA Dawn Framing Camera global mosaic (`File:Vesta_-_Dawn_(43193614815).png`). NASA / JPL-Caltech / UCLA / MPS / DLR / IDA (Public Domain).
