@@ -598,12 +598,118 @@ class SpaceRenderer {
             ctx.arc(w * 0.5, h * 0.58, atmoRad, 0, Math.PI * 2);
             ctx.fill();
 
+            // Spacecraft in foreground during approach & retrograde insertion burn
+            const scX = w * 0.38 + Math.sin(t * 0.8) * 6;
+            const scY = h * 0.54 + Math.cos(t * 0.6) * 5;
+            ctx.save();
+            ctx.translate(scX, scY);
+            // Angled retrograde relative to planetary trajectory
+            ctx.rotate(-0.25);
+
+            // Retrograde insertion burn thruster plasma flare
+            if (this.thrusterActive) {
+                // High-energy engine exhaust plume (authentic space probe insertion flare)
+                const burnGrad = ctx.createLinearGradient(0, 0, -85, 0);
+                burnGrad.addColorStop(0, '#FFFFFF');
+                burnGrad.addColorStop(0.2, '#FFE57F');
+                burnGrad.addColorStop(0.55, '#FF5722');
+                burnGrad.addColorStop(0.85, '#D50000');
+                burnGrad.addColorStop(1, 'rgba(213, 0, 0, 0)');
+
+                ctx.fillStyle = burnGrad;
+                ctx.beginPath();
+                ctx.moveTo(-18, -10);
+                ctx.lineTo(-85 - Math.random() * 20, 0);
+                ctx.lineTo(-18, 10);
+                ctx.closePath();
+                ctx.fill();
+
+                // Core plasma flare glow
+                const flareGrad = ctx.createRadialGradient(-18, 0, 2, -18, 0, 32);
+                flareGrad.addColorStop(0, 'rgba(255, 255, 255, 0.95)');
+                flareGrad.addColorStop(0.4, 'rgba(255, 171, 0, 0.7)');
+                flareGrad.addColorStop(1, 'rgba(255, 87, 34, 0)');
+                ctx.fillStyle = flareGrad;
+                ctx.beginPath();
+                ctx.arc(-18, 0, 32, 0, Math.PI * 2);
+                ctx.fill();
+
+                // HUD status burn lock
+                ctx.fillStyle = '#FFD54F';
+                ctx.font = '700 11px "Rajdhani", sans-serif';
+                ctx.fillText('🔥 RETROGRADE ΔV INSERTION BURN ACTIVE', -120, -28);
+            } else {
+                // Idle attitude thruster glow
+                ctx.fillStyle = 'rgba(0, 212, 255, 0.6)';
+                ctx.beginPath();
+                ctx.moveTo(-16, -3);
+                ctx.lineTo(-24, 0);
+                ctx.lineTo(-16, 3);
+                ctx.closePath();
+                ctx.fill();
+
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
+                ctx.font = '600 10px "Rajdhani", sans-serif';
+                ctx.fillText('ALIGNING RETROGRADE VECTOR', -85, -20);
+            }
+
+            // Spacecraft body
+            ctx.fillStyle = '#101C33';
+            ctx.strokeStyle = '#CAD5E8';
+            ctx.lineWidth = 1.8;
+            ctx.beginPath();
+            ctx.roundRect(-16, -12, 32, 24, 3);
+            ctx.fill();
+            ctx.stroke();
+
+            // Gold thermal MLI blanket
+            ctx.fillStyle = '#C8A230';
+            ctx.fillRect(-12, -8, 24, 6);
+
+            // Extended Solar Panels (Top & Bottom)
+            ctx.fillStyle = '#0B2355';
+            ctx.strokeStyle = '#2980D9';
+            ctx.lineWidth = 1.2;
+            // Top wing
+            ctx.fillRect(-6, -42, 12, 30);
+            ctx.strokeRect(-6, -42, 12, 30);
+            // Bottom wing
+            ctx.fillRect(-6, 12, 12, 30);
+            ctx.strokeRect(-6, 12, 12, 30);
+
+            // High-Gain Antenna Dish
+            ctx.strokeStyle = '#FFFFFF';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(16, 0, 10, -Math.PI * 0.45, Math.PI * 0.45);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(16, 0);
+            ctx.lineTo(24, 0);
+            ctx.stroke();
+
+            ctx.restore();
+
             return;
         }
 
         // ── PHASE 4+: Low-orbit reconnaissance (original full view) ──────────
         ctx.fillStyle = '#030612';
         ctx.fillRect(0, 0, w, h);
+
+        // Destination atmospheric environment backdrop subtle texture
+        const envImgs = this._imgs || {};
+        let envImg = null;
+        if (destination === "Mars") envImg = envImgs.mars_env;
+        else if (destination === "Moon") envImg = envImgs.moon_env;
+        else envImg = envImgs.europa_env;
+
+        if (envImg && envImg.complete && envImg.naturalWidth > 0) {
+            ctx.save();
+            ctx.globalAlpha = 0.22;
+            ctx.drawImage(envImg, 0, 0, w, h);
+            ctx.restore();
+        }
 
         // Deep space starfield in viewport
         for (let i = 0; i < 40; i++) {
@@ -685,71 +791,58 @@ class SpaceRenderer {
         this.drawPlanetOnContext(ctx, cx, cy, planetR, destination, this.planetAngle);
 
         // --- SURFACE RECONNAISSANCE VIEWFINDER TARGET BOX ---
-        // A high-tech square HUD targeting box over the planet's surface
-        const vfSize = Math.min(w, h) * 0.26;
-        const vfX = cx + planetR * 0.18;
-        const vfY = cy - planetR * 0.32;
+        // A high-tech square HUD targeting box displaying authentic photographic terrain
+        const vfSize = Math.min(w, h) * 0.28;
+        const vfX = cx + planetR * 0.16;
+        const vfY = cy - planetR * 0.34;
 
         ctx.save();
-        // Viewfinder background with magnified planetary surface terrain
-        ctx.fillStyle = 'rgba(7, 14, 30, 0.88)';
+        // Viewfinder background
+        ctx.fillStyle = 'rgba(7, 14, 30, 0.95)';
         ctx.fillRect(vfX, vfY, vfSize, vfSize);
 
-        // Magnified surface terrain inside box
+        // Magnified surface terrain inside box — USING REAL PHOTOGRAPHIC TERRAIN ASSETS
         ctx.save();
         ctx.beginPath();
         ctx.rect(vfX, vfY, vfSize, vfSize);
         ctx.clip();
         
+        const imgs = this._imgs || {};
+        let terrainImg = null;
         if (destination === "Mars") {
-            // Mars canyon/riverbed terrain inside viewfinder
-            ctx.fillStyle = '#A84422';
-            ctx.fillRect(vfX, vfY, vfSize, vfSize);
-            // Canyon rift
-            ctx.strokeStyle = '#4A1406';
-            ctx.lineWidth = 6;
-            ctx.beginPath();
-            ctx.moveTo(vfX, vfY + vfSize * 0.4);
-            ctx.quadraticCurveTo(vfX + vfSize * 0.5, vfY + vfSize * 0.65, vfX + vfSize, vfY + vfSize * 0.5);
-            ctx.stroke();
-            // Sediment layers
-            ctx.strokeStyle = '#752812';
-            ctx.lineWidth = 2;
-            for (let i = 0; i < 4; i++) {
-                ctx.beginPath();
-                ctx.moveTo(vfX, vfY + vfSize * (0.2 + i * 0.18));
-                ctx.lineTo(vfX + vfSize, vfY + vfSize * (0.2 + i * 0.18) + 8);
-                ctx.stroke();
-            }
+            terrainImg = imgs.mars_panorama;
         } else if (destination === "Moon") {
-            // Moon crater basin
-            ctx.fillStyle = '#5A6372';
-            ctx.fillRect(vfX, vfY, vfSize, vfSize);
-            ctx.fillStyle = '#2A303A';
-            ctx.beginPath();
-            ctx.arc(vfX + vfSize * 0.5, vfY + vfSize * 0.5, vfSize * 0.38, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.strokeStyle = '#8E9AA8';
-            ctx.lineWidth = 3;
-            ctx.stroke();
+            terrainImg = imgs.moon_card;
         } else {
-            // Europa ice cracks
-            ctx.fillStyle = '#D2DFEE';
-            ctx.fillRect(vfX, vfY, vfSize, vfSize);
-            ctx.strokeStyle = '#943820';
-            ctx.lineWidth = 3;
-            ctx.beginPath();
-            ctx.moveTo(vfX, vfY + vfSize * 0.2);
-            ctx.lineTo(vfX + vfSize, vfY + vfSize * 0.8);
-            ctx.moveTo(vfX + vfSize * 0.7, vfY);
-            ctx.lineTo(vfX + vfSize * 0.2, vfY + vfSize);
-            ctx.stroke();
+            terrainImg = imgs.europa_disk;
         }
 
-        // Scanlines inside viewfinder
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+        if (terrainImg && terrainImg.complete && terrainImg.naturalWidth > 0) {
+            // Draw authentic photographic geological terrain with subtle orbital drift
+            const panOffset = (Date.now() * 0.003) % (vfSize * 0.25);
+            ctx.drawImage(terrainImg, vfX - panOffset, vfY, vfSize * 1.35, vfSize);
+            // High-contrast color grade overlay
+            ctx.fillStyle = destination === "Mars" 
+                ? 'rgba(168, 68, 34, 0.2)' 
+                : (destination === "Moon" ? 'rgba(74, 110, 133, 0.15)' : 'rgba(139, 199, 213, 0.2)');
+            ctx.fillRect(vfX, vfY, vfSize, vfSize);
+        } else {
+            // High-contrast fallback terrain
+            ctx.fillStyle = destination === "Mars" ? '#A84422' : (destination === "Moon" ? '#4A5568' : '#D2DFEE');
+            ctx.fillRect(vfX, vfY, vfSize, vfSize);
+        }
+
+        // Active sensor sweep scanline (sweeps down during active scanning)
+        const sweepY = (Date.now() * (this.scanningActive ? 0.35 : 0.08)) % vfSize;
+        ctx.fillStyle = this.scanningActive ? 'rgba(0, 255, 136, 0.45)' : 'rgba(0, 212, 255, 0.2)';
+        ctx.fillRect(vfX, vfY + sweepY, vfSize, 3);
+        ctx.fillStyle = 'rgba(0, 212, 255, 0.08)';
+        ctx.fillRect(vfX, vfY + sweepY - 12, vfSize, 12);
+
+        // Subtle CRT scanlines inside viewfinder
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
         for (let s = 0; s < vfSize; s += 4) {
-            ctx.fillRect(vfX, vfY + s, vfSize, 1.5);
+            ctx.fillRect(vfX, vfY + s, vfSize, 1.2);
         }
         ctx.restore();
 
@@ -907,8 +1000,9 @@ class SpaceRenderer {
     }
 
     /**
-     * Renders the cinematic landing page: enormous planet filling the bottom
-     * of the viewport with atmospheric glow and a detailed spacecraft in the foreground.
+     * Renders the cinematic landing page atmospheric effects overlay.
+     * Integrates directly over the full-viewport Earth photograph without
+     * any artificial solid shapes or horizontal dividing arcs.
      */
     renderLandingPlanet(canvasId) {
         const c = document.getElementById(canvasId);
@@ -919,96 +1013,29 @@ class SpaceRenderer {
 
         ctx.clearRect(0, 0, w, h);
 
-        // Enormous planet at bottom — radius large enough to fill the bottom half
-        const planetR = Math.max(w, h) * 0.65;
-        const cx = (w * 0.5) + (this.mouseX * 25);
-        const cy = (h + planetR * 0.35) + (this.mouseY * 18); // pushes center below viewport so top of planet is visible
-
-        // Atmospheric outer glow (bluish haze)
-        const atmoGlow = ctx.createRadialGradient(cx, cy, planetR * 0.95, cx, cy, planetR * 1.3);
-        atmoGlow.addColorStop(0, 'rgba(30, 120, 255, 0.15)');
-        atmoGlow.addColorStop(0.5, 'rgba(0, 180, 255, 0.06)');
-        atmoGlow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        const t = Date.now() * 0.001;
+        // Subtle optical atmospheric shimmer that breathes with the solar horizon
+        const pulse = 0.12 + 0.04 * Math.sin(t * 0.8);
+        const atmoGlow = ctx.createRadialGradient(
+            w * 0.5 + this.mouseX * 30, h * 0.82 + this.mouseY * 20, w * 0.2,
+            w * 0.5 + this.mouseX * 30, h * 0.82 + this.mouseY * 20, w * 0.85
+        );
+        atmoGlow.addColorStop(0, `rgba(139, 199, 213, ${pulse})`);
+        atmoGlow.addColorStop(0.35, `rgba(74, 110, 133, ${pulse * 0.6})`);
+        atmoGlow.addColorStop(0.7, 'rgba(5, 7, 11, 0)');
         ctx.fillStyle = atmoGlow;
         ctx.fillRect(0, 0, w, h);
 
-        // Planet body — deep blue-gray Earth-like sphere with terrain
-        const bodyGrad = ctx.createRadialGradient(
-            cx - planetR * 0.3, cy - planetR * 0.4, planetR * 0.1,
-            cx, cy, planetR
-        );
-        bodyGrad.addColorStop(0, '#4A7CB8');
-        bodyGrad.addColorStop(0.2, '#2A5A8F');
-        bodyGrad.addColorStop(0.45, '#1A3A6A');
-        bodyGrad.addColorStop(0.7, '#0E2245');
-        bodyGrad.addColorStop(1, '#040E22');
-
-        ctx.fillStyle = bodyGrad;
-        ctx.beginPath();
-        ctx.arc(cx, cy, planetR, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Terrain features — continental shapes
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(cx, cy, planetR, 0, Math.PI * 2);
-        ctx.clip();
-
-        const t = (this.planetAngle || 0) * 0.3;
-
-        // Landmasses (brownish-green continents)
-        ctx.fillStyle = 'rgba(60, 100, 50, 0.25)';
-        ctx.beginPath();
-        ctx.moveTo(cx - planetR * 0.25 + Math.sin(t) * 20, cy - planetR * 0.35);
-        ctx.quadraticCurveTo(cx + planetR * 0.05, cy - planetR * 0.55, cx + planetR * 0.2, cy - planetR * 0.3);
-        ctx.quadraticCurveTo(cx + planetR * 0.35, cy - planetR * 0.15, cx + planetR * 0.15, cy - planetR * 0.05);
-        ctx.quadraticCurveTo(cx - planetR * 0.1, cy - planetR * 0.1, cx - planetR * 0.25 + Math.sin(t) * 20, cy - planetR * 0.35);
-        ctx.fill();
-
-        ctx.fillStyle = 'rgba(80, 120, 60, 0.2)';
-        ctx.beginPath();
-        ctx.arc(cx - planetR * 0.3, cy - planetR * 0.15, planetR * 0.15, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Cloud bands
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
-        ctx.lineWidth = planetR * 0.03;
-        for (let i = 0; i < 5; i++) {
-            const cloudY = cy - planetR * (0.5 - i * 0.15);
+        // Distant twinkling stars across the upper deep-space quadrant
+        for (let i = 0; i < 28; i++) {
+            const sx = (i * 187.3 + 45) % w;
+            const sy = (i * 73.1 + 25) % (h * 0.45);
+            const alpha = 0.2 + 0.35 * Math.sin(t * 1.5 + i);
+            ctx.fillStyle = `rgba(234, 244, 247, ${Math.max(0, alpha)})`;
             ctx.beginPath();
-            ctx.moveTo(cx - planetR * 0.8, cloudY);
-            ctx.quadraticCurveTo(cx, cloudY - 15 + Math.sin(t + i) * 8, cx + planetR * 0.8, cloudY + 5);
-            ctx.stroke();
+            ctx.arc(sx, sy, i % 3 === 0 ? 1.4 : 0.8, 0, Math.PI * 2);
+            ctx.fill();
         }
-
-        ctx.restore();
-
-        // Atmospheric limb (bright horizon glow)
-        const limbGrad = ctx.createRadialGradient(cx, cy, planetR * 0.98, cx, cy, planetR * 1.02);
-        limbGrad.addColorStop(0, 'rgba(100, 180, 255, 0.5)');
-        limbGrad.addColorStop(0.5, 'rgba(50, 130, 255, 0.25)');
-        limbGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-        ctx.strokeStyle = limbGrad;
-        ctx.lineWidth = planetR * 0.015;
-        ctx.beginPath();
-        ctx.arc(cx, cy, planetR, -Math.PI, 0);
-        ctx.stroke();
-
-        // Bright horizon light bloom at the very top of the planet
-        const bloomGrad = ctx.createRadialGradient(cx, cy - planetR + 10, 0, cx, cy - planetR + 10, planetR * 0.4);
-        bloomGrad.addColorStop(0, 'rgba(140, 200, 255, 0.35)');
-        bloomGrad.addColorStop(0.3, 'rgba(60, 140, 255, 0.15)');
-        bloomGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-        ctx.fillStyle = bloomGrad;
-        ctx.fillRect(0, 0, w, h);
-
-        // Sunrise glow on the right
-        const sunGrad = ctx.createRadialGradient(w * 0.85, cy - planetR * 0.2, 0, w * 0.85, cy - planetR * 0.2, planetR * 0.5);
-        sunGrad.addColorStop(0, 'rgba(255, 200, 100, 0.15)');
-        sunGrad.addColorStop(0.4, 'rgba(255, 140, 60, 0.05)');
-        sunGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-        ctx.fillStyle = sunGrad;
-        ctx.fillRect(0, 0, w, h);
     }
 
     /**

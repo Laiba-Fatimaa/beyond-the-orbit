@@ -230,12 +230,12 @@ class HangarBuilder {
             <rect width="100%" height="100%" fill="url(#cleanroomGrid)"/>
 
             <!-- Industrial Turntable Circular Floor Pedestal (Perspective Ellipses) -->
-            <ellipse cx="240" cy="270" rx="190" ry="42" fill="url(#turntableGlow)"/>
-            <ellipse cx="240" cy="270" rx="180" ry="38" fill="none" stroke="rgba(0, 212, 255, 0.3)" stroke-width="1.5" stroke-dasharray="6,4"/>
-            <ellipse cx="240" cy="270" rx="140" ry="30" fill="none" stroke="rgba(0, 212, 255, 0.5)" stroke-width="1.8"/>
-            <ellipse cx="240" cy="270" rx="90" ry="20" fill="none" stroke="rgba(0, 212, 255, 0.7)" stroke-width="2"/>
-            <line x1="240" y1="250" x2="240" y2="290" stroke="rgba(0, 212, 255, 0.4)" stroke-width="1.5"/>
-            <line x1="150" y1="270" x2="330" y2="270" stroke="rgba(0, 212, 255, 0.4)" stroke-width="1.5"/>
+            <ellipse cx="240" cy="275" rx="205" ry="46" fill="url(#turntableGlow)"/>
+            <ellipse cx="240" cy="275" rx="195" ry="42" fill="none" stroke="rgba(139, 199, 213, 0.4)" stroke-width="1.5" stroke-dasharray="6,4"/>
+            <ellipse cx="240" cy="275" rx="150" ry="32" fill="none" stroke="rgba(139, 199, 213, 0.6)" stroke-width="1.8"/>
+            <ellipse cx="240" cy="275" rx="100" ry="22" fill="none" stroke="rgba(139, 199, 213, 0.85)" stroke-width="2"/>
+            <line x1="240" y1="255" x2="240" y2="295" stroke="rgba(139, 199, 213, 0.5)" stroke-width="1.5"/>
+            <line x1="140" y1="275" x2="340" y2="275" stroke="rgba(139, 199, 213, 0.5)" stroke-width="1.5"/>
 
             <!-- Acoustic Fairing Envelope Limit Lines -->
             <path d="M 240 28 Q 320 45 320 120 L 320 280 L 160 280 L 160 120 Q 160 45 240 28 Z" 
@@ -245,29 +245,56 @@ class HangarBuilder {
             </text>
 
             <!-- Centerline Coordinate Beam -->
-            <line x1="240" y1="25" x2="240" y2="280" stroke="rgba(0, 212, 255, 0.2)" stroke-width="1" stroke-dasharray="4,4"/>
+            <line x1="240" y1="25" x2="240" y2="280" stroke="rgba(139, 199, 213, 0.2)" stroke-width="1" stroke-dasharray="4,4"/>
 
-            <!-- Solar Wings / MMRTG Subsystems -->
-            ${powerSvg}
-
-            <!-- Central Spacecraft Core Bus Structure -->
-            <g class="subsystem-node">
-                <!-- Outer Bus Wall -->
-                <rect x="175" y="115" width="130" height="112" rx="6" fill="${busMainColor}" stroke="${busTrimColor}" stroke-width="2.5"/>
-                <!-- Gold MLI Thermal Foil Inset -->
-                <rect x="183" y="123" width="114" height="96" rx="4" fill="url(#goldFoil)" stroke="#E5C158" stroke-width="1"/>
-                <!-- Central Electronics Bay -->
-                <rect x="195" y="132" width="90" height="78" rx="3" fill="#070E1E" stroke="#1E2D4A" stroke-width="1.5"/>
-
-                <!-- Active Instrument Badges -->
-                ${instBadgeSvg}
+            <!-- Central Photographic Spacecraft on Turntable -->
+            <g class="real-spacecraft-focus" transform="translate(240, 175)">
+                <!-- Ambient pedestal shadow -->
+                <ellipse cx="0" cy="72" rx="90" ry="18" fill="rgba(0,0,0,0.65)" filter="blur(6px)"/>
+                <!-- Real high-detail spacecraft image -->
+                <image href="assets/spacecraft_pedestal.png" x="-135" y="-105" width="270" height="195" preserveAspectRatio="xMidYMid meet" style="filter: drop-shadow(0 12px 28px rgba(0,0,0,0.85));"/>
             </g>
 
-            <!-- High-Gain Antenna on Mast -->
-            ${commSvg}
+            <!-- Active Hardware Telemetry Callout Pins Over Real Spacecraft -->
+            <!-- 1. Power Array Pin (Upper Left) -->
+            <g class="hud-callout-pin" transform="translate(68, 92)">
+                <line x1="0" y1="0" x2="75" y2="45" stroke="var(--accent-cyan)" stroke-width="1.2" stroke-dasharray="3,3"/>
+                <circle cx="75" cy="45" r="3.5" fill="var(--accent-cyan)"/>
+                <rect x="-6" y="-14" width="135" height="20" rx="3" fill="rgba(9, 15, 25, 0.9)" stroke="var(--accent-cyan)" stroke-width="1"/>
+                <text x="4" y="0" font-family="'Rajdhani', sans-serif" font-size="10" font-weight="700" fill="#FFF">⚡ ${comps.powerGen.name.toUpperCase()}</text>
+            </g>
 
-            <!-- Propulsion Engine -->
-            ${propSvg}
+            <!-- 2. High-Gain Antenna Pin (Upper Right) -->
+            <g class="hud-callout-pin" transform="translate(325, 80)">
+                <line x1="0" y1="0" x2="-45" y2="40" stroke="var(--accent-cyan)" stroke-width="1.2" stroke-dasharray="3,3"/>
+                <circle cx="-45" cy="40" r="3.5" fill="var(--accent-cyan)"/>
+                <rect x="-6" y="-14" width="130" height="20" rx="3" fill="rgba(9, 15, 25, 0.9)" stroke="var(--accent-cyan)" stroke-width="1"/>
+                <text x="4" y="0" font-family="'Rajdhani', sans-serif" font-size="10" font-weight="700" fill="#FFF">📡 ${comps.comms.name.toUpperCase()}</text>
+            </g>
+
+            <!-- 3. Propulsion Core Pin (Lower Center) -->
+            <g class="hud-callout-pin" transform="translate(240, 260)">
+                <line x1="0" y1="0" x2="0" y2="-30" stroke="var(--accent-amber)" stroke-width="1.2" stroke-dasharray="3,3"/>
+                <circle cx="0" cy="-30" r="3.5" fill="var(--accent-amber)"/>
+                <rect x="-75" y="4" width="150" height="20" rx="3" fill="rgba(9, 15, 25, 0.9)" stroke="var(--accent-amber)" stroke-width="1"/>
+                <text x="-65" y="18" font-family="'Rajdhani', sans-serif" font-size="10" font-weight="700" fill="#FFF">🚀 ${comps.propulsion.name.toUpperCase()}</text>
+            </g>
+
+            <!-- 4. Thermal & Structural Shield Pin (Lower Left) -->
+            <g class="hud-callout-pin" transform="translate(50, 205)">
+                <line x1="75" y1="0" x2="130" y2="-15" stroke="var(--accent-cyan)" stroke-width="1.2" stroke-dasharray="3,3"/>
+                <circle cx="130" cy="-15" r="3.5" fill="var(--accent-cyan)"/>
+                <rect x="-6" y="-12" width="135" height="20" rx="3" fill="rgba(9, 15, 25, 0.9)" stroke="var(--accent-cyan)" stroke-width="1"/>
+                <text x="4" y="2" font-family="'Rajdhani', sans-serif" font-size="10" font-weight="700" fill="#FFF">🛡 ${comps.structure.name.toUpperCase()}</text>
+            </g>
+
+            <!-- 5. Science Payload Pod Pin (Lower Right) -->
+            <g class="hud-callout-pin" transform="translate(330, 205)">
+                <line x1="0" y1="0" x2="-45" y2="-15" stroke="var(--accent-green)" stroke-width="1.2" stroke-dasharray="3,3"/>
+                <circle cx="-45" cy="-15" r="3.5" fill="var(--accent-green)"/>
+                <rect x="-6" y="-12" width="140" height="20" rx="3" fill="rgba(9, 15, 25, 0.9)" stroke="var(--accent-green)" stroke-width="1"/>
+                <text x="4" y="2" font-family="'Rajdhani', sans-serif" font-size="10" font-weight="700" fill="#FFF">🔬 ${insts.length} SENSOR SUITES</text>
+            </g>
 
             <!-- Metadata Overlay Pill -->
             <g transform="translate(18, 22)">
