@@ -1,2253 +1,645 @@
-/* BEYOND THE ORBIT — CINEMATIC AEROSPACE GAME STYLESHEET */
-
-:root {
-    --bg-void: #05070B;
-    --bg-space: #090F19;
-    --bg-deep: #101923;
-    --bg-charcoal: #171C22;
-    --bg-panel: rgba(16, 25, 35, 0.88);
-    --bg-panel-hover: rgba(23, 28, 34, 0.95);
-    --bg-card: rgba(16, 25, 35, 0.92);
-    --border-subtle: #26313C;
-    --border-dim: #374350;
-    --border-bright: #697785;
-    --accent-cyan: #8BC7D5;
-    --accent-blue: #4A6E85;
-    --accent-amber: #D8A45B;
-    --accent-orange: #D87548;
-    --accent-red: #E05252;
-    --accent-green: #52B788;
-    --text-white: #EAF4F7;
-    --text-light: #D0DCE5;
-    --text-dim: #8B9BB0;
-    --text-muted: #697785;
-    --font-display: 'Orbitron', monospace, sans-serif;
-    --font-ui: 'Rajdhani', sans-serif;
-    --font-body: 'Inter', -apple-system, sans-serif;
-    --glow-cyan: 0 0 20px rgba(139, 199, 213, 0.3);
-    --glow-amber: 0 0 20px rgba(216, 164, 91, 0.3);
-}
-
-/* ===== GLOBAL RESET & BASE ===== */
-*, *::before, *::after {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-
-html, body {
-    width: 100%;
-    height: 100%;
-    background: var(--bg-void);
-    color: var(--text-white);
-    font-family: var(--font-body);
-    line-height: 1.5;
-    overflow-x: hidden;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-}
-
-/* ===== SCROLLBAR STYLING ===== */
-::-webkit-scrollbar {
-    width: 6px;
-}
-::-webkit-scrollbar-track {
-    background: var(--bg-space);
-}
-::-webkit-scrollbar-thumb {
-    background: var(--border-dim);
-    border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-    background: var(--accent-cyan);
-}
-
-/* ===== BACKGROUND CANVAS (full-screen starfield) ===== */
-#space-canvas {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    z-index: 0;
-    pointer-events: none;
-}
-
-/* ===== SCANLINE OVERLAY — very subtle CRT effect ===== */
-.scanline-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    z-index: 9999;
-    pointer-events: none;
-    background: repeating-linear-gradient(
-        0deg,
-        transparent,
-        transparent 2px,
-        rgba(0, 0, 0, 0.08) 2px,
-        rgba(0, 0, 0, 0.08) 4px
-    );
-    opacity: 0.15;
-}
-
-/* ===== TOP NAVIGATION BAR ===== */
-.top-nav {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 500;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 32px;
-    height: 56px;
-    background: rgba(4, 8, 20, 0.75);
-    backdrop-filter: blur(20px) saturate(1.5);
-    -webkit-backdrop-filter: blur(20px) saturate(1.5);
-    border-bottom: 1px solid rgba(30, 45, 74, 0.5);
-    transition: background 0.3s;
-}
-
-/* Hide nav chrome on landing page via JS class on body */
-body.screen-landing .top-nav {
-    background: rgba(4, 8, 20, 0.35);
-    border-bottom-color: transparent;
-}
-
-.brand-container {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    cursor: pointer;
-}
-
-.brand-title {
-    font-family: var(--font-display);
-    font-size: 15px;
-    font-weight: 800;
-    letter-spacing: 2px;
-    color: var(--accent-cyan);
-    text-shadow: 0 0 15px rgba(0, 212, 255, 0.4);
-}
-
-.brand-subtitle {
-    font-family: var(--font-ui);
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 1.5px;
-    color: var(--text-dim);
-}
-
-.nav-links {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-}
-
-.nav-step-btn {
-    background: transparent;
-    border: 1px solid transparent;
-    color: var(--text-dim);
-    font-family: var(--font-ui);
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.8px;
-    padding: 6px 14px;
-    border-radius: 20px;
-    cursor: pointer;
-    transition: all 0.25s ease;
-    white-space: nowrap;
-}
-
-.nav-step-btn:hover {
-    color: var(--text-white);
-    background: rgba(0, 212, 255, 0.08);
-    border-color: rgba(0, 212, 255, 0.2);
-}
-
-.nav-step-btn.active {
-    color: var(--bg-void);
-    background: var(--accent-cyan);
-    border-color: var(--accent-cyan);
-    box-shadow: var(--glow-cyan);
-    text-shadow: none;
-}
-
-.top-controls {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-}
-
-.control-btn {
-    background: rgba(10, 22, 40, 0.6);
-    border: 1px solid var(--border-subtle);
-    color: var(--text-dim);
-    font-family: var(--font-ui);
-    font-size: 11px;
-    font-weight: 700;
-    padding: 5px 12px;
-    border-radius: 16px;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.control-btn:hover {
-    border-color: var(--accent-cyan);
-    color: var(--accent-cyan);
-}
-
-/* ===== SCREEN SYSTEM ===== */
-/* Main wrapper is full-screen, no max-width constraint for immersive screens */
-.main-wrapper {
-    position: relative;
-    z-index: 1;
-    min-height: 100vh;
-    padding-top: 56px; /* height of top-nav */
-}
-
-.game-screen {
-    display: none;
-    opacity: 0;
-    transition: opacity 0.5s ease;
-}
-
-.game-screen.active-screen {
-    display: flex;
-    flex-direction: column;
-    opacity: 1;
-    animation: screenReveal 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-/* Screen-leaving transition — added by JS just before hiding */
-.game-screen.screen-exit {
-    animation: screenExit 0.4s ease forwards;
-    pointer-events: none;
-}
-
-@keyframes screenReveal {
-    from {
-        opacity: 0;
-        transform: translateY(14px) scale(0.99);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}
-
-@keyframes screenExit {
-    from {
-        opacity: 1;
-        transform: scale(1);
-    }
-    to {
-        opacity: 0;
-        transform: scale(1.02);
-    }
-}
-
-/* Full-viewport flash effect for exciting transitions */
-.screen-flash-overlay {
-    position: fixed;
-    inset: 0;
-    background: radial-gradient(circle, rgba(139,199,213,0.25) 0%, transparent 70%);
-    z-index: 9000;
-    pointer-events: none;
-    opacity: 0;
-    animation: flashPop 0.6s ease forwards;
-}
-
-@keyframes flashPop {
-    0% { opacity: 0; }
-    30% { opacity: 1; }
-    100% { opacity: 0; }
-}
-
-/* ===== SCREEN 1: CINEMATIC LANDING ===== */
-#screen-landing {
-    min-height: 100vh;
-    position: relative;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    background: linear-gradient(180deg, rgba(5,7,11,0.45) 0%, rgba(5,7,11,0.08) 40%, rgba(5,7,11,0.6) 100%), url('../assets/screen1_landing.jpg') no-repeat center center / cover;
-    background-attachment: fixed;
-}
-
-#screen-landing.active-screen {
-    display: flex;
-}
-
-/* Full-screen atmospheric effects canvas */
-.landing-planet-canvas {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 0;
-    pointer-events: none;
-}
-
-/* Spacecraft overlay canvas */
-.landing-craft-canvas {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1;
-    pointer-events: none;
-}
-
-/* Landing content overlay — centered with subtle darkening for sharp readability */
-.landing-content {
-    position: relative;
-    z-index: 10;
-    text-align: center;
-    padding: 36px 52px;
-    margin-top: -6vh;
-    background: radial-gradient(ellipse at center, rgba(5, 7, 11, 0.72) 0%, rgba(5, 7, 11, 0.25) 75%, transparent 100%);
-    border-radius: 24px;
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-    max-width: 860px;
-}
-
-.landing-event-tag {
-    font-family: var(--font-ui);
-    font-size: 13px;
-    font-weight: 600;
-    letter-spacing: 4px;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    margin-bottom: 16px;
-    opacity: 0;
-    animation: fadeSlideUp 0.8s 0.3s ease forwards;
-}
-
-.landing-title {
-    font-family: var(--font-display);
-    font-size: clamp(42px, 7vw, 88px);
-    font-weight: 900;
-    letter-spacing: 6px;
-    color: var(--text-white);
-    text-shadow: 0 0 60px rgba(0, 212, 255, 0.3), 0 4px 20px rgba(0, 0, 0, 0.6);
-    line-height: 1.1;
-    margin-bottom: 8px;
-    opacity: 0;
-    animation: fadeSlideUp 0.8s 0.5s ease forwards;
-}
-
-.landing-title .accent {
-    color: var(--accent-cyan);
-}
-
-.landing-tagline {
-    font-family: var(--font-display);
-    font-size: clamp(14px, 2vw, 22px);
-    font-weight: 500;
-    letter-spacing: 5px;
-    color: var(--accent-amber);
-    margin-bottom: 40px;
-    opacity: 0;
-    animation: fadeSlideUp 0.8s 0.7s ease forwards;
-}
-
-.landing-subtitle {
-    max-width: 640px;
-    margin: 0 auto 36px auto;
-    font-size: 15px;
-    color: var(--text-light);
-    line-height: 1.7;
-    letter-spacing: 0.2px;
-    opacity: 0;
-    animation: fadeSlideUp 0.8s 0.9s ease forwards;
-}
-
-.landing-cta {
-    opacity: 0;
-    animation: fadeSlideUp 0.8s 1.1s ease forwards;
-}
-
-@keyframes fadeSlideUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Bottom corner labels on landing */
-.landing-corner-info {
-    position: absolute;
-    bottom: 32px;
-    font-family: var(--font-ui);
-    font-size: 11px;
-    letter-spacing: 1.5px;
-    color: var(--text-muted);
-}
-
-.landing-corner-info.left {
-    left: 32px;
-}
-
-.landing-corner-info.right {
-    right: 32px;
-    text-align: right;
-}
-
-/* ===== BUTTONS ===== */
-.btn-start-mission {
-    display: inline-flex;
-    align-items: center;
-    gap: 12px;
-    background: linear-gradient(135deg, rgba(0, 212, 255, 0.15) 0%, rgba(30, 107, 255, 0.15) 100%);
-    border: 1.5px solid var(--accent-cyan);
-    border-radius: 50px;
-    color: var(--text-white);
-    font-family: var(--font-display);
-    font-size: 14px;
-    font-weight: 700;
-    letter-spacing: 2px;
-    padding: 16px 40px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: var(--glow-cyan);
-    text-transform: uppercase;
-}
-
-.btn-start-mission:hover {
-    background: linear-gradient(135deg, rgba(0, 212, 255, 0.3) 0%, rgba(30, 107, 255, 0.3) 100%);
-    box-shadow: 0 0 50px rgba(0, 212, 255, 0.6);
-    transform: translateY(-2px);
-}
-
-.btn-start-mission .arrow {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: var(--accent-cyan);
-    color: var(--bg-void);
-    font-size: 16px;
-    font-weight: 900;
-    transition: transform 0.3s;
-}
-
-.btn-start-mission:hover .arrow {
-    transform: translateX(4px);
-}
-
-.btn-primary {
-    background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
-    color: var(--bg-void);
-    border: none;
-    border-radius: 8px;
-    font-family: var(--font-display);
-    font-size: 12px;
-    font-weight: 800;
-    letter-spacing: 1px;
-    padding: 12px 28px;
-    cursor: pointer;
-    transition: all 0.25s;
-    box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    text-transform: uppercase;
-}
-
-.btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 0 35px rgba(0, 212, 255, 0.6);
-    filter: brightness(1.1);
-}
-
-.btn-primary.btn-disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-    transform: none !important;
-    box-shadow: none !important;
-    filter: none !important;
-}
-
-.btn-secondary {
-    background: rgba(10, 22, 40, 0.6);
-    border: 1px solid var(--border-dim);
-    color: var(--text-white);
-    border-radius: 8px;
-    font-family: var(--font-display);
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    padding: 10px 22px;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.btn-secondary:hover {
-    border-color: var(--accent-cyan);
-    color: var(--accent-cyan);
-    background: rgba(0, 212, 255, 0.06);
-}
-
-/* ===== SCREEN 2: DESTINATION SELECTION ===== */
-#screen-selection {
-    min-height: 100vh;
-    padding: 80px 40px 60px;
-    background: radial-gradient(circle at 50% 30%, rgba(16, 25, 35, 0.78) 0%, rgba(5, 7, 11, 0.94) 100%), url('../assets/screen2_selection.jpg') no-repeat center center / cover;
-    background-attachment: fixed;
-}
-
-#screen-selection.active-screen {
-    display: block;
-}
-
-.selection-header {
-    text-align: center;
-    margin: 0 auto 40px auto;
-    max-width: 760px;
-    padding: 24px 32px;
-    background: radial-gradient(ellipse at center, rgba(5, 7, 11, 0.88) 0%, rgba(5, 7, 11, 0.4) 75%, transparent 100%);
-    border-radius: 20px;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-}
-
-.selection-logo {
-    font-family: var(--font-display);
-    font-size: 18px;
-    font-weight: 800;
-    letter-spacing: 4px;
-    color: var(--accent-cyan);
-    margin-bottom: 12px;
-    text-shadow: 0 0 20px rgba(139, 199, 213, 0.4);
-}
-
-.selection-title {
-    font-family: var(--font-display);
-    font-size: clamp(26px, 4vw, 42px);
-    font-weight: 900;
-    letter-spacing: 3px;
-    color: #FFFFFF;
-    text-shadow: 0 2px 14px rgba(0, 0, 0, 0.9);
-    margin-bottom: 8px;
-}
-
-.selection-subtitle {
-    font-family: var(--font-ui);
-    font-size: 15px;
-    font-weight: 600;
-    letter-spacing: 1.5px;
-    color: var(--text-light);
-    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.8);
-}
-
-.destination-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 32px;
-    max-width: 1320px;
-    margin: 0 auto;
-}
-
-.dest-card {
-    position: relative;
-    background: rgba(10, 18, 28, 0.94);
-    border: 1.5px solid rgba(139, 199, 213, 0.24);
-    border-radius: 18px;
-    overflow: hidden;
-    cursor: pointer;
-    transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.65);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-}
-
-.dest-card:hover {
-    transform: translateY(-8px);
-    border-color: var(--accent-cyan);
-    box-shadow: 0 24px 65px rgba(0, 0, 0, 0.75), 0 0 30px rgba(139, 199, 213, 0.25);
-}
-
-.dest-card.selected {
-    border-color: var(--accent-cyan);
-    box-shadow: 0 0 45px rgba(139, 199, 213, 0.35), 0 20px 50px rgba(0, 0, 0, 0.7);
-}
-
-/* Large planet image area */
-.dest-planet-viewport {
-    position: relative;
-    width: 100%;
-    height: 230px;
-    overflow: hidden;
-    background: #05070B;
-    background-size: cover;
-    background-position: center;
-}
-
-.dest-planet-viewport canvas {
-    width: 100%;
-    height: 100%;
-    display: block;
-}
-
-/* Photo gradient overlay inside card viewport */
-.dest-planet-gradient {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    background: linear-gradient(180deg, rgba(5,7,11,0.15) 0%, rgba(5,7,11,0) 40%, rgba(9,15,25,0.95) 100%);
-}
-
-/* Planet label badge at bottom of card viewport */
-.dest-planet-label {
-    position: absolute;
-    bottom: 14px;
-    left: 18px;
-    font-family: var(--font-display);
-    font-size: 12px;
-    font-weight: 800;
-    letter-spacing: 2px;
-    color: #FFFFFF;
-    text-shadow: 0 2px 10px rgba(0,0,0,0.95), 0 0 15px rgba(139,199,213,0.5);
-}
-
-/* Card content below image */
-.dest-card-body {
-    padding: 22px 26px 26px;
-    background: linear-gradient(180deg, rgba(16, 25, 35, 0.98) 0%, rgba(9, 15, 25, 0.98) 100%);
-}
-
-.dest-card-name {
-    font-family: var(--font-display);
-    font-size: 22px;
-    font-weight: 900;
-    letter-spacing: 2px;
-    color: #FFFFFF;
-    text-shadow: 0 2px 8px rgba(0,0,0,0.8);
-    margin-bottom: 4px;
-}
-
-.dest-card-tagline {
-    font-family: var(--font-ui);
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--accent-amber);
-    letter-spacing: 1px;
-    margin-bottom: 18px;
-    text-transform: uppercase;
-}
-
-.dest-info-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-bottom: 22px;
-}
-
-.dest-info-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-family: var(--font-ui);
-    font-size: 12.5px;
-    color: var(--text-light);
-    background: rgba(5, 7, 11, 0.72);
-    border: 1px solid rgba(38, 49, 60, 0.85);
-    border-radius: 8px;
-    padding: 8px 12px;
-}
-
-.dest-info-item .icon {
-    font-size: 15px;
-}
-
-.dest-info-item .label {
-    color: var(--text-dim);
-    font-weight: 500;
-}
-
-.dest-info-item .value {
-    font-weight: 700;
-    color: #FFFFFF;
-}
-
-.dest-select-btn {
-    width: 100%;
-    background: rgba(139, 199, 213, 0.1);
-    border: 1.5px solid var(--accent-cyan);
-    color: #FFFFFF;
-    font-family: var(--font-display);
-    font-size: 12px;
-    font-weight: 800;
-    letter-spacing: 1.5px;
-    padding: 13px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.25s;
-    text-transform: uppercase;
-    box-shadow: 0 0 15px rgba(139, 199, 213, 0.15);
-}
-
-.dest-select-btn:hover {
-    background: var(--accent-cyan);
-    color: var(--bg-void);
-    box-shadow: var(--glow-cyan);
-}
-
-.dest-select-btn:hover {
-    background: rgba(0, 212, 255, 0.2);
-    box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
-}
-
-.dest-card.selected .dest-select-btn {
-    background: var(--accent-cyan);
-    color: var(--bg-void);
-    box-shadow: var(--glow-cyan);
-}
-
-/* ===== SCREEN 3: SPACECRAFT ENGINEERING LAB ===== */
-#screen-planning {
-    min-height: 100vh;
-    padding: 72px 32px 48px;
-    background: linear-gradient(to bottom, rgba(5,7,11,0.82) 0%, rgba(9,15,25,0.72) 100%), url('../assets/hangar_wide.jpg') no-repeat center center / cover;
-    background-attachment: fixed;
-}
-
-#screen-planning.active-screen {
-    display: block;
-}
-
-.planning-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    padding-bottom: 14px;
-    border-bottom: 1px solid var(--border-subtle);
-}
-
-.planning-header-left {}
-
-.planning-title {
-    font-family: var(--font-display);
-    font-size: 16px;
-    font-weight: 800;
-    letter-spacing: 1.5px;
-    color: var(--accent-cyan);
-}
-
-.planning-subtitle {
-    font-family: var(--font-ui);
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 1px;
-    color: var(--text-dim);
-    margin-top: 2px;
-}
-
-/* Telemetry row */
-.telemetry-row {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 12px;
-    margin-bottom: 20px;
-}
-
-.telemetry-gauge {
-    background: var(--bg-panel);
-    border: 1px solid var(--border-subtle);
-    border-radius: 10px;
-    padding: 14px 12px;
-    text-align: center;
-    transition: border-color 0.3s;
-}
-
-.telemetry-gauge:hover {
-    border-color: var(--border-dim);
-}
-
-.telemetry-val {
-    font-family: var(--font-display);
-    font-size: 20px;
-    font-weight: 800;
-    color: var(--accent-cyan);
-}
-
-.telemetry-label {
-    font-family: var(--font-ui);
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    margin-top: 4px;
-}
-
-.telemetry-sub {
-    font-size: 10px;
-    color: var(--text-muted);
-    margin-top: 2px;
-}
-
-/* Hangar two-column layout */
-.hangar-grid {
-    display: grid;
-    grid-template-columns: 1.1fr 1.4fr;
-    gap: 20px;
-}
-
-.blueprint-viewport {
-    width: 100%;
-    min-height: 300px;
-    background: radial-gradient(ellipse at center, #0A1425 0%, #050A16 100%);
-    border: 1px solid var(--border-bright);
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 14px;
-    position: relative;
-    overflow: hidden;
-}
-
-/* Subsystem tabs */
-.subsystem-tabs {
-    display: flex;
-    gap: 4px;
-    background: var(--bg-deep);
-    border: 1px solid var(--border-subtle);
-    border-radius: 10px;
-    padding: 4px;
-    margin-bottom: 16px;
-}
-
-.tab-btn {
-    flex: 1;
-    background: transparent;
-    border: none;
-    color: var(--text-dim);
-    font-family: var(--font-ui);
-    font-size: 12px;
-    font-weight: 700;
-    padding: 8px 10px;
-    border-radius: 7px;
-    cursor: pointer;
-    text-align: center;
-    transition: all 0.2s;
-    letter-spacing: 0.5px;
-}
-
-.tab-btn:hover {
-    color: var(--text-white);
-    background: rgba(0, 212, 255, 0.05);
-}
-
-.tab-btn.active {
-    background: var(--accent-cyan);
-    color: var(--bg-void);
-    box-shadow: 0 0 12px rgba(0, 212, 255, 0.4);
-}
-
-.tab-content {
-    display: none;
-}
-
-.tab-content.active {
-    display: block;
-}
-
-/* Component cards */
-.comp-card {
-    background: var(--bg-deep);
-    border: 1px solid var(--border-subtle);
-    border-radius: 8px;
-    padding: 12px 16px;
-    cursor: pointer;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
-    transition: all 0.2s ease;
-}
-
-.comp-card:hover {
-    border-color: var(--accent-blue);
-    background: var(--bg-panel-hover);
-}
-
-.comp-card.active {
-    border-color: var(--accent-cyan);
-    background: rgba(0, 212, 255, 0.06);
-    box-shadow: 0 0 12px rgba(0, 212, 255, 0.1);
-}
-
-.component-option-grid {
-    /* simple stacked cards — no special grid needed */
-}
-
-/* NASA callout */
-.nasa-callout {
-    background: linear-gradient(90deg, rgba(30, 107, 255, 0.12) 0%, rgba(10, 22, 40, 0.5) 100%);
-    border-left: 3px solid var(--accent-blue);
-    border-radius: 0 8px 8px 0;
-    padding: 10px 16px;
-    margin: 10px 0;
-    font-size: 12px;
-    color: var(--text-light);
-    line-height: 1.5;
-}
-
-.nasa-callout strong {
-    color: var(--accent-cyan);
-}
-
-/* Validation critique / HUD panel */
-.hud-panel {
-    background: var(--bg-panel);
-    border: 1px solid var(--border-subtle);
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-}
-
-.hud-panel:hover {
-    border-color: var(--border-dim);
-}
-
-/* Status badges */
-.badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 5px 14px;
-    border-radius: 20px;
-    font-family: var(--font-display);
-    font-size: 10px;
-    font-weight: 800;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-}
-
-.badge-ready {
-    background: rgba(0, 212, 255, 0.1);
-    border: 1px solid var(--accent-cyan);
-    color: var(--accent-cyan);
-    box-shadow: 0 0 10px rgba(0, 212, 255, 0.15);
-}
-
-.badge-attention {
-    background: rgba(255, 181, 71, 0.1);
-    border: 1px solid var(--accent-amber);
-    color: var(--accent-amber);
-}
-
-.badge-blocked {
-    background: rgba(255, 51, 85, 0.1);
-    border: 1px solid var(--accent-red);
-    color: var(--accent-red);
-}
-
-/* Section headers (reusable) */
-.section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 18px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid var(--border-subtle);
-}
-
-.section-title {
-    font-family: var(--font-display);
-    font-size: 15px;
-    font-weight: 800;
-    letter-spacing: 1.5px;
-    color: var(--accent-cyan);
-}
-
-.section-subtitle {
-    font-family: var(--font-ui);
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--text-dim);
-    letter-spacing: 0.8px;
-}
-
-/* ===== SCREEN 4: FLIGHT OPERATIONS ===== */
-#screen-simulation {
-    min-height: 100vh;
-    padding: 68px 24px 40px;
-    background: #05070B;
-}
-
-#screen-simulation.active-screen {
-    display: block;
-}
-
-/* Warp control */
-.warp-control-bar {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: var(--bg-deep);
-    border: 1px solid var(--border-subtle);
-    border-radius: 10px;
-    padding: 8px 16px;
-    margin-bottom: 14px;
-}
-
-.warp-btn {
-    background: var(--bg-panel);
-    border: 1px solid var(--border-subtle);
-    color: var(--text-dim);
-    font-family: var(--font-ui);
-    font-size: 11px;
-    font-weight: 700;
-    padding: 5px 14px;
-    border-radius: 16px;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.warp-btn.active {
-    background: var(--accent-cyan);
-    color: var(--bg-void);
-    border-color: var(--accent-cyan);
-}
-
-/* Flight ops grid */
-.flight-operations-grid {
-    display: grid;
-    grid-template-columns: 1.5fr 1fr;
-    gap: 20px;
-}
-
-.radar-display-panel {
-    background: radial-gradient(ellipse at center, #080E20 0%, #030610 100%);
-    border: 1px solid var(--border-bright);
-    border-radius: 14px;
-    padding: 12px;
-    height: 420px;
-    position: relative;
-    overflow: hidden;
-    box-shadow: 0 0 30px rgba(0, 212, 255, 0.08);
-}
-
-#flight-deck-radar-canvas {
-    width: 100%;
-    height: 100%;
-    display: block;
-}
-
-/* Flight action buttons */
-.flight-action-deck {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    margin-top: 14px;
-}
-
-.action-card-btn {
-    background: var(--bg-panel);
-    border: 1px solid var(--border-subtle);
-    border-radius: 10px;
-    padding: 14px;
-    text-align: left;
-    cursor: pointer;
-    transition: all 0.25s;
-    display: flex;
-    flex-direction: column;
-}
-
-.action-card-btn:hover {
-    border-color: var(--accent-cyan);
-    transform: translateY(-2px);
-    box-shadow: 0 0 15px rgba(0, 212, 255, 0.2);
-}
-
-.action-card-btn.action-ready {
-    border-color: rgba(0, 212, 255, 0.5);
-    background: rgba(0, 212, 255, 0.05);
-}
-
-.action-card-btn-title {
-    font-family: var(--font-display);
-    font-size: 11px;
-    font-weight: 800;
-    color: var(--accent-cyan);
-    margin-bottom: 4px;
-    letter-spacing: 0.5px;
-}
-
-.action-card-btn-sub {
-    font-family: var(--font-ui);
-    font-size: 11px;
-    color: var(--text-dim);
-    line-height: 1.4;
-}
-
-/* Flight log */
-.flight-log-feed {
-    height: 220px;
-    overflow-y: auto;
-    background: var(--bg-void);
-    border: 1px solid var(--border-subtle);
-    border-radius: 10px;
-    padding: 12px;
-    font-family: var(--font-ui);
-    font-size: 11.5px;
-}
-
-.log-entry {
-    padding: 5px 0;
-    border-bottom: 1px solid rgba(26, 39, 68, 0.5);
-    line-height: 1.4;
-}
-
-.log-entry:last-child {
-    border-bottom: none;
-}
-
-/* Anomaly modal */
-.anomaly-modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(2, 4, 8, 0.88);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    z-index: 2000;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-}
-
-.anomaly-modal-box {
-    background: #0A1428;
-    border: 2px solid var(--accent-red);
-    border-radius: 16px;
-    max-width: 640px;
-    width: 100%;
-    padding: 32px;
-    box-shadow: 0 0 60px rgba(255, 51, 85, 0.4);
-    animation: modalPop 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-@keyframes modalPop {
-    from {
-        opacity: 0;
-        transform: scale(0.9);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
-}
-
-.choices-container {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-top: 16px;
-}
-
-.choice-btn {
-    background: var(--bg-deep);
-    border: 1px solid var(--border-dim);
-    border-radius: 10px;
-    padding: 14px 18px;
-    cursor: pointer;
-    text-align: left;
-    transition: all 0.2s;
-}
-
-.choice-btn:hover {
-    border-color: var(--accent-cyan);
-    background: var(--bg-panel-hover);
-    transform: translateX(4px);
-}
-
-.choice-btn-title {
-    font-family: var(--font-ui);
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--accent-cyan);
-    margin-bottom: 2px;
-}
-
-.choice-btn-desc {
-    font-size: 12px;
-    color: var(--text-dim);
-}
-
-/* Glow pulse animations */
-.glow-cyan-pulse {
-    animation: pulseCyan 1.5s infinite;
-}
-
-@keyframes pulseCyan {
-    0%, 100% {
-        box-shadow: 0 0 10px rgba(0, 212, 255, 0.2);
-    }
-    50% {
-        box-shadow: 0 0 25px rgba(0, 212, 255, 0.5);
-    }
-}
-
-.glow-red-pulse {
-    animation: pulseRed 0.8s infinite;
-}
-
-@keyframes pulseRed {
-    0%, 100% {
-        box-shadow: 0 0 10px rgba(255, 51, 85, 0.3);
-    }
-    50% {
-        box-shadow: 0 0 30px rgba(255, 51, 85, 0.7);
-    }
-}
-
-/* ===== SCREEN 5: MISSION DEBRIEF ===== */
-#screen-debrief {
-    min-height: 100vh;
-    padding: 80px 40px 60px;
-    max-width: 1100px;
-    margin: 0 auto;
-    position: relative;
-}
-
-/* Destination-specific debrief backgrounds — applied full-viewport via pseudo-element */
-body.debrief-moon::before,
-body.debrief-mars::before,
-body.debrief-europa::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    pointer-events: none;
-    background-size: cover;
-    background-position: center top;
-    background-repeat: no-repeat;
-}
-body.debrief-moon::before {
-    background-image: linear-gradient(to bottom, rgba(5,7,11,0.65) 0%, rgba(9,15,25,0.88) 65%), url('../assets/moon_mission_env.jpg');
-}
-body.debrief-mars::before {
-    background-image: linear-gradient(to bottom, rgba(5,7,11,0.6) 0%, rgba(16,10,5,0.88) 65%), url('../assets/mars_mission_env.jpg');
-}
-body.debrief-europa::before {
-    background-image: linear-gradient(to bottom, rgba(5,7,11,0.6) 0%, rgba(5,10,20,0.88) 65%), url('../assets/europa_mission_env.jpg');
-}
-/* Ensure debrief content sits above the pseudo-element */
-body.debrief-moon #screen-debrief,
-body.debrief-mars #screen-debrief,
-body.debrief-europa #screen-debrief {
-    position: relative;
-    z-index: 1;
-}
-
-#screen-debrief.active-screen {
-    display: block;
-}
-
-.debrief-hero {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: var(--bg-panel);
-    border: 1px solid var(--border-subtle);
-    border-radius: 16px;
-    padding: 28px 36px;
-    margin-bottom: 28px;
-}
-
-.debrief-hero-left {}
-
-.debrief-hero-right {
-    text-align: right;
-}
-
-.debrief-score-number {
-    font-family: var(--font-display);
-    font-size: 48px;
-    font-weight: 900;
-}
-
-.debrief-outcome-badge {
-    margin-top: 8px;
-}
-
-/* Score progress bars */
-.score-progress-track {
-    background: var(--bg-deep);
-    border: 1px solid var(--border-subtle);
-    height: 8px;
-    border-radius: 4px;
-    overflow: hidden;
-}
-
-.score-progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan));
-    transition: width 1s cubic-bezier(0.16, 1, 0.3, 1);
-    border-radius: 4px;
-}
-
-/* ===== UTILITY / SHARED ===== */
-.hero-badge-tag {
-    font-family: var(--font-ui);
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 2px;
-    color: var(--accent-blue);
-    text-transform: uppercase;
-}
-
-.hero-main-title {
-    font-family: var(--font-display);
-    font-size: 32px;
-    font-weight: 900;
-    letter-spacing: 2px;
-    color: var(--text-white);
-}
-
-/* ===== PRINT ===== */
-@media print {
-    body {
-        background: #fff !important;
-        color: #000 !important;
-    }
-    #space-canvas,
-    .scanline-overlay,
-    .top-nav,
-    .btn-primary,
-    .btn-secondary,
-    .top-controls,
-    .landing-planet-canvas,
-    .landing-craft-canvas {
-        display: none !important;
-    }
-    .hud-panel {
-        background: #fff !important;
-        border: 1px solid #ccc !important;
-        color: #000 !important;
-        box-shadow: none !important;
-    }
-    .telemetry-val {
-        color: #000 !important;
-    }
-    .game-screen {
-        display: block !important;
-        opacity: 1 !important;
-    }
-}
-
-/* ===== RESPONSIVE ===== */
-@media (max-width: 1100px) {
-    .destination-grid {
-        grid-template-columns: 1fr 1fr;
-    }
-    .flight-operations-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-@media (max-width: 768px) {
-    .destination-grid,
-    .hangar-grid,
-    .flight-operations-grid,
-    .telemetry-row {
-        grid-template-columns: 1fr;
-    }
-    .nav-links {
-        display: none;
-    }
-    .landing-title {
-        letter-spacing: 2px;
-    }
-    .top-nav {
-        padding: 0 16px;
-    }
-    #screen-selection {
-        padding: 72px 20px 40px;
-    }
-    #screen-planning {
-        padding: 64px 16px 40px;
-    }
-}
-
-
-/* =========================================================
-   CINEMATIC 5-SCREEN EXTENSIONS (MATCHING NASA SHOWCASE)
-   ========================================================= */
-
-/* --- SCREEN 1: HERO LOGO BOX --- */
-.hero-logo-box {
-    margin-bottom: 12px;
-}
-.hero-subtext-top {
-    font-family: var(--font-display);
-    font-size: clamp(28px, 4.5vw, 44px);
-    font-weight: 800;
-    letter-spacing: 6px;
-    color: var(--text-white);
-}
-.hero-orbit-wrapper {
-    position: relative;
-    display: inline-block;
-    padding: 0 10px;
-}
-.hero-orbit-word {
-    font-family: var(--font-display);
-    font-size: clamp(52px, 8.5vw, 96px);
-    font-weight: 900;
-    letter-spacing: 8px;
-    color: var(--text-white);
-    text-shadow: 0 0 50px rgba(0, 212, 255, 0.5);
-}
-.hero-orbit-ellipse {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) rotate(-18deg);
-    width: 140%;
-    height: 90%;
-    border-radius: 50%;
-    border: 3px solid transparent;
-    border-top: 3.5px solid var(--accent-cyan);
-    border-right: 2px solid rgba(0, 212, 255, 0.4);
-    box-shadow: 0 0 30px rgba(0, 212, 255, 0.6);
-    pointer-events: none;
-}
-.landing-scroll-hint {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    margin-top: 28px;
-    font-family: var(--font-ui);
-    font-size: 13px;
-    color: var(--text-dim);
-    letter-spacing: 1px;
-}
-
-/* --- SCREEN 3: HANGAR 3-COLUMN LAYOUT --- */
-.hangar-nav-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 18px;
-    background: var(--bg-deep);
-    border: 1px solid var(--border-subtle);
-    border-radius: 10px;
-    margin-bottom: 20px;
-}
-.hangar-breadcrumbs {
-    font-family: var(--font-ui);
-    font-size: 14px;
-    letter-spacing: 1px;
-}
-.crumb-link {
-    color: var(--text-dim);
-    cursor: pointer;
-    transition: color 0.2s;
-}
-.crumb-link:hover { color: var(--accent-cyan); }
-.crumb-sep { color: var(--border-bright); margin: 0 8px; }
-.crumb-active { color: var(--accent-cyan); font-weight: bold; }
-
-.hangar-three-col {
-    display: grid;
-    grid-template-columns: 280px 1fr 300px;
-    gap: 20px;
-    min-height: 560px;
-}
-.hangar-left-col, .hangar-right-col {
-    background: var(--bg-panel);
-    border: 1px solid var(--border-subtle);
-    border-radius: 12px;
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-}
-.hud-panel-header {
-    font-family: var(--font-ui);
-    font-size: 13px;
-    font-weight: 800;
-    letter-spacing: 1.5px;
-    color: var(--accent-cyan);
-    margin-bottom: 14px;
-    text-transform: uppercase;
-    border-bottom: 1px solid var(--border-subtle);
-    padding-bottom: 8px;
-}
-.component-category-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-bottom: 16px;
-}
-.comp-nav-item {
-    background: var(--bg-deep);
-    border: 1px solid var(--border-subtle);
-    border-radius: 8px;
-    padding: 10px 14px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    color: var(--text-light);
-    font-family: var(--font-ui);
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    text-align: left;
-}
-.comp-nav-item:hover {
-    border-color: var(--accent-blue);
-    background: var(--bg-panel-hover);
-    color: var(--text-white);
-}
-.comp-nav-item.active {
-    border-color: var(--accent-cyan);
-    background: rgba(0, 212, 255, 0.1);
-    color: var(--accent-cyan);
-    box-shadow: 0 0 16px rgba(0, 212, 255, 0.15);
-}
-.comp-icon { font-size: 16px; }
-
-.subsystem-options-box {
-    flex: 1;
-    overflow-y: auto;
-    padding-right: 4px;
-}
-.subsystem-option-card {
-    background: var(--bg-deep);
-    border: 1px solid var(--border-subtle);
-    border-radius: 8px;
-    padding: 10px 12px;
-    margin-bottom: 8px;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-.subsystem-option-card:hover {
-    border-color: var(--accent-blue);
-}
-.subsystem-option-card.selected {
-    border-color: var(--accent-cyan);
-    background: rgba(0, 212, 255, 0.08);
-}
-
-.hangar-center-col {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
+/* Cinematic scenes and game panels */
+.hero-orbit-art {
+  position: absolute;
+  right: 4%;
+  top: 8%;
+  width: min(52vw, 700px);
+  height: 640px;
+  pointer-events: none;
+  animation: heroOrbitIntro 1.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.planet-earth {
+  position: absolute;
+  width: clamp(260px, 34vw, 460px);
+  height: clamp(260px, 34vw, 460px);
+  border-radius: 50%;
+  top: 90px;
+  left: 110px;
+  background: radial-gradient(circle at 35% 28%, rgba(169, 220, 232, 0.22), transparent 52%), url('../assets/planet_earth_globe.jpg') center/cover no-repeat;
+  box-shadow: inset -48px -28px 80px rgba(2, 8, 21, 0.94), 0 0 65px rgba(67, 217, 255, 0.45), 0 0 130px rgba(43, 82, 108, 0.32);
+}
+.planet-shade {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: linear-gradient(110deg, transparent 35%, rgba(2, 8, 20, 0.65) 76%);
+}
+.planet-glow {
+  position: absolute;
+  inset: -12px;
+  border: 1px solid rgba(140, 184, 198, 0.45);
+  border-radius: 50%;
+  filter: blur(4px);
+  pointer-events: none;
+}
+.orbit {
+  position: absolute;
+  border-radius: 50%;
+  transform: rotate(-23deg);
+  pointer-events: none;
+}
+.orbit-a {
+  width: 650px;
+  height: 270px;
+  top: 180px;
+  left: 0;
+  border: 1px dashed rgba(169, 220, 232, 0.28);
+  box-shadow: 0 0 25px rgba(169, 220, 232, 0.08);
+}
+.orbit-b {
+  width: 560px;
+  height: 390px;
+  top: 105px;
+  left: 45px;
+  transform: rotate(45deg);
+  border: 1px solid rgba(214, 168, 117, 0.22);
+  box-shadow: 0 0 25px rgba(214, 168, 117, 0.06);
+}
+.moon {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #c6c9c0, #6c7782 65%, #253443);
+  box-shadow: 0 0 35px rgba(158, 180, 194, 0.2);
+}
+.moon-one {
+  width: 48px;
+  height: 48px;
+  top: 95px;
+  right: 70px;
+}
+.satellite {
+  position: absolute;
+  top: 380px;
+  left: 35px;
+  width: 74px;
+  height: 48px;
+  background: url('../assets/probe_satellite_clean.png') center/contain no-repeat;
+  transform: rotate(-25deg);
+  filter: drop-shadow(0 0 16px rgba(214, 168, 117, 0.75));
+}
+.hero-coordinate {
+  position: absolute;
+  font: 9px var(--mono);
+  letter-spacing: 0.14em;
+  color: #91a4b4;
+  background: rgba(8, 15, 27, 0.65);
+  padding: 4px 8px;
+  border: 1px solid rgba(145, 164, 180, 0.22);
+  border-radius: 3px;
+  backdrop-filter: blur(8px);
+}
+.coord-one { top: 70px; left: 20px; }
+.coord-two { bottom: 70px; right: 0; }
+.hero-caption {
+  position: absolute;
+  right: 0;
+  bottom: 110px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #8192a5;
+  font: 9px var(--mono);
+  letter-spacing: 0.12em;
+  line-height: 1.8;
+  background: rgba(8, 15, 27, 0.65);
+  padding: 6px 12px;
+  border: 1px solid rgba(145, 164, 180, 0.2);
+  border-radius: 4px;
+  backdrop-filter: blur(8px);
+}
+.hero-caption b { color: #d3dce4; font-weight: 500; }
+.caption-rule { width: 38px; height: 1px; background: var(--accent); }
+.destination-layout{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(280px,.8fr);gap:25px;align-items:stretch}.destination-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}.destination-card{background:rgba(16,27,44,.72);border:1px solid var(--line);color:var(--text);padding:0;text-align:left;min-width:0;transition:.25s;position:relative}.destination-card:hover{border-color:#a5b7c2aa;transform:translateY(-3px)}.destination-card.selected{border-color:var(--accent);box-shadow:0 0 0 1px #d6a87526}.destination-image{height:175px;position:relative;overflow:hidden;background:#111d2e}.destination-image:after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(6,12,22,.62),transparent 65%)}.planet-disc{position:absolute;width:170px;height:170px;border-radius:50%;left:50%;top:55%;transform:translate(-50%,-50%);box-shadow:inset -20px -8px 32px #030916a8,0 0 35px #fff1}.moon-image{background:radial-gradient(ellipse at 50% 100%,#35495b,#111c2c 68%)}.moon-image .planet-disc{background:radial-gradient(circle at 32% 30%,#c7c9c3,#7e8790 62%,#333e4b)}.mars-image{background:radial-gradient(ellipse at 50% 100%,#754d42,#1b1b29 72%)}.mars-image .planet-disc{background:radial-gradient(circle at 30% 27%,#e6a37b,#a64e37 58%,#4c2a2d)}.europa-image{background:radial-gradient(ellipse at 50% 100%,#3b6175,#101b2d 72%)}.europa-image .planet-disc{background:repeating-linear-gradient(145deg,#c4c9c5 0 5px,#8d9da1 6px 8px,#e1ded1 9px 12px);box-shadow:inset -20px -8px 32px #07111ca8,0 0 35px #a8d5e455}.card-tag{position:absolute;top:13px;left:13px;z-index:1;font:8px var(--mono);letter-spacing:.12em;color:#e6d9c8}.destination-info{display:flex;justify-content:space-between;align-items:center;padding:16px 14px 7px}.destination-info h3{font-size:17px;margin:0 0 5px;font-weight:600}.distance{font:8px var(--mono);color:#8291a3;letter-spacing:.08em}.select-indicator{width:20px;height:20px;border:1px solid #657488;border-radius:50%;display:grid;place-items:center;color:transparent;font-size:11px}.selected .select-indicator{background:var(--accent);border-color:var(--accent);color:#15202b}.destination-card>p{font-size:10px;line-height:1.6;color:#91a0b1;padding:0 14px;min-height:49px;margin:6px 0 12px}.card-meta{border-top:1px solid var(--line);padding:11px 14px;display:flex;justify-content:space-between;font:8px var(--mono);letter-spacing:.08em;color:#8a9aac}.card-meta span:last-child{color:var(--accent);letter-spacing:.04em}.mission-brief-panel,.configuration-panel,.flight-console,.results-panel{background:linear-gradient(145deg,rgba(20,32,50,.94),rgba(12,21,36,.88));border:1px solid var(--line);padding:23px;min-width:0}.brief-planet{height:115px;display:grid;place-items:center;position:relative;margin:8px 0 12px}.brief-planet:before{content:"";position:absolute;width:180px;height:80px;border:1px solid #91aebd38;border-radius:50%;transform:rotate(-18deg)}.brief-planet-disc{width:85px;height:85px;border-radius:50%;background:radial-gradient(circle at 30% 25%,#c7cbc3,#7c8992 58%,#263748);box-shadow:inset -15px -6px 22px #050a13,0 0 35px #94b8c12b}.brief-planet.mars .brief-planet-disc{background:radial-gradient(circle at 30% 25%,#f0b28b,#a84d36 62%,#3b202a)}.brief-planet.europa .brief-planet-disc{background:repeating-linear-gradient(135deg,#d9ded7 0 4px,#8c9ca2 5px 7px)}.mission-brief-panel h3{font-size:25px;margin:0 0 8px}.mission-brief-panel>p{font-size:11px;line-height:1.7;color:#9ba9b8}.brief-data{border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:13px 0;margin:15px 0;display:grid;gap:12px}.brief-data div{display:flex;flex-direction:column;gap:5px}.brief-data small,.resource-heading label,.loadout-summary span,.panel-topline,.craft-nameplate small,.flight-scene-label small,.flight-distance small,.telemetry-grid small,.result-metrics small,.score-row small{font:8px var(--mono);letter-spacing:.12em;color:#8090a3}.brief-data b{font-size:11px;font-weight:500;color:#d4dce4}.field-label{display:block;margin-bottom:8px;font-size:8px}.select-control{width:100%;background:#0c1727;color:#e4e9ee;border:1px solid var(--line);padding:12px;font-size:11px;margin-bottom:15px;outline:none}
+.craft-layout{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(320px,.85fr);gap:20px}.craft-visual-panel{border:1px solid var(--line);background:linear-gradient(155deg,rgba(19,33,52,.88),rgba(9,17,30,.8));padding:20px;min-height:570px}.panel-topline{display:flex;justify-content:space-between;align-items:center}.status-chip{color:#9ac8a7;font:8px var(--mono)}.status-chip i{display:inline-block;width:5px;height:5px;border-radius:50%;background:#8ec7a3;margin-right:6px}.craft-stage{height:285px;display:grid;place-items:center;position:relative;overflow:hidden;background:radial-gradient(ellipse at center,#28415a45,transparent 55%)}.craft-halo{position:absolute;width:250px;height:250px;border-radius:50%;border:1px solid #9cb9ca25;box-shadow:0 0 50px #4c829c1c,inset 0 0 45px #4c829c13}.craft-orbit-ring{position:absolute;width:350px;height:120px;border:1px solid #9cb9ca25;border-radius:50%;transform:rotate(-25deg)}.craft-model{position:relative;width:250px;height:130px;transform:rotate(-20deg);filter:drop-shadow(0 12px 16px #0008);animation:craft-float 5s ease-in-out infinite}.craft-core{position:absolute;width:72px;height:72px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#e4d4b6,#71899a 50%,#1a3048);left:88px;top:28px;z-index:3;border:2px solid #d5d0bd}.craft-body{position:absolute;width:135px;height:22px;background:linear-gradient(90deg,#455c6d,#d4d0c2 42%,#536b7b);left:58px;top:52px;border-radius:8px;z-index:2}.craft-nose{position:absolute;left:181px;top:49px;border-left:27px solid #d5c8a8;border-top:14px solid transparent;border-bottom:14px solid transparent;z-index:2}.craft-panel{position:absolute;top:37px;width:67px;height:50px;background:repeating-linear-gradient(90deg,#183858 0 8px,#7e9ba7 9px 10px);border:2px solid #9aabb0;z-index:1}.craft-panel.left{left:0}.craft-panel.right{right:0}.craft-antenna{position:absolute;width:3px;height:37px;background:#c9c1ac;left:120px;top:4px;transform:rotate(20deg)}.craft-engine{position:absolute;left:40px;top:55px;width:20px;height:16px;background:#a3a69c;border-radius:4px}.craft-nameplate{display:flex;justify-content:space-between;align-items:flex-end;border-top:1px solid var(--line);padding:15px 0}.craft-nameplate h3{font-size:20px;margin:5px 0 0}.craft-nameplate>span{font:8px var(--mono);color:var(--accent);letter-spacing:.1em}.craft-selector{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.craft-option{background:#0c1727;border:1px solid var(--line);padding:10px;text-align:left;color:#c7d0d9;display:grid;grid-template-columns:22px 1fr 12px;gap:7px;align-items:center}.craft-option.selected{border-color:var(--accent);background:#1c2937}.craft-option>span:nth-child(2){display:flex;flex-direction:column;gap:4px}.craft-option b{font-size:10px}.craft-option small{font-size:8px;color:#8998a9}.craft-option i{font-style:normal;color:transparent}.craft-option.selected i{color:var(--accent)}.craft-mini{color:var(--accent);font-size:17px}.configuration-panel{padding:25px}.loadout-intro h3{font-size:21px;margin:14px 0 6px}.loadout-intro p{font-size:11px;line-height:1.65;color:#96a4b4}.resource-control{padding:18px 0;border-bottom:1px solid var(--line)}.resource-heading{display:flex;justify-content:space-between;align-items:center}.resource-heading b{font:17px var(--mono);color:#e7e8e2}.resource-heading b small{font-size:9px;color:#77879a}.resource-control input{width:100%;accent-color:var(--accent);margin:17px 0 5px}.range-labels{display:flex;justify-content:space-between;font:8px var(--mono);color:#718196;letter-spacing:.1em}.loadout-summary{display:flex;justify-content:space-between;padding:17px 0}.loadout-summary div{display:flex;flex-direction:column;gap:7px}.loadout-summary b{font:15px var(--mono);color:var(--sage)}.readiness-good{color:#9ac8a7!important}.readiness-warn{color:#e4b57c!important}.readiness-low{color:#dc8e87!important}
+.flight-top{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:22px}.flight-top h2{margin-bottom:0}.mission-status{font:8px var(--mono);letter-spacing:.1em;color:#9eacbb;display:flex;align-items:center;gap:9px;padding-bottom:8px}.mission-status b{color:#9ac8a7;font-weight:400;margin-left:9px}.flight-layout{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(320px,.8fr);gap:17px;flex:1}.flight-scene{position:relative;min-height:520px;overflow:hidden;border:1px solid var(--line);background:radial-gradient(ellipse at 75% 43%,#384e692c,transparent 38%),linear-gradient(145deg,#101d30,#070d19 75%)}.flight-stars{position:absolute;inset:0;background-image:radial-gradient(1px 1px at 12% 20%,#fff9 50%,transparent 100%),radial-gradient(1px 1px at 38% 65%,#fff8 50%,transparent 100%),radial-gradient(2px 2px at 65% 25%,#fff8 50%,transparent 100%),radial-gradient(1px 1px at 83% 80%,#fff9 50%,transparent 100%),radial-gradient(1px 1px at 25% 85%,#fff7 50%,transparent 100%);background-size:210px 190px;animation:star-drift 45s linear infinite}.flight-nebula{position:absolute;width:75%;height:70%;top:5%;left:10%;background:radial-gradient(ellipse,#6a557c22,transparent 65%);filter:blur(25px)}.flight-destination{position:absolute;right:-12%;top:17%;width:52%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 30% 27%,#d7a77c,#9d5543 44%,#392738 70%,#101725);box-shadow:inset -40px -18px 60px #030712,0 0 65px #c0876c30;transition:.6s}.flight-destination.moon{background:radial-gradient(circle at 30% 27%,#d5d5ca,#7c8792 55%,#303c4a 75%)}.flight-destination.europa{background:repeating-linear-gradient(135deg,#cbd6d5 0 6px,#718d9a 7px 10px,#d7d7cc 11px 16px);box-shadow:inset -40px -18px 60px #030712,0 0 65px #91c4d630}.flight-path{position:absolute;width:75%;height:45%;left:8%;top:35%;border-top:1px dashed #d7b48a65;border-radius:50%;transform:rotate(-20deg)}.path-node{position:absolute;width:5px;height:5px;border-radius:50%;background:#8196a9;top:-3px;left:0}.path-node.active{left:48%;background:var(--accent);box-shadow:0 0 12px var(--accent)}.path-node:last-child{left:98%}.flight-spacecraft{position:absolute;left:43%;top:49%;width:60px;height:30px;transform:rotate(-25deg);animation:ship-drift 6s ease-in-out infinite;z-index:2}.flight-craft-body{position:absolute;width:42px;height:12px;left:8px;top:9px;background:linear-gradient(#e2ded0,#718696);border-radius:8px}.flight-craft-wing{position:absolute;left:19px;top:0;width:24px;height:30px;background:linear-gradient(90deg,#35516b,#9aafba);clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%)}.flight-craft-flame{position:absolute;left:-12px;top:11px;width:15px;height:8px;background:linear-gradient(90deg,transparent,#f1b875);filter:blur(2px);border-radius:50%}.flight-scene-label{position:absolute;left:22px;top:20px;display:flex;flex-direction:column;gap:6px}.flight-scene-label b{font:10px var(--mono);letter-spacing:.1em;color:#d7e0e7}.flight-distance{position:absolute;bottom:22px;left:22px;width:190px}.flight-distance b{display:block;font:24px var(--mono);margin:5px 0 9px}.progress-track,.score-track{height:3px;background:#71819533}.progress-track span,.score-track span{display:block;height:100%;width:18%;background:var(--accent);transition:width .5s}.flight-console{padding:20px;display:flex;flex-direction:column}.console-head{display:flex;justify-content:space-between;align-items:center;font:9px var(--mono);letter-spacing:.12em;color:#b9c6d2}.console-head>div{display:flex;align-items:center;gap:8px}.console-head small{font-size:8px;color:#718195}.telemetry-grid{display:grid;grid-template-columns:1fr 1fr;gap:17px 12px;padding:22px 0}.telemetry-grid>div{display:flex;flex-direction:column;gap:6px}.telemetry-grid b{font:19px var(--mono)}.telemetry-grid b span{font-size:10px;color:#8594a6}.telemetry-ok{font-size:11px!important;color:#9ac8a7!important}.console-divider{height:1px;background:var(--line)}.event-kicker{font:8px var(--mono);letter-spacing:.1em;color:var(--accent);margin:20px 0 10px}.event-kicker span{float:right;color:#d58f82}.flight-console h3{font-size:20px;margin:0 0 8px}.flight-console>p{font-size:11px;line-height:1.7;color:#9ba9b8}.event-choices{display:grid;gap:8px}.event-choice{display:grid;grid-template-columns:24px 1fr 12px;gap:10px;align-items:center;background:#0b1626;border:1px solid var(--line);padding:12px;text-align:left;color:#d9e0e7;transition:.2s}.event-choice:hover,.event-choice.selected{border-color:var(--accent);background:#1b2938}.choice-index{font:10px var(--mono);color:var(--accent)}.event-choice span:nth-child(2){display:flex;flex-direction:column;gap:4px}.event-choice b{font-size:10px;font-weight:600}.event-choice small{font-size:9px;color:#91a0b0;line-height:1.4}.choice-arrow{color:#9eacbb}.console-log{margin:15px 0;color:#7e8d9f;font:8px var(--mono);line-height:1.5}.console-log span{color:#d1a879;margin-right:8px}.flight-console .button{margin-top:auto}.flight-console .button:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.debrief-header{display:flex;justify-content:space-between;align-items:center}.success-stamp{border:1px solid #8bb79a66;color:#a4c9ad;padding:9px 13px;font:9px var(--mono);letter-spacing:.1em}.success-stamp span{margin-right:7px}.debrief-title{margin:25px 0 28px;display:flex;align-items:flex-end;justify-content:space-between}.debrief-title h2{margin:0}.debrief-title p{color:#9ba9b8;font-size:12px;max-width:270px;line-height:1.7;margin:0 0 7px}.debrief-layout{display:grid;grid-template-columns:1fr 1fr;gap:20px}.debrief-visual{position:relative;min-height:350px;overflow:hidden;border:1px solid var(--line);background:radial-gradient(ellipse at 50% 75%,#36495c55,transparent 50%),linear-gradient(145deg,#111e31,#080e19)}.debrief-planet{position:absolute;width:290px;height:290px;left:50%;top:48%;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle at 30% 25%,#d8d8ce,#788793 60%,#283745 78%);box-shadow:inset -40px -20px 55px #050b15,0 0 65px #9cbac12b}.debrief-planet.mars{background:radial-gradient(circle at 30% 25%,#e8b18a,#a34c37 60%,#39252c 78%)}.debrief-planet.europa{background:repeating-linear-gradient(135deg,#d8ded8 0 5px,#7e929a 6px 9px)}.debrief-orbit{position:absolute;width:440px;height:140px;border:1px solid #b6c6d52b;border-radius:50%;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-20deg)}.debrief-ship{position:absolute;left:70%;top:29%;font-size:22px;color:var(--accent);text-shadow:0 0 20px var(--accent)}.debrief-visual-label{position:absolute;bottom:20px;left:20px;display:flex;flex-direction:column;gap:6px}.debrief-visual-label small{font:8px var(--mono);letter-spacing:.13em;color:#9aa8b7}.debrief-visual-label b{font:12px var(--mono);letter-spacing:.12em}.results-panel{padding:24px}.score-row{display:flex;justify-content:space-between;align-items:center}.score-number{font:58px var(--mono);letter-spacing:-.08em;margin-top:5px}.score-number span{font-size:15px;color:#8291a2;letter-spacing:0}.grade-badge{width:52px;height:52px;border:1px solid var(--accent);display:grid;place-items:center;font:25px Georgia,serif;color:var(--accent)}.score-track{margin:10px 0 22px}.score-track span{width:82%}.result-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:17px 0}.result-metrics div{display:flex;flex-direction:column;gap:7px}.result-metrics b{font-size:10px;color:#cbd4dd}.debrief-message{padding:17px 0 4px}.debrief-message span{font:8px var(--mono);letter-spacing:.12em;color:var(--accent)}.debrief-message p{font-size:11px;line-height:1.7;color:#a5b1bf;margin:8px 0 0}
+
+
+/* DESTINATION CONFIGURATION REVEAL */
+.config-reveal{font:8px var(--mono);letter-spacing:.08em;color:#b9c9d4;background:linear-gradient(90deg,#c69a6c18,transparent);border-left:2px solid var(--accent);padding:10px 11px;margin:2px 0 17px;line-height:1.6}
+.reveal-pulse{animation:configReveal .55s ease both}
+@keyframes configReveal{0%{opacity:.25;transform:translateY(5px)}100%{opacity:1;transform:translateY(0)}}
+.destination-card.selected{background:linear-gradient(180deg,#26384b88,#101b2c);box-shadow:0 0 0 1px #d6a87544,0 15px 45px #0005}
+.destination-card.selected:after{content:"SELECTED FOR MISSION";position:absolute;right:10px;top:10px;z-index:3;background:#d7b48a;color:#111b27;padding:5px 7px;font:7px var(--mono);letter-spacing:.08em}
+
+/* CINEMATIC FLIGHT DECK */
+.flight-screen{position:relative}
+.flight-screen:before{content:"";position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 65%,#253f5b20,transparent 58%);z-index:-1}
+.flight-scene{min-height:590px;background:radial-gradient(ellipse at 72% 48%,#5a779b38,transparent 33%),radial-gradient(ellipse at 15% 82%,#765b7820,transparent 45%),linear-gradient(145deg,#0a1424,#050912 75%);box-shadow:inset 0 0 90px #0009,0 25px 80px #0006}
+.flight-scene:before{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 20%,#a8c8df09 48%,transparent 72%),radial-gradient(ellipse at 52% 100%,#6383a31c,transparent 55%);animation:spaceSheen 12s ease-in-out infinite alternate}
+.flight-scene:after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,#03071155,transparent 22%,transparent 72%,#03071188)}
+@keyframes spaceSheen{from{transform:translateX(-4%);opacity:.5}to{transform:translateX(4%);opacity:1}}
+.flight-stars{opacity:.9;background-size:170px 155px,230px 200px,300px 260px;animation:star-drift 35s linear infinite}
+.flight-nebula{width:95%;height:85%;top:0;left:0;background:radial-gradient(ellipse at 60% 45%,#8a6a9630,transparent 56%),radial-gradient(ellipse at 25% 72%,#527d9a20,transparent 48%);filter:blur(34px)}
+.flight-destination{right:-7%;top:12%;width:min(63%,560px);box-shadow:inset -55px -25px 85px #02050d,0 0 90px #c0876c45,0 0 180px #89b4d01b}
+.flight-destination:before{content:"";position:absolute;inset:-5%;border-radius:50%;background:radial-gradient(circle,transparent 61%,#d9c1a52a 62%,transparent 70%);filter:blur(3px)}
+.flight-destination:after{content:"";position:absolute;inset:-18%;border-radius:50%;background:radial-gradient(circle,transparent 62%,#9db6ca16 63%,transparent 64%);transform:rotate(-18deg)}
+.flight-path{height:53%;top:33%;border-top:1px dashed #d7b48a88;filter:drop-shadow(0 0 5px #d7b48a66)}
+.flight-spacecraft{left:37%;top:49%;width:88px;height:48px;transform:rotate(-24deg) scale(1.25);filter:drop-shadow(0 0 13px #9fc9e888)}
+.flight-craft-body{width:60px;height:15px;left:12px;top:16px;background:linear-gradient(180deg,#f0eee3,#8196a5 52%,#394e63);border-radius:10px}
+.flight-craft-wing{left:25px;top:2px;width:34px;height:44px;background:linear-gradient(90deg,#29465f,#b7c4c8 48%,#3b5b76);clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%)}
+.flight-craft-flame{left:-20px;top:19px;width:25px;height:10px;background:linear-gradient(90deg,transparent,#7ed5f5,#f1b875);filter:blur(3px)}
+.flight-distance{z-index:2;width:230px}.flight-scene-label{z-index:2}
+.flight-console{background:linear-gradient(155deg,rgba(19,34,54,.96),rgba(7,14,26,.97));box-shadow:0 20px 55px #0005}
+.flight-console .event-kicker,.flight-console #event-title,.flight-console #event-description,.flight-console #event-choices,.flight-console #next-event{display:none}
+.flight-console .console-log{margin-top:auto;padding-top:14px;border-top:1px solid var(--line)}
+
+/* ACTION POPUP */
+.event-backdrop{z-index:40;background:rgba(2,6,13,.76);backdrop-filter:blur(13px)}
+.event-modal-card{width:min(650px,100%);padding:clamp(24px,4vw,42px);border-color:#b58e654f;background:radial-gradient(ellipse at 100% 0%,#bd986c18,transparent 45%),linear-gradient(145deg,#17263a,#091321);box-shadow:0 35px 120px #000c;animation:modalRise .35s cubic-bezier(.2,.8,.2,1) both}
+.event-modal-top{display:flex;align-items:center;gap:9px;margin-bottom:27px;font:8px var(--mono);letter-spacing:.12em;color:#d7b48a}
+.event-alert-dot{width:7px;height:7px;border-radius:50%;background:#e7a36d;box-shadow:0 0 12px #e7a36d;animation:alertPulse 1.4s ease-in-out infinite}
+.event-priority{margin-left:auto;color:#e69b8b}
+.event-modal-card h2{font-size:clamp(30px,5vw,45px);line-height:1.08;margin:12px 0}
+.event-modal-card>p{font-size:13px;line-height:1.8;max-width:520px;color:#aab8c7}
+.popup-choice-label{font:8px var(--mono);letter-spacing:.14em;color:#d7b48a;margin:25px 0 11px}
+.popup-choices{display:grid;gap:9px;margin-bottom:18px}
+.popup-choices .event-choice{padding:16px;background:#07111fbb;grid-template-columns:28px 1fr 15px}
+.popup-choices .event-choice b{font-size:12px}.popup-choices .event-choice small{font-size:10px}
+.popup-choices .event-choice.selected{border-color:#d7b48a;background:#283747;box-shadow:inset 3px 0 #d7b48a}
+.popup-choices .event-choice:disabled{cursor:default;opacity:.75}
+.event-outcome{padding:15px 17px;margin:10px 0 18px;border:1px solid #8eb79a55;background:#8eb79a0c}
+.event-outcome span{font:8px var(--mono);letter-spacing:.14em;color:#a5d2b0}
+.event-outcome p{font-size:11px;line-height:1.7;color:#c5d1dc;margin:8px 0 0}
+.event-modal-card .button:disabled{opacity:.45;cursor:not-allowed;transform:none}
+
+/* CINEMATIC MISSION RESULT */
+.result-backdrop{z-index:45;background:rgba(2,5,11,.84);backdrop-filter:blur(16px)}
+.result-modal-card{width:min(620px,100%);text-align:center;padding:30px clamp(24px,5vw,48px) 38px;background:radial-gradient(ellipse at 50% 15%,#b18d6120,transparent 42%),linear-gradient(155deg,#17263a,#080f1c);border-color:#b99a705c;overflow:hidden;animation:modalRise .55s cubic-bezier(.2,.8,.2,1) both}
+.result-orbit-art{height:145px;position:relative;margin:-8px 0 14px;display:grid;place-items:center}
+.result-orbit-planet{width:105px;height:105px;border-radius:50%;background:radial-gradient(circle at 30% 25%,#e2d9c4,#8c9ca5 55%,#263746 78%);box-shadow:inset -18px -10px 25px #030711,0 0 42px #b5cbd344}
+.result-orbit-ring{position:absolute;width:230px;height:72px;border:1px solid #d5b48a88;border-radius:50%;transform:rotate(-20deg);box-shadow:0 0 15px #d5b48a22}
+.result-spark{position:absolute;top:20px;right:calc(50% - 105px);font-size:20px;color:#e8c48e;text-shadow:0 0 20px #e8c48e}
+.result-modal-card h2{font-size:clamp(30px,5vw,48px);letter-spacing:.02em;margin:10px 0}
+.result-modal-card>p{max-width:460px;margin:0 auto;color:#aab8c7;font-size:12px;line-height:1.8}
+.result-popup-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:27px 0 17px;padding:17px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.result-popup-stats div{display:flex;flex-direction:column;gap:8px}.result-popup-stats small{font:7px var(--mono);letter-spacing:.1em;color:#8192a5}.result-popup-stats b{font:17px var(--mono);color:#e1e7ec}
+.result-popup-note{font:8px var(--mono);letter-spacing:.08em;color:#a9b7c5;margin:0 0 22px}
+.result-modal-card.failed{border-color:#c77e7666;background:radial-gradient(ellipse at 50% 15%,#a84e4422,transparent 42%),linear-gradient(155deg,#2a202b,#0b111d)}
+.result-modal-card.failed .result-orbit-planet{filter:saturate(.45);box-shadow:inset -18px -10px 25px #030711,0 0 42px #c06e6a22}
+.result-modal-card.failed .result-orbit-ring{border-color:#d17c7888}
+.success-stamp.failed{border-color:#c77e7666;color:#d8958d}
+@keyframes modalRise{from{opacity:0;transform:translateY(18px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes alertPulse{50%{opacity:.35;box-shadow:0 0 2px #e7a36d}}
+@media(max-width:600px){.result-popup-stats{grid-template-columns:repeat(2,1fr);row-gap:16px}.flight-scene{min-height:440px}.flight-destination{width:75%;right:-22%}.flight-spacecraft{left:27%}.event-modal-card{padding:23px}}
+
+/* V2 functional visual redesign: destination feedback + immersive flight deck */
+.destination-layout{grid-template-columns:minmax(0,1.45fr) minmax(310px,.8fr);gap:22px}
+.destination-card{overflow:hidden;border-radius:5px;background:linear-gradient(155deg,#142238e8,#091321f2);box-shadow:0 14px 35px #0004}
+.destination-card.selected{border-color:#e7b77e;box-shadow:0 0 0 1px #e7b77e77,0 0 32px #e7b77e25,0 22px 48px #0008;transform:translateY(-5px)}
+.destination-card.selected .destination-image:before{content:"";position:absolute;inset:8px;border:1px solid #f1c8948a;z-index:2;pointer-events:none}
+.destination-card.selected .planet-disc{animation:planetBreath 4s ease-in-out infinite;filter:brightness(1.12)}
+.destination-card .card-tag{background:#07111dcc;padding:6px 8px;border:1px solid #ffffff24;border-radius:2px}
+.mission-brief-panel{border-radius:5px;background:radial-gradient(ellipse at 50% 5%,#52748c22,transparent 44%),linear-gradient(150deg,#15263cfa,#091321f5);box-shadow:0 18px 55px #0007;transition:border-color .25s,transform .25s}
+.mission-brief-panel.profile-changed{border-color:#d6a875;transform:translateY(-2px)}
+.brief-planet{height:132px}.brief-planet-disc{width:104px;height:104px;box-shadow:inset -22px -12px 30px #050a13,0 0 38px #a8d2e44a,0 0 85px #8bb9d01c}
+.brief-planet.moon .brief-planet-disc{background:radial-gradient(circle at 30% 25%,#f1eee0,#9da5a9 48%,#374451 77%)}
+.brief-planet.mars .brief-planet-disc{background:radial-gradient(circle at 30% 25%,#ffc18f,#c45d3c 48%,#4b2630 78%)}
+.brief-planet.europa .brief-planet-disc{background:repeating-linear-gradient(135deg,#e7eee8 0 3px,#91aeb6 4px 6px,#d9e3df 7px 10px);box-shadow:inset -22px -12px 30px #050a13,0 0 40px #9ed9ed55}
+.config-reveal{border:1px solid #91b5c533;background:#5e9ab00d;color:#a9c7d4;padding:10px 11px;margin:15px 0 17px;font:8px var(--mono);line-height:1.6;letter-spacing:.07em}
+.brief-data{grid-template-columns:1fr 1fr;gap:13px 18px}.brief-data div{min-width:0}.brief-data b{line-height:1.5}
+@keyframes planetBreath{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(1.045)}}
+
+.flight-screen{padding-left:clamp(16px,3vw,48px);padding-right:clamp(16px,3vw,48px);padding-top:28px;min-height:calc(100vh - 76px);background:radial-gradient(ellipse at 50% 55%,#183a5a24,transparent 65%)}
+.flight-top{margin:0 auto 14px;width:100%;max-width:1600px}.flight-top h2{font-size:clamp(34px,4vw,52px)}
+.flight-layout{width:100%;max-width:1600px;margin:0 auto;grid-template-columns:minmax(0,1.8fr) minmax(290px,.62fr);gap:14px}
+.flight-scene{min-height:clamp(570px,69vh,760px);border-radius:7px;isolation:isolate;background:radial-gradient(ellipse at 73% 49%,#7ca5c332,transparent 34%),radial-gradient(ellipse at 20% 75%,#9d6c8a20,transparent 38%),linear-gradient(145deg,#071321,#030711 76%);box-shadow:inset 0 0 120px #000c,0 25px 90px #0008;--flight-progress:18%;}
+.flight-scene:before{content:"";position:absolute;inset:-20%;z-index:-1;background:conic-gradient(from 20deg at 55% 48%,transparent 0 18%,#7299b00b 22%,transparent 31% 55%,#a77e9a0c 60%,transparent 70%);filter:blur(22px);animation:nebulaTurn 70s linear infinite}
+.flight-stars{inset:-10%;background-image:radial-gradient(1px 1px at 12% 20%,#fff 50%,transparent 100%),radial-gradient(1px 1px at 38% 65%,#fff 50%,transparent 100%),radial-gradient(2px 2px at 65% 25%,#fff 50%,transparent 100%),radial-gradient(1px 1px at 83% 80%,#fff 50%,transparent 100%),radial-gradient(1px 1px at 25% 85%,#fff 50%,transparent 100%),radial-gradient(1px 1px at 92% 12%,#8ec9ee 50%,transparent 100%);background-size:190px 180px,270px 220px,320px 270px,230px 190px,300px 240px,380px 310px;opacity:.9}
+.stars-front{opacity:.35;filter:blur(.4px);transform:scale(1.4);animation:star-drift 18s linear infinite reverse}
+.flight-earth{position:absolute;width:62%;aspect-ratio:1;left:-21%;bottom:-48%;border-radius:50%;z-index:0;background:radial-gradient(ellipse at 56% 23%,#a8d4e8 0 2%,transparent 3%),radial-gradient(ellipse at 44% 36%,#688c80 0 8%,transparent 9%),radial-gradient(ellipse at 64% 50%,#719a8b 0 13%,transparent 14%),radial-gradient(circle at 35% 25%,#6a9ab5,#1a4c70 48%,#07192c 72%);box-shadow:inset -45px -22px 65px #020713,0 0 0 5px #a8d7f018,0 0 85px #63b6e04a;animation:earthDrift 24s ease-in-out infinite alternate}
+.flight-earth:after{content:"";position:absolute;inset:-2%;border-radius:50%;border:2px solid #a6dfff3d;filter:blur(3px)}
+.flight-earth span{position:absolute;inset:0;border-radius:50%;background:repeating-linear-gradient(168deg,transparent 0 18px,#d5efff10 19px 21px,transparent 22px 38px);opacity:.8}
+.flight-destination{right:5%;top:9%;width:min(46%,510px);z-index:1;overflow:visible;background:radial-gradient(circle at 30% 25%,#f1d6b2 0 2%,transparent 3%),radial-gradient(circle at 56% 48%,#a77a63 0 7%,transparent 8%),radial-gradient(circle at 35% 55%,#c18d72 0 10%,transparent 11%),radial-gradient(circle at 30% 27%,#d7a77c,#9d5543 44%,#392738 70%,#101725);box-shadow:inset -55px -30px 85px #02050d,0 0 95px #c0876c52,0 0 190px #89b4d02b;animation:destinationFloat 15s ease-in-out infinite alternate}
+.flight-destination.moon{background:radial-gradient(circle at 25% 23%,#eee9d9 0 1%,transparent 2%),radial-gradient(circle at 63% 45%,#5e6671 0 5%,transparent 6%),radial-gradient(circle at 40% 60%,#a6a8a5 0 9%,transparent 10%),radial-gradient(circle at 30% 27%,#e2e0d4,#929ba2 53%,#303c4a 78%);box-shadow:inset -55px -30px 85px #02050d,0 0 95px #c8d9e552,0 0 190px #89b4d02b}
+.flight-destination.europa{background:repeating-linear-gradient(135deg,#dce5e0 0 6px,#8ba3aa 7px 10px,#d4dedb 11px 16px);box-shadow:inset -55px -30px 85px #02050d,0 0 95px #91c4d655,0 0 190px #89b4d02b}
+.planet-atmosphere{position:absolute;inset:-3%;border-radius:50%;border:2px solid #c6e5f54a;box-shadow:0 0 28px #8bc8e733,inset 0 0 22px #8bc8e722}
+.flight-path{left:5%;top:41%;width:88%;height:39%;z-index:2;border-top:1px dashed #c3d8e77a;border-radius:50%;transform:rotate(-16deg);filter:drop-shadow(0 0 7px #a9cde866)}
+.flight-path:after{content:"";position:absolute;left:0;right:0;top:-1px;height:1px;background:linear-gradient(90deg,transparent,#d6a875aa,transparent);transform:scaleX(var(--flight-progress));transform-origin:left;transition:transform 1.1s ease}
+.flight-spacecraft{left:calc(18% + var(--flight-progress) * .36);top:54%;width:150px;height:85px;z-index:4;transform:rotate(-19deg) scale(1.2);filter:drop-shadow(0 0 18px #8dd7ffb0);animation:shipFloat 5s ease-in-out infinite}
+.flight-craft-body{width:112px;height:26px;left:19px;top:31px;border-radius:12px;background:linear-gradient(180deg,#fff7df 0%,#c4d2d5 28%,#526d80 65%,#243a50 100%);box-shadow:inset 0 2px 4px #fff,0 4px 8px #0008}
+.flight-craft-body:before{content:"";position:absolute;right:-22px;top:4px;border-left:28px solid #c8d5d8;border-top:9px solid transparent;border-bottom:9px solid transparent}
+.flight-craft-body:after{content:"";position:absolute;left:40px;top:4px;width:26px;height:8px;border-radius:50%;background:#1b344b;box-shadow:inset 0 0 5px #76c9ee}
+.flight-craft-wing{left:50px;top:8px;width:36px;height:70px;clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%);background:linear-gradient(90deg,#233f5c,#b4c7d1 48%,#39546c)}
+.flight-craft-flame{left:-42px;top:39px;width:55px;height:13px;background:linear-gradient(90deg,transparent,#4bb9ff 35%,#e2faff 80%,transparent);filter:blur(4px);box-shadow:0 0 22px #56baff;animation:enginePulse .22s ease-in-out infinite alternate}
+.flight-craft-solar{position:absolute;left:28px;top:23px;width:110px;height:3px;background:#b9cbd0;box-shadow:0 0 0 1px #0d233b}
+.flight-craft-solar:before,.flight-craft-solar:after{content:"";position:absolute;top:-13px;width:44px;height:27px;border:1px solid #9eb7c8;background:repeating-linear-gradient(90deg,#102e4c 0 6px,#547b9a 7px 8px),repeating-linear-gradient(0deg,transparent 0 6px,#b3d4e0 7px 8px)}
+.flight-craft-solar:before{left:-42px}.flight-craft-solar:after{right:-42px}
+.flight-craft-dish{position:absolute;left:72px;top:0;width:25px;height:12px;border:2px solid #d8ded6;border-bottom:0;border-radius:50% 50% 0 0;transform:rotate(-20deg)}
+.flight-asteroids{position:absolute;z-index:2;border-radius:50%;background:radial-gradient(circle at 30% 25%,#a7a29a,#555d65 56%,#202a36);box-shadow:inset -6px -4px 9px #080d16,0 0 13px #9cb5c522}
+.asteroid-one{width:23px;height:19px;top:26%;left:56%;animation:asteroidFloat 12s ease-in-out infinite}.asteroid-two{width:13px;height:11px;top:72%;right:25%;animation:asteroidFloat 9s ease-in-out infinite reverse}.asteroid-three{width:9px;height:8px;top:17%;left:35%;animation:asteroidFloat 15s ease-in-out infinite}
+.flight-hud{position:absolute;z-index:5;display:flex;flex-direction:column;gap:5px;padding:11px 13px;border:1px solid #a6c4d52b;background:#06111d88;backdrop-filter:blur(8px);font-family:var(--mono);font-size:8px;letter-spacing:.1em;color:#a7b9c9}
+.flight-hud small{font-size:7px;color:#8298ab}.flight-hud b{font-size:9px;color:#dce9f1;font-weight:500}.flight-hud-left{left:20px;top:100px}.flight-hud-right{right:18px;top:18px;display:grid;grid-template-columns:8px auto;align-items:center}.flight-hud-right b{grid-column:2}.hud-live-dot{width:6px;height:6px;border-radius:50%;background:#8ed5a5;box-shadow:0 0 12px #8ed5a5}
+.flight-scene-label{left:22px;top:20px;z-index:5}.flight-scene-label b{font-size:11px}.flight-scene-label span{font:7px var(--mono);letter-spacing:.1em;color:#8eb7c9}
+.flight-distance{z-index:5;background:#06111d99;border:1px solid #a6c4d52b;padding:12px 14px;backdrop-filter:blur(8px);bottom:18px;left:18px}
+.flight-console{border-radius:6px;padding:20px;background:linear-gradient(155deg,#14253bf5,#07111ef7);box-shadow:0 20px 60px #0008;backdrop-filter:blur(12px)}
+.flight-console .telemetry-grid>div{padding:12px;border:1px solid #a6c4d51c;background:#07132180;border-radius:3px}.flight-console .telemetry-grid b{font-size:22px}.flight-console .console-log{background:#07132180;padding:13px;border:1px solid #a6c4d51c;min-height:62px}
+.flight-screen .screen-footer{max-width:1600px;width:100%;margin:0 auto;padding-top:14px}
+@keyframes nebulaTurn{to{transform:rotate(360deg)}}@keyframes earthDrift{to{transform:translate(3%,-2%) scale(1.03)}}@keyframes destinationFloat{to{transform:translateY(-12px) rotate(2deg)}}@keyframes shipFloat{0%,100%{translate:0 0}50%{translate:0 -12px}}@keyframes asteroidFloat{0%,100%{translate:0 0}50%{translate:18px -15px}}@keyframes enginePulse{to{opacity:.62;transform:scaleX(.8)}}
+@media(max-width:850px){.flight-screen{padding-left:18px;padding-right:18px}.flight-layout{grid-template-columns:1fr!important}.flight-scene{min-height:560px}.flight-console{min-height:400px}.flight-destination{width:55%;right:-1%;top:18%}.flight-spacecraft{left:28%;top:54%}.brief-data{grid-template-columns:1fr 1fr}}
+@media(max-width:580px){.flight-screen{padding:24px 12px}.flight-scene{min-height:500px}.flight-destination{width:67%;right:-18%;top:22%}.flight-earth{width:90%;left:-40%;bottom:-35%}.flight-spacecraft{left:12%;top:56%;transform:rotate(-19deg) scale(.8)}.flight-hud-left{top:110px;left:10px}.flight-hud-right{right:8px;top:8px}.flight-distance{left:10px;bottom:10px}.flight-scene-label{left:12px;top:12px}.brief-data{grid-template-columns:1fr}}
+/* Spacecraft bay polish */
+.craft-visual-panel{border-radius:6px;background:radial-gradient(ellipse at 50% 42%,#5684a12a,transparent 42%),linear-gradient(155deg,#162940ed,#07111ff5);box-shadow:0 20px 60px #0007}
+.craft-stage{height:315px;background:radial-gradient(ellipse at 50% 54%,#7bb7d02a,transparent 45%),radial-gradient(1px 1px at 20% 20%,#fff9 50%,transparent 100%),radial-gradient(1px 1px at 78% 30%,#fff9 50%,transparent 100%),radial-gradient(1px 1px at 65% 78%,#fff9 50%,transparent 100%);background-size:auto,120px 100px,170px 130px,220px 170px}
+.craft-model{transform:rotate(-15deg) scale(1.12);filter:drop-shadow(0 15px 18px #000b) drop-shadow(0 0 14px #8dc5dc55)}
+.craft-core{box-shadow:inset -18px -9px 22px #0b1724,0 0 0 4px #b4c5c733,0 0 20px #c8e5ee44}
+.craft-body{height:27px;background:linear-gradient(180deg,#f3eee0,#a8b8bc 38%,#506a7c 72%,#263d51);box-shadow:inset 0 2px 4px #fff,0 4px 8px #0009}
+.craft-panel{background:repeating-linear-gradient(90deg,#102e4b 0 7px,#527d9b 8px 9px),repeating-linear-gradient(0deg,transparent 0 8px,#c0d7dc 9px 10px);box-shadow:0 0 12px #5ba6d333}
+.craft-engine{box-shadow:0 0 16px #7acdf4;background:radial-gradient(circle,#eafaff,#5aa9d3 50%,#334e62)}
+.craft-stage:after{content:"";position:absolute;width:70%;height:1px;bottom:25px;background:linear-gradient(90deg,transparent,#8dc4d655,transparent);box-shadow:0 0 20px #8dc4d633}
+
+/* DESTINATION SCREEN — cinematic ThreeUI-inspired interaction pass */
+#screen-destination{
+  min-height:calc(100vh - 76px);
+  padding:clamp(24px,4vh,42px) clamp(22px,6vw,92px) 28px;
+  background:
+    radial-gradient(ellipse at 78% 30%,rgba(69,119,157,.20),transparent 38%),
+    radial-gradient(ellipse at 15% 82%,rgba(151,91,70,.13),transparent 35%);
+  overflow:hidden;
+}
+#screen-destination:before{
+  content:"";position:absolute;inset:0;pointer-events:none;opacity:.25;
+  background-image:linear-gradient(rgba(159,190,213,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(159,190,213,.045) 1px,transparent 1px);
+  background-size:58px 58px;mask-image:linear-gradient(90deg,#000,transparent 85%);
+}
+#screen-destination .section-heading{position:relative;z-index:1;margin-bottom:26px;align-items:flex-end}
+#screen-destination .section-heading h2{font-size:clamp(39px,5vw,66px);margin:13px 0 10px}
+#screen-destination .section-heading p{max-width:510px;font-size:13px}
+#screen-destination .destination-layout{position:relative;z-index:1;display:flex;flex-direction:column;gap:20px}
+#screen-destination .destination-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(12px,1.8vw,24px);perspective:1200px}
+#screen-destination .destination-card{
+  min-height:320px;overflow:hidden;position:relative;text-align:left;color:var(--text);
+  border:1px solid rgba(151,181,205,.22);border-radius:7px;padding:0;
+  background:linear-gradient(155deg,rgba(17,31,50,.82),rgba(5,13,25,.94));
+  box-shadow:0 18px 48px rgba(0,0,0,.25);
+  transform:translateY(0) scale(1);transform-origin:center;
+  transition:transform .75s cubic-bezier(.16,1,.3,1),border-color .55s ease,box-shadow .75s cubic-bezier(.16,1,.3,1),filter .55s ease;
+  isolation:isolate;
+}
+#screen-destination .destination-card:after{content:"";position:absolute;inset:0;pointer-events:none;opacity:0;background:linear-gradient(130deg,rgba(147,202,230,.12),transparent 42%,rgba(223,166,115,.08));transition:opacity .6s ease;z-index:0}
+#screen-destination .destination-card:hover{transform:translateY(-9px) scale(1.012);border-color:rgba(177,210,229,.62);box-shadow:0 28px 65px rgba(0,0,0,.42);filter:brightness(1.08)}
+#screen-destination .destination-card.selected{transform:translateY(-5px) scale(1.018);border-color:#e8bd8a;box-shadow:0 0 0 1px rgba(232,189,138,.36),0 0 42px rgba(214,168,117,.19),0 30px 70px rgba(0,0,0,.48)}
+#screen-destination .destination-card.selected:after{opacity:1}
+#screen-destination .destination-image{height:205px;position:relative;overflow:hidden;background-color:#101d30}
+#screen-destination .destination-image:before{content:"";position:absolute;inset:-20%;z-index:1;opacity:.65;background:radial-gradient(ellipse at 50% 90%,rgba(94,160,196,.22),transparent 52%);transition:transform 1.1s cubic-bezier(.16,1,.3,1),opacity .6s}
+#screen-destination .destination-card:hover .destination-image:before,#screen-destination .destination-card.selected .destination-image:before{transform:scale(1.2);opacity:1}
+#screen-destination .planet-disc{width:clamp(138px,13vw,190px);height:clamp(138px,13vw,190px);top:57%;box-shadow:inset -28px -14px 38px rgba(0,0,0,.66),0 0 45px rgba(192,218,234,.15);transition:transform .9s cubic-bezier(.16,1,.3,1),filter .7s ease,box-shadow .7s ease}
+#screen-destination .destination-card:hover .planet-disc{transform:translate(-50%,-53%) scale(1.07);filter:brightness(1.12)}
+#screen-destination .destination-card.selected .planet-disc{transform:translate(-50%,-53%) scale(1.09);filter:brightness(1.16);box-shadow:inset -28px -14px 38px rgba(0,0,0,.58),0 0 55px rgba(219,190,156,.25)}
+#screen-destination .moon-image{background:radial-gradient(ellipse at 50% 100%,#52677a 0,#1a2b40 55%,#0a1423 100%)}
+#screen-destination .mars-image{background:radial-gradient(ellipse at 50% 100%,#9d5946 0,#382a31 54%,#101827 100%)}
+#screen-destination .europa-image{background:radial-gradient(ellipse at 50% 100%,#557d91 0,#203b51 55%,#0b1727 100%)}
+#screen-destination .card-tag{top:15px;left:16px;font-size:8px;letter-spacing:.16em;padding:7px 9px;background:rgba(4,12,23,.68);border:1px solid rgba(196,218,231,.16);backdrop-filter:blur(10px)}
+#screen-destination .destination-info{padding:17px 19px 7px}
+#screen-destination .destination-info h3{font-size:21px;letter-spacing:-.035em}
+#screen-destination .distance{font-size:9px}
+#screen-destination .destination-card>p{font-size:11px;line-height:1.65;padding:0 19px;min-height:40px;margin:6px 0 15px;color:#a5b4c4}
+#screen-destination .card-meta{padding:13px 19px;border-color:rgba(151,181,205,.13);font-size:8px}
+#screen-destination .select-indicator{width:24px;height:24px;border-color:#71869b;transition:all .45s cubic-bezier(.16,1,.3,1)}
+#screen-destination .selected .select-indicator{background:#e8bd8a;border-color:#e8bd8a;color:#111c2a;box-shadow:0 0 18px rgba(232,189,138,.35);transform:rotate(360deg)}
+#screen-destination .mission-brief-panel{
+  display:grid;grid-template-columns:150px minmax(190px,.85fr) minmax(280px,1.35fr) minmax(190px,.8fr);
+  grid-template-rows:auto auto auto 1fr;column-gap:24px;row-gap:4px;align-items:center;
+  border-radius:7px;padding:18px 24px 20px;min-height:225px;position:relative;overflow:hidden;
+  background:linear-gradient(105deg,rgba(17,34,53,.96),rgba(8,18,32,.97) 65%,rgba(19,31,47,.95));
+  border:1px solid rgba(151,181,205,.25);box-shadow:0 24px 65px rgba(0,0,0,.32);
+  transition:border-color .55s ease,box-shadow .7s ease,transform .7s cubic-bezier(.16,1,.3,1);
+}
+#screen-destination .mission-brief-panel:before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(110deg,rgba(116,172,201,.09),transparent 35%,rgba(218,166,116,.055));opacity:.8}
+#screen-destination .mission-brief-panel.profile-changed{border-color:rgba(232,189,138,.7);box-shadow:0 0 0 1px rgba(232,189,138,.13),0 26px 80px rgba(0,0,0,.42),0 0 45px rgba(117,170,198,.12);transform:translateY(-3px)}
+#screen-destination .panel-kicker{grid-column:1/-1;position:relative;z-index:1;margin-bottom:2px}
+#screen-destination .brief-planet{grid-column:1;grid-row:2/6;height:145px;margin:0;align-self:center}
+#screen-destination .brief-planet:before{width:135px;height:62px;border-color:rgba(157,195,216,.35);animation:destinationOrbit 12s linear infinite}
+#screen-destination .brief-planet-disc{width:106px;height:106px;transition:background .6s ease,filter .6s ease,transform .7s cubic-bezier(.16,1,.3,1)}
+#screen-destination .mission-brief-panel h3{grid-column:2;grid-row:2;font-size:clamp(23px,2.5vw,32px);margin:0;align-self:end;transition:transform .55s ease,opacity .4s ease}
+#screen-destination .mission-brief-panel>p{grid-column:2;grid-row:3;font-size:11px;line-height:1.75;margin:8px 0 0;align-self:start;color:#a8b7c6}
+#screen-destination .brief-data{grid-column:3;grid-row:2/6;grid-template-columns:1fr 1fr;border:0;border-left:1px solid rgba(151,181,205,.16);border-right:1px solid rgba(151,181,205,.16);padding:8px 22px;margin:0;gap:14px 20px}
+#screen-destination .brief-data small{font-size:8px}
+#screen-destination .brief-data b{font-size:10px;line-height:1.55}
+#screen-destination .config-reveal{grid-column:2;grid-row:4;align-self:end;margin:8px 0 0;font-size:7px;padding:8px 10px}
+#screen-destination .field-label{grid-column:4;grid-row:2;align-self:end;margin:0 0 7px}
+#screen-destination #science-objective{grid-column:4;grid-row:3;align-self:start;margin:0 0 10px;width:100%}
+#screen-destination #continue-destination{grid-column:4;grid-row:4;align-self:end;min-height:44px;font-size:9px;white-space:nowrap}
+#screen-destination .screen-footer{position:relative;z-index:1;padding-top:20px}
+#screen-destination .destination-card:focus-visible,#screen-destination #continue-destination:focus-visible{outline:2px solid #f0c797;outline-offset:4px}
+@keyframes destinationOrbit{to{transform:rotate(342deg)}}
+@keyframes destinationPanelIn{0%{opacity:.35;transform:translateY(15px) scale(.99);filter:blur(4px)}100%{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}}
+#screen-destination .mission-brief-panel.profile-changed h3,#screen-destination .mission-brief-panel.profile-changed .brief-data,#screen-destination .mission-brief-panel.profile-changed>p{animation:destinationPanelIn .65s cubic-bezier(.16,1,.3,1) both}
+@media(max-width:1050px){#screen-destination .mission-brief-panel{grid-template-columns:125px 1fr 1.2fr;grid-template-rows:auto auto auto auto}#screen-destination .field-label,#screen-destination #science-objective,#screen-destination #continue-destination{grid-column:2;grid-row:auto}#screen-destination .brief-data{grid-column:3;grid-row:2/6}#screen-destination .config-reveal{grid-column:2;grid-row:auto}#screen-destination .brief-planet{grid-row:2/7}}
+@media(max-width:720px){#screen-destination .destination-grid{grid-template-columns:1fr;gap:12px}#screen-destination .destination-card{min-height:0;display:grid;grid-template-columns:135px 1fr;grid-template-rows:auto auto auto;min-height:155px}#screen-destination .destination-image{height:100%;min-height:155px;grid-column:1;grid-row:1/4}#screen-destination .planet-disc{width:112px;height:112px}#screen-destination .destination-info{grid-column:2;padding:15px 14px 4px}#screen-destination .destination-card>p{grid-column:2;padding:0 14px;margin:4px 0 7px;min-height:0}#screen-destination .card-meta{grid-column:2;padding:8px 14px}#screen-destination .mission-brief-panel{grid-template-columns:90px 1fr;grid-template-rows:auto auto auto auto auto auto;gap:8px 14px;padding:16px}#screen-destination .panel-kicker{grid-column:1/-1}#screen-destination .brief-planet{grid-column:1;grid-row:2/5;height:100px}#screen-destination .brief-planet-disc{width:75px;height:75px}#screen-destination .mission-brief-panel h3{grid-column:2;grid-row:2}#screen-destination .mission-brief-panel>p{grid-column:2;grid-row:3}#screen-destination .brief-data{grid-column:1/-1;grid-row:5;border:0;border-top:1px solid rgba(151,181,205,.16);padding:13px 0 0}#screen-destination .config-reveal{grid-column:1/-1;grid-row:6}#screen-destination .field-label,#screen-destination #science-objective,#screen-destination #continue-destination{grid-column:1/-1;grid-row:auto}#screen-destination .screen-footer span:nth-child(2){display:none}}
+@media(prefers-reduced-motion:reduce){#screen-destination .destination-card,#screen-destination .mission-brief-panel,#screen-destination .brief-planet:before{animation:none!important;transition:none!important}}
+
+/* Destination confirmation: cinematic, layered briefing modal */
+.modal-backdrop{opacity:0;transition:opacity .42s cubic-bezier(.2,.75,.25,1);background:rgba(2,7,14,.82);backdrop-filter:blur(0);}
+.modal-backdrop.is-visible{opacity:1;backdrop-filter:blur(14px);}
+.modal-backdrop .modal-card{opacity:0;transform:translateY(26px) scale(.965);filter:blur(7px);transition:opacity .48s cubic-bezier(.16,1,.3,1),transform .62s cubic-bezier(.16,1,.3,1),filter .48s ease;}
+.modal-backdrop.is-visible .modal-card{opacity:1;transform:translateY(0) scale(1);filter:blur(0);}
+.destination-backdrop{z-index:30;padding:clamp(14px,3vw,34px);}
+.destination-modal-card{width:min(940px,100%);min-height:500px;display:grid;grid-template-columns:.82fr 1.18fr;gap:0;padding:0;overflow:hidden;border:1px solid rgba(161,199,224,.35);border-radius:16px;background:linear-gradient(135deg,#101d30 0%,#081321 60%,#101a2a 100%);box-shadow:0 45px 140px #000e,0 0 90px rgba(80,151,194,.12);}
+.destination-modal-card:before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,rgba(116,181,216,.09),transparent 42%,rgba(225,174,120,.055));z-index:0;}
+.destination-modal-visual{position:relative;min-height:500px;overflow:hidden;display:grid;place-items:center;background:radial-gradient(ellipse at 50% 47%,rgba(90,142,176,.22),transparent 48%),linear-gradient(160deg,#101f34,#050c18 78%);border-right:1px solid rgba(160,195,218,.16);}
+.destination-modal-visual:before,.destination-modal-visual:after{content:"";position:absolute;inset:-20%;pointer-events:none;background-image:radial-gradient(1px 1px at 12% 23%,#dcecff 98%,transparent),radial-gradient(1px 1px at 72% 17%,#fff 98%,transparent),radial-gradient(1px 1px at 34% 72%,#a9d8f4 98%,transparent),radial-gradient(1px 1px at 82% 81%,#fff 98%,transparent),radial-gradient(1px 1px at 56% 45%,#dcecff 98%,transparent);background-size:190px 170px;opacity:.5;animation:destinationStars 24s linear infinite;}
+.destination-modal-visual:after{opacity:.22;transform:rotate(22deg);animation-duration:36s;}
+.destination-modal-planet{position:relative;z-index:1;width:clamp(190px,24vw,290px);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 32% 28%,#d6e0e5,#7e8d9b 37%,#344354 68%,#111a27 100%);box-shadow:inset -45px -20px 65px #020711cc,0 0 65px rgba(169,205,226,.2),0 0 150px rgba(84,145,185,.12);animation:destinationFloat 7s ease-in-out infinite;transition:background .6s ease,box-shadow .6s ease;}
+.destination-modal-planet.mars{background:radial-gradient(circle at 32% 28%,#ffbd8d,#c66b48 38%,#713c35 70%,#211923 100%);box-shadow:inset -45px -20px 65px #140b10cc,0 0 75px rgba(225,121,79,.25),0 0 160px rgba(185,83,54,.13);}
+.destination-modal-planet.europa{background:radial-gradient(circle at 30% 26%,#e5f4fa,#9dbdc9 34%,#496d82 67%,#18283a 100%);box-shadow:inset -45px -20px 65px #06101bcc,0 0 75px rgba(131,199,224,.25),0 0 160px rgba(81,149,184,.14);}
+.destination-modal-orbit{position:absolute;z-index:1;width:82%;height:34%;border:1px solid rgba(170,211,236,.36);border-radius:50%;transform:rotate(-22deg);box-shadow:0 0 22px rgba(100,174,214,.1);animation:destinationOrbit 18s linear infinite;}
+.destination-modal-orbit:after{content:"";position:absolute;width:9px;height:9px;border-radius:50%;background:#d9f3ff;box-shadow:0 0 16px #85d7ff;top:15%;left:15%;}
+.destination-modal-coordinate{position:absolute;left:24px;bottom:23px;z-index:2;font:9px var(--mono);letter-spacing:.16em;color:#92a9bd;}
+.destination-modal-coordinate b{color:#e9c79e;font-weight:500;}
+.destination-modal-copy{position:relative;z-index:2;padding:clamp(27px,4vw,46px);align-self:center;}
+.destination-modal-copy .eyebrow{font-size:9px;letter-spacing:.18em;color:#d5b38e;}
+.destination-modal-copy h2{font-size:clamp(38px,5vw,58px);letter-spacing:-.055em;line-height:1;margin:13px 0 12px;}
+.destination-modal-copy>p{font-size:12px;line-height:1.8;color:#aab9c9;margin:0 0 24px;max-width:490px;}
+.destination-modal-stats{display:grid;grid-template-columns:1fr 1fr;gap:0 22px;border-top:1px solid rgba(155,190,214,.17);margin:0 0 23px;}
+.destination-modal-stats div{padding:13px 0 11px;border-bottom:1px solid rgba(155,190,214,.12);display:grid;gap:6px;min-width:0;}
+.destination-modal-stats small{font:8px var(--mono);letter-spacing:.12em;color:#7f97ac;}
+.destination-modal-stats b{font-size:11px;line-height:1.45;color:#e4ebf2;font-weight:600;}
+.destination-modal-copy .field-label{display:block;margin:0 0 8px;}
+.destination-modal-copy #science-objective{width:100%;margin-bottom:15px;}
+.destination-modal-copy #continue-destination{min-height:50px;letter-spacing:.08em;}
+.destination-modal-card .modal-close{z-index:5;right:18px;top:12px;font-size:29px;width:34px;height:34px;border-radius:50%;background:rgba(4,11,20,.45);transition:background .2s,transform .25s;}
+.destination-modal-card .modal-close:hover{background:rgba(130,174,204,.18);transform:rotate(90deg);}
+.destination-prompt{position:relative;z-index:1;display:flex;align-items:center;gap:16px;margin:28px auto 0;padding:18px 23px;width:min(570px,100%);border:1px solid rgba(151,181,205,.2);border-radius:8px;background:linear-gradient(110deg,rgba(15,29,47,.8),rgba(7,15,27,.75));box-shadow:0 18px 55px #0003;}
+.destination-prompt .prompt-orbit{font-size:28px;color:#e2bd91;text-shadow:0 0 24px #dba96b66;}
+.destination-prompt div{display:grid;gap:5px;}
+.destination-prompt b{font:9px var(--mono);letter-spacing:.16em;color:#d9e7f1;}
+.destination-prompt small{font-size:11px;color:#91a4b7;}
+@keyframes destinationFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+@keyframes destinationStars{to{transform:translate3d(35px,-25px,0)}}
+@media(max-width:700px){.destination-modal-card{grid-template-columns:1fr;max-height:92vh;overflow:auto}.destination-modal-visual{min-height:220px;border-right:0;border-bottom:1px solid rgba(160,195,218,.16)}.destination-modal-planet{width:150px}.destination-modal-orbit{width:65%;}.destination-modal-coordinate{bottom:12px;left:16px}.destination-modal-copy{padding:24px}.destination-modal-copy h2{font-size:38px}.destination-modal-stats{gap:0 14px}.destination-modal-stats div{padding:10px 0}}
+@media(prefers-reduced-motion:reduce){.modal-backdrop,.modal-backdrop .modal-card,.destination-modal-planet,.destination-modal-orbit,.destination-modal-visual:before,.destination-modal-visual:after{animation:none!important;transition:none!important}}
+
+/* Playable flight deck: hands-on navigation, scanning and orbital insertion */
+.flight-screen .flight-scene{position:relative;overflow:hidden;isolation:isolate}
+.flight-objective{position:absolute;z-index:8;left:22px;right:22px;top:20px;display:flex;align-items:center;gap:13px;padding:13px 16px;border:1px solid rgba(147,196,220,.24);border-radius:13px;background:linear-gradient(110deg,rgba(6,17,31,.88),rgba(12,27,44,.62));backdrop-filter:blur(16px);box-shadow:0 12px 40px rgba(0,0,0,.25);}
+.flight-objective>div{display:grid;gap:4px;min-width:0}.flight-objective small{font-size:9px;letter-spacing:.19em;color:#8db8ca}.flight-objective b{font-size:12px;letter-spacing:.12em;color:#f3f7fa}.flight-objective span:not(.objective-pulse){font-size:10px;color:#a8bdcb}.objective-step{margin-left:auto;white-space:nowrap;font-size:10px!important;letter-spacing:.14em;color:#d8b77e!important}.objective-pulse{width:9px;height:9px;flex:0 0 9px;border-radius:50%;background:#6ce0c1;box-shadow:0 0 0 5px rgba(108,224,193,.12),0 0 18px #6ce0c1;animation:objectivePulse 1.8s ease-in-out infinite}
+.flight-game-controls{position:absolute;z-index:10;left:22px;right:22px;bottom:20px;display:flex;align-items:center;gap:12px;padding:11px 13px;border:1px solid rgba(147,196,220,.2);border-radius:14px;background:rgba(5,14,26,.82);backdrop-filter:blur(18px);box-shadow:0 12px 42px rgba(0,0,0,.35)}
+.steer-controls,.primary-flight-controls{display:flex;align-items:center;gap:7px}.primary-flight-controls{margin-left:auto}.flight-control{min-height:38px;min-width:42px;padding:0 13px;border:1px solid rgba(155,192,210,.28);border-radius:8px;background:rgba(130,169,190,.1);color:#e8f3f7;font-family:inherit;font-weight:600;font-size:10px;line-height:1;letter-spacing:.1em;cursor:pointer;transition:transform .2s,border-color .2s,background .2s,box-shadow .2s}.flight-control:hover{transform:translateY(-2px);border-color:rgba(124,219,216,.7);background:rgba(87,174,183,.2)}.flight-control-primary{background:linear-gradient(120deg,#b38a59,#d6b37d);border-color:transparent;color:#101a22;min-width:148px}.flight-control.engaged{background:linear-gradient(120deg,#d68a4f,#f3bd75);box-shadow:0 0 24px rgba(236,157,88,.3)}.flight-control[hidden]{display:none!important}.flight-feedback{font-size:9px;letter-spacing:.13em;color:#9eb6c4;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.flight-hazards{position:absolute;inset:0;z-index:4;pointer-events:none;overflow:hidden;opacity:0;transition:opacity .6s}.flight-hazards.active{opacity:1}.flight-hazard-rock{position:absolute;width:27px;height:22px;border-radius:38% 58% 46% 52%;background:radial-gradient(circle at 30% 28%,#b8a99b 0 5%,#786f6b 23%,#383a42 62%,#171e2b 100%);box-shadow:inset -7px -5px 10px rgba(0,0,0,.55),0 0 17px rgba(207,157,111,.17);transform:rotate(25deg);animation:rockSpin 4s linear infinite}.flight-hazard-rock.impact{animation:rockImpact .4s ease-out forwards}.rock-2{width:18px;height:17px}.rock-3{width:34px;height:28px}.rock-4{width:22px;height:18px}.rock-5{width:15px;height:15px}.scan-target{position:absolute;top:39%;left:50%;width:78px;height:78px;transform:translate(-50%,-50%);border:1px solid rgba(114,226,218,.7);border-radius:50%;display:grid;place-items:center;color:#b9f5e9;text-align:center;background:radial-gradient(circle,rgba(72,195,184,.17),transparent 68%);box-shadow:0 0 30px rgba(87,229,212,.22);animation:scanPulse 1.6s ease-in-out infinite}.scan-target:before,.scan-target:after{content:"";position:absolute;inset:-9px;border:1px dashed rgba(116,218,213,.5);border-radius:50%;animation:scanRotate 12s linear infinite}.scan-target:after{inset:12px;border-style:solid;opacity:.55}.scan-target span{width:7px;height:7px;background:#b5fff0;border-radius:50%;box-shadow:0 0 15px #8affea}.scan-target b{position:absolute;top:88px;white-space:nowrap;font-size:8px;letter-spacing:.16em;color:#bceee8}.flight-scene[data-stage="scan"] .flight-destination{filter:saturate(1.25) brightness(1.13)}.flight-scene[data-stage="approach"] .flight-path{opacity:1;filter:drop-shadow(0 0 8px #8dd5d2)}
+@keyframes objectivePulse{50%{opacity:.55;box-shadow:0 0 0 9px rgba(108,224,193,.03),0 0 22px #6ce0c1}}@keyframes rockSpin{to{rotate:385deg}}@keyframes rockImpact{to{opacity:0;scale:2.5;filter:blur(5px)}}@keyframes scanPulse{50%{box-shadow:0 0 45px rgba(87,229,212,.42);scale:1.06}}@keyframes scanRotate{to{rotate:360deg}}
+@media(max-width:760px){.flight-objective{left:10px;right:10px;top:10px;padding:10px}.flight-objective b{font-size:10px}.flight-objective span:not(.objective-pulse){font-size:9px}.flight-game-controls{left:10px;right:10px;bottom:10px;flex-wrap:wrap;gap:7px;padding:8px}.primary-flight-controls{margin-left:0}.flight-feedback{flex-basis:100%;order:3}.flight-control{min-height:34px}.flight-control-primary{min-width:120px}}
+.flight-stage-list{display:grid;gap:9px;margin:18px 0 14px}.flight-stage-item{display:grid;grid-template-columns:28px 1fr auto;align-items:center;gap:9px;padding:10px 9px;border:1px solid rgba(151,183,203,.12);border-radius:8px;background:rgba(255,255,255,.025);opacity:.58;transition:all .35s}.flight-stage-item>span{font:600 10px/1 monospace;color:#8ca6b8}.flight-stage-item div{display:grid;gap:4px}.flight-stage-item b{font-size:10px;letter-spacing:.08em;color:#d9e5ec}.flight-stage-item small{font-size:9px;color:#8da2b0}.flight-stage-item i{font-style:normal;font-size:8px;letter-spacing:.1em;color:#8095a3}.flight-stage-item.active{opacity:1;border-color:rgba(108,224,193,.38);background:rgba(69,151,147,.1);box-shadow:inset 2px 0 #6ce0c1}.flight-stage-item.active i{color:#79e1c4}.flight-stage-item.done{opacity:.85}.flight-stage-item.done i{color:#b7d89c}.approach-readout{font-size:9px;letter-spacing:.12em;color:#9eb6c4;white-space:nowrap}.approach-readout b{font-size:15px;color:#f0d5a7;margin:0 3px}
+
+/* =============================================================
+   NASA AUTHENTIC VISUAL REFINEMENT & THREEUI / KAGE POLISH
+   Preserves base background canvas exactly; upgrades celestial bodies,
+   spacecraft hardware, asteroid hazards, and flight deck HUD.
+   ============================================================= */
+
+/* 1. CINEMATIC LANDING SCREEN: NASA Artemis II Orion Earth Horizon (art002e000192) */
+#screen-intro .planet-earth {
+  background: radial-gradient(circle at 35% 28%, rgba(169, 220, 232, 0.22), transparent 52%), url('../assets/planet_earth_globe.jpg') center/cover no-repeat !important;
+  box-shadow: inset -48px -28px 80px rgba(2, 8, 21, 0.94), 0 0 65px rgba(67, 217, 255, 0.45), 0 0 130px rgba(43, 82, 108, 0.32) !important;
+  border: 1px solid rgba(169, 220, 232, 0.38) !important;
+  border-radius: 50% !important;
+  aspect-ratio: 1 / 1 !important;
+  animation: earthFloat 9s ease-in-out infinite alternate;
+  transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.8s ease;
+}
+#screen-intro .planet-earth:hover {
+  transform: scale(1.025) translateY(-6px);
+  box-shadow: inset -42px -22px 75px rgba(2, 8, 21, 0.9), 0 0 85px rgba(67, 217, 255, 0.6), 0 0 150px rgba(43, 82, 108, 0.42) !important;
+}
+#screen-intro .planet-earth:after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 25%, rgba(255, 255, 255, 0.16), transparent 45%), linear-gradient(115deg, transparent 38%, rgba(2, 8, 20, 0.72) 82%);
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+#screen-intro .satellite {
+  background: url('../assets/probe_satellite_clean.png') center/contain no-repeat !important;
+  width: 74px !important;
+  height: 48px !important;
+  border: none !important;
+  box-shadow: none !important;
+  filter: drop-shadow(0 0 16px rgba(214, 164, 92, 0.85)) !important;
+  animation: probeFloat 7s ease-in-out infinite alternate;
+  transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+#screen-intro .satellite:hover {
+  transform: rotate(-22deg) scale(1.08) !important;
+}
+#screen-intro .satellite:before, #screen-intro .satellite:after {
+  display: none !important;
+}
+#screen-intro .moon-one {
+  background: radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.15), transparent 45%), url('../assets/planet_moon_clean.jpg') center/cover no-repeat !important;
+  box-shadow: inset -10px -5px 16px rgba(0, 0, 0, 0.88), 0 0 28px rgba(169, 220, 232, 0.38) !important;
+  border: 1px solid rgba(169, 220, 232, 0.25);
+  border-radius: 50% !important;
+  aspect-ratio: 1 / 1 !important;
+  animation: moonOrbitDrift 11s ease-in-out infinite alternate;
+}
+
+/* 2. DESTINATION SELECTION: NASA LRO, Viking, and Galileo Surface Imagery */
+#screen-destination .destination-card {
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.4s ease, box-shadow 0.4s ease;
+  backdrop-filter: blur(12px);
+}
+#screen-destination .destination-card:hover {
+  transform: translateY(-8px) scale(1.015);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55), 0 0 25px rgba(67, 217, 255, 0.2);
+}
+#screen-destination .moon-image .planet-disc {
+  background: radial-gradient(circle at 35% 28%, rgba(255, 255, 255, 0.14), transparent 48%), url('../assets/planet_moon_clean.jpg') center/cover no-repeat !important;
+  box-shadow: inset -26px -12px 42px rgba(2, 6, 16, 0.92), 0 0 35px rgba(169, 220, 232, 0.35) !important;
+  border: 1px solid rgba(169, 220, 232, 0.25);
+  border-radius: 50% !important;
+  aspect-ratio: 1 / 1 !important;
+  overflow: hidden;
+}
+#screen-destination .mars-image .planet-disc {
+  background: radial-gradient(circle at 35% 28%, rgba(255, 180, 140, 0.16), transparent 48%), url('../assets/planet_mars_clean.jpg') center/cover no-repeat !important;
+  box-shadow: inset -26px -12px 42px rgba(2, 6, 16, 0.92), 0 0 45px rgba(224, 112, 77, 0.45) !important;
+  border: 1px solid rgba(224, 112, 77, 0.28);
+  border-radius: 50% !important;
+  aspect-ratio: 1 / 1 !important;
+  overflow: hidden;
+}
+#screen-destination .europa-image .planet-disc {
+  background: radial-gradient(circle at 35% 28%, rgba(255, 255, 255, 0.18), transparent 48%), url('../assets/planet_europa_clean.jpg') center/cover no-repeat !important;
+  box-shadow: inset -26px -12px 42px rgba(2, 6, 16, 0.92), 0 0 50px rgba(120, 205, 230, 0.52) !important;
+  border: 1px solid rgba(120, 205, 230, 0.28);
+  border-radius: 50% !important;
+  aspect-ratio: 1 / 1 !important;
+  overflow: hidden;
+}
+
+/* Destination Briefing Popup Planet */
+.destination-modal-planet.moon {
+  background: radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.14), transparent 45%), url('../assets/planet_moon_clean.jpg') center/cover no-repeat !important;
+  box-shadow: inset -26px -14px 42px rgba(0, 0, 0, 0.88), 0 0 40px rgba(169, 220, 232, 0.35) !important;
+  border-radius: 50% !important;
+  aspect-ratio: 1 / 1 !important;
+}
+.destination-modal-planet.mars {
+  background: radial-gradient(circle at 32% 28%, rgba(255, 180, 140, 0.18), transparent 45%), url('../assets/planet_mars_clean.jpg') center/cover no-repeat !important;
+  box-shadow: inset -26px -14px 42px rgba(0, 0, 0, 0.88), 0 0 48px rgba(224, 112, 77, 0.48) !important;
+  border-radius: 50% !important;
+  aspect-ratio: 1 / 1 !important;
+}
+.destination-modal-planet.europa {
+  background: radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.2), transparent 45%), url('../assets/planet_europa_clean.jpg') center/cover no-repeat !important;
+  box-shadow: inset -26px -14px 42px rgba(0, 0, 0, 0.88), 0 0 54px rgba(120, 205, 230, 0.55) !important;
+  border-radius: 50% !important;
+  aspect-ratio: 1 / 1 !important;
+}
+
+/* Side Briefing Panel Planet */
+#screen-destination .brief-planet.moon .brief-planet-disc {
+  background: radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.14), transparent 45%), url('../assets/planet_moon_clean.jpg') center/cover no-repeat !important;
+  box-shadow: inset -22px -12px 30px #050a13, 0 0 38px rgba(169, 220, 232, 0.38) !important;
+}
+#screen-destination .brief-planet.mars .brief-planet-disc {
+  background: radial-gradient(circle at 32% 28%, rgba(255, 180, 140, 0.18), transparent 45%), url('../assets/planet_mars_clean.jpg') center/cover no-repeat !important;
+  box-shadow: inset -22px -12px 30px #050a13, 0 0 42px rgba(224, 112, 77, 0.45) !important;
+}
+#screen-destination .brief-planet.europa .brief-planet-disc {
+  background: radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.2), transparent 45%), url('../assets/planet_europa_clean.jpg') center/cover no-repeat !important;
+  box-shadow: inset -22px -12px 30px #050a13, 0 0 45px rgba(120, 205, 230, 0.5) !important;
+}
+
+/* 3. FLIGHT SIMULATION ENVIRONMENT: Earth Departure & Destination Approach */
+.flight-earth {
+  background: radial-gradient(circle at 35% 28%, rgba(169, 220, 232, 0.18), transparent 50%), url('../assets/planet_earth_globe.jpg') center/cover no-repeat !important;
+  box-shadow: inset -28px -16px 45px rgba(2, 6, 18, 0.92), 0 0 38px rgba(67, 217, 255, 0.42) !important;
+  border: 1px solid rgba(169, 220, 232, 0.25);
+  border-radius: 50% !important;
+  aspect-ratio: 1 / 1 !important;
+}
+.flight-destination.moon {
+  background: radial-gradient(circle at 30% 28%, rgba(255, 255, 255, 0.12), transparent 45%), url('../assets/planet_moon_clean.jpg') center/cover no-repeat !important;
+  box-shadow: inset -55px -25px 85px #02050d, 0 0 95px rgba(169, 220, 232, 0.38), 0 0 170px rgba(169, 220, 232, 0.18) !important;
+  border-radius: 50% !important;
+  aspect-ratio: 1 / 1 !important;
+}
+.flight-destination.mars {
+  background: radial-gradient(circle at 30% 28%, rgba(255, 180, 140, 0.16), transparent 45%), url('../assets/planet_mars_clean.jpg') center/cover no-repeat !important;
+  box-shadow: inset -55px -25px 85px #02050d, 0 0 100px rgba(224, 112, 77, 0.5), 0 0 190px rgba(224, 112, 77, 0.24) !important;
+  border-radius: 50% !important;
+  aspect-ratio: 1 / 1 !important;
+}
+.flight-destination.europa {
+  background: radial-gradient(circle at 30% 28%, rgba(255, 255, 255, 0.18), transparent 45%), url('../assets/planet_europa_clean.jpg') center/cover no-repeat !important;
+  box-shadow: inset -55px -25px 85px #02050d, 0 0 105px rgba(120, 205, 230, 0.55), 0 0 190px rgba(120, 205, 230, 0.24) !important;
+  border-radius: 50% !important;
+  aspect-ratio: 1 / 1 !important;
+}
+
+/* 4. AUTHENTIC NASA ASTEROID SPRITES (Bennu, Vesta, Ryugu, Eros) */
+.flight-hazard-rock {
+  background-size: contain !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.85)) !important;
+  will-change: top, transform;
+}
+.rock-1 { background-image: url('../assets/asteroid_bennu.png') !important; width: 34px !important; height: 34px !important; }
+.rock-2 { background-image: url('../assets/asteroid_vesta.png') !important; width: 30px !important; height: 30px !important; }
+.rock-3 { background-image: url('../assets/asteroid_ryugu.png') !important; width: 40px !important; height: 40px !important; }
+.rock-4 { background-image: url('../assets/asteroid_eros.png') !important; width: 36px !important; height: 28px !important; }
+.rock-5 { background-image: url('../assets/asteroid_bennu.png') !important; width: 26px !important; height: 26px !important; }
+
+/* 5. SCIENCE TARGET VIEWFINDER (Jezero, Shackleton, Conamara Surface Imagery) */
+.scan-target {
+  background-size: cover !important;
+  background-position: center !important;
+  box-shadow: 0 0 38px rgba(87, 229, 212, 0.4), inset 0 0 22px rgba(0, 0, 0, 0.65) !important;
+  backdrop-filter: blur(4px);
+  will-change: left, transform;
+}
+.flight-scene.dest-moon .scan-target {
+  background-image: radial-gradient(circle, rgba(114, 226, 218, 0.2), transparent 70%), url('../assets/moon_mission_env.jpg') !important;
+}
+.flight-scene.dest-mars .scan-target {
+  background-image: radial-gradient(circle, rgba(114, 226, 218, 0.2), transparent 70%), url('../assets/mars_surface.jpg') !important;
+}
+.flight-scene.dest-europa .scan-target {
+  background-image: radial-gradient(circle, rgba(114, 226, 218, 0.2), transparent 70%), url('../assets/europa_mission_env.jpg') !important;
+}
+
+/* 6. SPACECRAFT HARDWARE & CLEANROOM HANGAR */
+.craft-stage {
+  background: radial-gradient(ellipse at 50% 50%, rgba(67, 217, 255, 0.08), transparent 65%), linear-gradient(180deg, rgba(16, 27, 44, 0.78), rgba(8, 13, 22, 0.96)) !important;
+  box-shadow: inset 0 0 80px rgba(0, 0, 0, 0.6);
+}
+.craft-option {
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  backdrop-filter: blur(8px);
+}
+.craft-option:hover {
+  transform: translateY(-3px);
+  border-color: rgba(67, 217, 255, 0.45);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+.craft-option.selected {
+  border-color: var(--accent);
+  background: linear-gradient(145deg, #1c2b3d, #121e2c);
+  box-shadow: 0 0 0 1px rgba(214, 164, 92, 0.3), 0 10px 28px rgba(0, 0, 0, 0.4);
+}
+
+/* Probe SVG metallic textures & ion thruster luminescence */
+.probe-svg {
+  filter: drop-shadow(0 14px 26px rgba(0, 0, 0, 0.55));
+}
+.flight-spacecraft {
+  width: clamp(120px, 19vw, 195px) !important;
+  aspect-ratio: 640/260;
+  left: calc(50% + var(--ship-x, 0px)) !important;
+  top: 54% !important;
+  transform: translate3d(-50%, -50%, 0) rotate(-8deg) !important;
+  will-change: transform;
+  backface-visibility: hidden;
+  transition: filter 0.35s ease;
+}
+.flight-scene[data-stage="navigate"] .flight-spacecraft { filter: drop-shadow(0 0 22px rgba(119, 207, 255, 0.75)); }
+.flight-scene[data-stage="scan"] .flight-spacecraft { filter: drop-shadow(0 0 25px rgba(166, 240, 232, 0.8)); }
+.flight-scene[data-stage="approach"] .flight-spacecraft { filter: drop-shadow(0 0 24px rgba(231, 193, 141, 0.8)); }
+
+/* 7. DEBRIEF SCREEN: NASA Deep Space Horizon */
+.debrief-visual {
+  position: relative;
+  min-height: 350px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: radial-gradient(ellipse at 50% 75%, rgba(54, 73, 92, 0.35), transparent 60%), linear-gradient(145deg, #0f1c2d, #070d18) !important;
+  box-shadow: inset 0 0 65px rgba(0, 0, 0, 0.85), 0 20px 50px rgba(0, 0, 0, 0.35) !important;
+}
+.debrief-planet {
+  position: absolute;
+  width: 290px;
+  height: 290px;
+  left: 50%;
+  top: 48%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  aspect-ratio: 1 / 1;
+  background: radial-gradient(circle at 30% 25%, rgba(255, 255, 255, 0.14), transparent 45%), url('../assets/planet_moon_clean.jpg') center/cover no-repeat;
+  box-shadow: inset -45px -22px 65px #050b15, 0 0 75px rgba(169, 220, 232, 0.38);
+}
+.debrief-planet.moon {
+  background: radial-gradient(circle at 30% 25%, rgba(255, 255, 255, 0.14), transparent 45%), url('../assets/planet_moon_clean.jpg') center/cover no-repeat !important;
+  box-shadow: inset -45px -22px 65px #050b15, 0 0 75px rgba(169, 220, 232, 0.38) !important;
+  border-radius: 50% !important;
+  aspect-ratio: 1 / 1 !important;
+}
+.debrief-planet.mars {
+  background: radial-gradient(circle at 30% 25%, rgba(255, 180, 140, 0.16), transparent 45%), url('../assets/planet_mars_clean.jpg') center/cover no-repeat !important;
+  box-shadow: inset -45px -22px 65px #050b15, 0 0 85px rgba(224, 112, 77, 0.48) !important;
+  border-radius: 50% !important;
+  aspect-ratio: 1 / 1 !important;
+}
+.debrief-planet.europa {
+  background: radial-gradient(circle at 30% 25%, rgba(255, 255, 255, 0.2), transparent 45%), url('../assets/planet_europa_clean.jpg') center/cover no-repeat !important;
+  box-shadow: inset -45px -22px 65px #050b15, 0 0 85px rgba(120, 205, 230, 0.52) !important;
+  border-radius: 50% !important;
+  aspect-ratio: 1 / 1 !important;
 }
-.hangar-viewport-wrapper {
-    flex: 1;
-    background: radial-gradient(ellipse at 50% 65%, #0A1630 0%, #030610 85%);
-    border: 1px solid var(--border-bright);
-    border-radius: 14px;
-    position: relative;
-    overflow: hidden;
-    min-height: 420px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 0 40px rgba(0, 0, 0, 0.6);
-}
-.hangar-lights-bar {
-    position: absolute;
-    top: 0; left: 0; width: 100%; height: 100%;
-    pointer-events: none;
-    background: radial-gradient(circle at 50% 0%, rgba(0, 212, 255, 0.12) 0%, transparent 60%);
-}
-.blueprint-viewport {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.hangar-bottom-card {
-    background: var(--bg-panel);
-    border: 1px solid var(--border-subtle);
-    border-radius: 12px;
-    padding: 16px 22px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-.hangar-detail-title {
-    font-family: var(--font-display);
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--accent-cyan);
-    margin-bottom: 4px;
-}
-.hangar-detail-desc {
-    font-size: 13px;
-    color: var(--text-dim);
-    margin-bottom: 8px;
-    max-width: 540px;
-}
-.hangar-detail-stats {
-    display: flex;
-    gap: 8px;
-}
-.tag {
-    font-family: var(--font-ui);
-    font-size: 12px;
-    font-weight: 700;
-    padding: 3px 8px;
-    border-radius: 4px;
-    background: var(--bg-deep);
-    border: 1px solid var(--border-subtle);
-}
-.tag-pwr { color: var(--accent-cyan); }
-.tag-mass { color: var(--text-light); }
-.tag-cost { color: var(--accent-amber); }
-
-.hangar-stats-card {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-.stat-line {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-family: var(--font-ui);
-    font-size: 14px;
-}
-.stat-label { color: var(--text-dim); }
-.stat-val {
-    font-family: var(--font-display);
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--text-white);
-}
-.stats-divider {
-    height: 1px;
-    background: var(--border-subtle);
-    margin: 8px 0;
-}
-.readiness-banner {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 14px;
-    background: rgba(0, 230, 118, 0.08);
-    border: 1px solid var(--accent-green);
-    border-radius: 8px;
-}
-.readiness-icon {
-    font-size: 20px;
-    color: var(--accent-green);
-    font-weight: 900;
-}
-.readiness-title {
-    font-family: var(--font-display);
-    font-size: 13px;
-    font-weight: 800;
-    color: var(--accent-green);
-}
-.readiness-sub {
-    font-size: 11px;
-    color: var(--text-dim);
-}
-
-/* --- SCREEN 4: FLIGHT OPERATIONS DECK --- */
-.flight-top-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 20px;
-    background: var(--bg-panel);
-    border: 1px solid var(--border-subtle);
-    border-radius: 10px;
-    margin-bottom: 16px;
-}
-.flight-mission-name {
-    font-family: var(--font-display);
-    font-size: 16px;
-    font-weight: 800;
-    color: var(--text-white);
-    letter-spacing: 1px;
-}
-.flight-phase-name {
-    font-family: var(--font-ui);
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--accent-cyan);
-    letter-spacing: 0.8px;
-}
-.flight-top-right {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-}
-.mission-timer-box {
-    text-align: right;
-}
-.timer-label {
-    display: block;
-    font-family: var(--font-ui);
-    font-size: 10px;
-    color: var(--text-dim);
-    letter-spacing: 0.8px;
-    text-transform: uppercase;
-}
-.timer-digits {
-    font-family: var(--font-display);
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--accent-amber);
-    letter-spacing: 1px;
-}
-.time-warp-cluster {
-    display: flex;
-    gap: 4px;
-}
-
-.flight-viewport-container {
-    position: relative;
-    width: 100%;
-    height: 480px;
-    background: radial-gradient(ellipse at 70% 50%, #0C1A35 0%, #030610 80%);
-    border: 1px solid var(--border-bright);
-    border-radius: 14px;
-    overflow: hidden;
-    margin-bottom: 16px;
-    box-shadow: 0 0 50px rgba(0, 0, 0, 0.7);
-}
-#flight-deck-radar-canvas {
-    width: 100%;
-    height: 100%;
-    display: block;
-}
-
-/* Floating HUD overlays */
-.flight-overlay-objectives {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    background: rgba(7, 14, 30, 0.85);
-    backdrop-filter: blur(12px);
-    border: 1px solid var(--border-subtle);
-    border-radius: 10px;
-    padding: 14px;
-    width: 260px;
-}
-.overlay-box-header {
-    font-family: var(--font-ui);
-    font-size: 11px;
-    font-weight: 800;
-    color: var(--accent-cyan);
-    letter-spacing: 1px;
-    margin-bottom: 10px;
-    border-bottom: 1px solid var(--border-subtle);
-    padding-bottom: 4px;
-}
-.objective-check-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 12px;
-    color: var(--text-light);
-    margin-bottom: 6px;
-}
-.objective-check-item.done {
-    color: var(--accent-green);
-    font-weight: 600;
-}
-
-.flight-overlay-resources {
-    position: absolute;
-    bottom: 20px;
-    left: 20px;
-    background: rgba(7, 14, 30, 0.85);
-    backdrop-filter: blur(12px);
-    border: 1px solid var(--border-subtle);
-    border-radius: 10px;
-    padding: 14px 18px;
-    width: 250px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-.resource-bar-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-family: var(--font-ui);
-    font-size: 12px;
-}
-.res-name { width: 44px; color: var(--text-dim); }
-.res-track {
-    flex: 1;
-    height: 7px;
-    background: var(--bg-void);
-    border: 1px solid var(--border-subtle);
-    border-radius: 4px;
-    overflow: hidden;
-}
-.res-fill { height: 100%; transition: width 0.4s ease; border-radius: 4px; }
-.fill-fuel { background: var(--accent-amber); }
-.fill-power { background: var(--accent-cyan); }
-.fill-health { background: var(--accent-green); }
-.res-val { font-family: var(--font-display); font-size: 11px; width: 34px; text-align: right; color: var(--text-white); }
-
-.flight-discovery-banner {
-    position: absolute;
-    bottom: 24px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(10, 22, 45, 0.9);
-    backdrop-filter: blur(14px);
-    border: 1px solid var(--accent-cyan);
-    box-shadow: 0 0 25px rgba(0, 212, 255, 0.35);
-    border-radius: 30px;
-    padding: 8px 24px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-family: var(--font-ui);
-    font-size: 13.5px;
-    font-weight: 700;
-    color: var(--text-white);
-    letter-spacing: 0.5px;
-    white-space: nowrap;
-}
-.discovery-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    background: var(--accent-cyan);
-    color: var(--bg-void);
-    font-weight: 900;
-    font-size: 12px;
-}
-
-.flight-action-cluster {
-    position: absolute;
-    bottom: 20px;
-    right: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    width: 230px;
-}
-.btn-flight-action {
-    background: rgba(10, 22, 45, 0.85);
-    backdrop-filter: blur(10px);
-    border: 1px solid var(--border-bright);
-    color: var(--text-white);
-    border-radius: 8px;
-    padding: 10px 14px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-family: var(--font-display);
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 0.8px;
-    cursor: pointer;
-    transition: all 0.2s;
-    text-align: left;
-}
-.btn-flight-action:hover {
-    border-color: var(--accent-cyan);
-    background: rgba(0, 212, 255, 0.15);
-    box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
-    transform: translateY(-2px);
-}
-.btn-scan-glow {
-    border-color: var(--accent-cyan);
-    background: rgba(0, 212, 255, 0.14);
-    box-shadow: 0 0 16px rgba(0, 212, 255, 0.3);
-}
-.act-icon { font-size: 15px; }
-
-.flight-bottom-log-row {
-    display: grid;
-    grid-template-columns: 1fr 340px;
-    gap: 16px;
-    height: 140px;
-}
-.flight-log-panel {
-    background: var(--bg-panel);
-    border: 1px solid var(--border-subtle);
-    border-radius: 10px;
-    padding: 12px 16px;
-    display: flex;
-    flex-direction: column;
-}
-
-/* --- SCREEN 5: MISSION DEBRIEF --- */
-.debrief-hero-box {
-    text-align: center;
-    padding: 30px 20px;
-    margin-bottom: 24px;
-}
-.laurel-wreath-icon {
-    font-size: 42px;
-    margin-bottom: 8px;
-}
-.debrief-title {
-    font-family: var(--font-display);
-    font-size: clamp(32px, 5vw, 54px);
-    font-weight: 900;
-    letter-spacing: 4px;
-    color: var(--text-white);
-    text-shadow: 0 0 40px rgba(0, 212, 255, 0.4);
-}
-.debrief-tagline {
-    font-family: var(--font-ui);
-    font-size: 16px;
-    font-weight: 600;
-    letter-spacing: 2px;
-    color: var(--accent-amber);
-    margin-top: 4px;
-}
-.debrief-summary-grid {
-    display: grid;
-    grid-template-columns: 1.4fr 1fr;
-    gap: 24px;
-    margin-bottom: 24px;
-}
-.debrief-report-card {
-    padding: 22px 26px;
-}
-.debrief-stat-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-family: var(--font-ui);
-    font-size: 15px;
-    margin-bottom: 8px;
-}
-.debrief-label { color: var(--text-dim); }
-.debrief-val { font-family: var(--font-display); font-weight: 700; color: var(--text-white); }
-.debrief-score-stars {
-    font-family: var(--font-display);
-    font-size: 24px;
-    font-weight: 900;
-    color: var(--accent-amber);
-    text-shadow: 0 0 20px rgba(255, 181, 71, 0.5);
-}
-.debrief-outcome-card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 26px;
-}
-.outcome-circle-icon {
-    width: 72px;
-    height: 72px;
-    border-radius: 50%;
-    border: 3px solid var(--accent-green);
-    box-shadow: 0 0 35px rgba(0, 230, 118, 0.4);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 34px;
-    font-weight: 900;
-    color: var(--accent-green);
-    margin: 12px 0;
-}
-.outcome-text-badge {
-    font-family: var(--font-display);
-    font-size: 20px;
-    font-weight: 900;
-    letter-spacing: 2px;
-    color: var(--accent-green);
-}
-.debrief-actions-bar {
-    display: flex;
-    justify-content: center;
-    gap: 16px;
-    margin-top: 32px;
-    padding-top: 20px;
-    border-top: 1px solid var(--border-subtle);
-}
-
-/* =========================================================
-   CINEMATIC LAUNCH SEQUENCE MODAL
-   ========================================================= */
-.launch-modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: radial-gradient(circle at center, rgba(10, 18, 38, 0.94) 0%, rgba(3, 6, 16, 0.98) 100%);
-    backdrop-filter: blur(20px);
-    z-index: 9999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    animation: fadeIn 0.4s ease forwards;
-}
-
-.launch-modal-box {
-    position: relative;
-    width: 90%;
-    max-width: 680px;
-    background: rgba(14, 25, 52, 0.92);
-    border: 1px solid var(--accent-amber);
-    box-shadow: 0 0 60px rgba(255, 181, 71, 0.4), inset 0 0 30px rgba(255, 181, 71, 0.12);
-    border-radius: 12px;
-    padding: 38px 32px;
-    text-align: center;
-    overflow: hidden;
-}
-
-.launch-anim-canvas {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    opacity: 0.9;
-}
-
-.launch-modal-content {
-    position: relative;
-    z-index: 2;
-}
-
-.launch-badge {
-    display: inline-block;
-    font-family: var(--font-display);
-    font-size: 11px;
-    letter-spacing: 2px;
-    padding: 5px 14px;
-    border-radius: 20px;
-    background: rgba(255, 181, 71, 0.15);
-    border: 1px solid var(--accent-amber);
-    color: var(--accent-amber);
-    margin-bottom: 14px;
-}
-
-.launch-countdown-num {
-    font-family: var(--font-display);
-    font-size: 58px;
-    font-weight: 900;
-    letter-spacing: 4px;
-    color: var(--text-white);
-    text-shadow: 0 0 35px rgba(255, 181, 71, 0.85), 0 0 70px rgba(255, 110, 50, 0.55);
-    margin: 8px 0;
-}
-
-.launch-status-sub {
-    font-family: var(--font-ui);
-    font-size: 15px;
-    font-weight: 700;
-    letter-spacing: 1.5px;
-    color: var(--accent-cyan);
-    margin-bottom: 24px;
-}
-
-.launch-telemetry-row {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-    margin-bottom: 24px;
-}
-
-.telemetry-pill {
-    background: rgba(7, 14, 30, 0.85);
-    border: 1px solid var(--border-subtle);
-    border-radius: 6px;
-    padding: 10px 8px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.telemetry-lbl {
-    font-family: var(--font-display);
-    font-size: 9px;
-    letter-spacing: 1px;
-    color: var(--text-dim);
-}
-
-.telemetry-val {
-    font-family: var(--font-ui);
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--text-white);
-}
 
-.launch-progress-bar-wrap {
-    width: 100%;
-    height: 6px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 3px;
-    overflow: hidden;
-    margin-top: 10px;
-}
-
-.launch-progress-bar-fill {
-    width: 0%;
-    height: 100%;
-    background: linear-gradient(90deg, var(--accent-amber), var(--accent-cyan));
-    box-shadow: 0 0 12px var(--accent-cyan);
-    transition: width 0.1s linear;
-}
-
-/* =========================================================
-   AUDIO CONTROLS CLUSTER
-   ========================================================= */
-.audio-control-cluster {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: rgba(16, 25, 35, 0.7);
-    border: 1px solid rgba(139, 199, 213, 0.25);
-    border-radius: 8px;
-    padding: 2px 8px;
-}
-
-.volume-slider {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 70px;
-    height: 4px;
-    background: rgba(139, 199, 213, 0.3);
-    border-radius: 2px;
-    outline: none;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.volume-slider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background: var(--accent-cyan);
-    box-shadow: 0 0 8px var(--accent-cyan);
-    cursor: pointer;
-}
-
-.volume-slider::-moz-range-thumb {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background: var(--accent-cyan);
-    box-shadow: 0 0 8px var(--accent-cyan);
-    cursor: pointer;
-    border: none;
-}
-
-/* =========================================================
-   COCKPIT FOREGROUND & ANIMATED STARFIELD VIDEO
-   ========================================================= */
-.flight-viewport-container {
-    position: relative;
-    width: 100%;
-    height: 520px;
-    background: #02040A;
-    border: 1.5px solid rgba(139, 199, 213, 0.35);
-    border-radius: 16px;
-    overflow: hidden;
-    margin-bottom: 16px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9), inset 0 0 30px rgba(0, 0, 0, 0.8);
-}
-
-.flight-starfield-video {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    z-index: 1;
-    pointer-events: none;
-    opacity: 0.65;
-    mix-blend-mode: screen;
-}
-
-#flight-deck-radar-canvas {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    display: block;
-    z-index: 2;
-    background: transparent;
-}
-
-/* Realistic Space Shuttle Cockpit Foreground Overlay (User Reference Pic 4) */
-.cockpit-foreground-overlay {
-    position: absolute;
-    inset: 0;
-    z-index: 4;
-    pointer-events: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-}
-
-.cockpit-frame-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    pointer-events: none;
-    filter: drop-shadow(0 15px 35px rgba(0,0,0,0.95));
-}
-
-/* Position HUD overlays over cockpit consoles with high z-index */
-.flight-overlay-objectives {
-    position: absolute;
-    top: 14px;
-    left: 18px;
-    z-index: 6;
-}
-
-.flight-overlay-resources {
-    position: absolute;
-    bottom: 22px;
-    left: 18px;
-    z-index: 6;
-}
-
-.flight-discovery-banner {
-    position: absolute;
-    bottom: 24px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 6;
-}
-
-.flight-action-cluster {
-    position: absolute;
-    bottom: 20px;
-    right: 18px;
-    z-index: 6;
-}

@@ -1,546 +1,275 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BEYOND THE ORBIT | Space Mission Design Game</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
-    
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Orbitron:wght@400;500;700;800;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Stylesheets -->
-    <link rel="stylesheet" href="css/cinematic.css">
-    <link rel="stylesheet" href="css/animations.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#080d19">
+  <title>Beyond the Orbit — Mission Control</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/cinematic.css">
+  <link rel="stylesheet" href="css/animations.css">
 </head>
-<body class="screen-landing">
-    <!-- Full-screen procedural starfield canvas -->
-    <canvas id="space-canvas"></canvas>
-    <div class="scanline-overlay"></div>
-
-    <!-- Top Navigation Bar -->
-    <header class="top-nav" id="top-nav">
-        <div class="brand-container" data-nav-target="landing">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#00D4FF" stroke-width="2">
-                <circle cx="12" cy="12" r="9"/>
-                <path d="M3.6 9h16.8"/>
-                <path d="M3.6 15h16.8"/>
-                <path d="M12 3a15.3 15.3 0 0 1 4 9 15.3 15.3 0 0 1-4 9 15.3 15.3 0 0 1-4-9 15.3 15.3 0 0 1 4-9z"/>
-            </svg>
-            <div>
-                <div class="brand-title">BEYOND THE ORBIT</div>
-                <div class="brand-subtitle">NASA SPACE APPS 2026 · TEAM ORBITERA</div>
-            </div>
-        </div>
-
-        <nav class="nav-links">
-            <button class="nav-step-btn active" data-nav-target="landing">1. PROLOGUE</button>
-            <button class="nav-step-btn" data-nav-target="selection">2. DESTINATION</button>
-            <button class="nav-step-btn" data-nav-target="planning">3. ENGINEERING</button>
-            <button class="nav-step-btn" data-nav-target="simulation">4. FLIGHT OPS</button>
-            <button class="nav-step-btn" data-nav-target="debrief">5. DEBRIEF</button>
-        </nav>
-
-        <div class="top-controls">
-            <div class="audio-control-cluster">
-                <button class="control-btn" id="audio-toggle-btn" title="Toggle Audio Ambience &amp; Sound FX">🔊 AUDIO</button>
-                <input type="range" id="audio-volume-slider" class="volume-slider" min="0" max="1" step="0.05" value="0.75" title="Audio Volume">
-            </div>
-            <button class="control-btn" id="reset-btn">↺ RESET</button>
-        </div>
+<body>
+  <div class="app-shell">
+    <canvas id="space-canvas" aria-hidden="true"></canvas>
+    <div class="ambient ambient-one"></div><div class="ambient ambient-two"></div>
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="Beyond the Orbit home">
+        <span class="brand-mark"><span></span><span></span><span></span></span>
+        <span><b>BEYOND</b><small>THE ORBIT</small></span>
+      </a>
+      <div class="topbar-center"><span class="live-dot"></span> SIMULATION ENVIRONMENT <span class="topbar-divider">/</span> <span id="system-clock">MISSION SYSTEMS READY</span></div>
+      <button class="sound-toggle" id="sound-toggle" type="button" aria-pressed="false"><span class="sound-icon">♫</span><span> SOUND OFF</span></button>
     </header>
 
-    <!-- Main Content -->
-    <main class="main-wrapper">
-
-        <!-- =========================================================
-             SCREEN 1 — CINEMATIC LANDING PAGE
-             ========================================================= -->
-        <section id="screen-landing" class="game-screen active-screen">
-            <!-- Full-screen planet rendered at bottom of viewport -->
-            <canvas id="landing-planet-canvas" class="landing-planet-canvas"></canvas>
-            <!-- Spacecraft overlay -->
-            <canvas id="landing-craft-canvas" class="landing-craft-canvas"></canvas>
-
-            <!-- Content overlay -->
-            <div class="landing-content">
-                <div class="landing-event-tag">
-                    NASA SPACE APPS CHALLENGE 2026 — TEAM ORBITERA
-                </div>
-                
-                <div class="hero-logo-box">
-                    <div class="hero-subtext-top">BEYOND THE</div>
-                    <div class="hero-orbit-wrapper">
-                        <span class="hero-orbit-word">ORBIT</span>
-                        <div class="hero-orbit-ellipse"></div>
-                    </div>
-                </div>
-
-                <div class="landing-tagline">
-                    YOUR NEXT FRONTIER IS UNKNOWN.
-                </div>
-
-                <div class="landing-cta">
-                    <button class="btn-start-mission" data-nav-target="selection">
-                        START MISSION <span class="arrow">›</span>
-                    </button>
-                </div>
-
-                <div class="landing-scroll-hint">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8899B5" stroke-width="1.8">
-                        <rect x="6" y="3" width="12" height="18" rx="6"/>
-                        <line x1="12" y1="7" x2="12" y2="11"/>
-                    </svg>
-                    <span>Explore. Design. Discover.</span>
-                </div>
-            </div>
-
-            <!-- Bottom corner info -->
-            <div class="landing-corner-info left">
-                🛰 FLIGHT CONTROL ONLINE · SIMULATION READY
-            </div>
-            <div class="landing-corner-info right">
-                FAISALABAD LOCAL EVENT · 2026
-            </div>
-        </section>
-
-        <!-- =========================================================
-             SCREEN 2 — DESTINATION SELECTION
-             ========================================================= -->
-        <section id="screen-selection" class="game-screen">
-            <div class="selection-header">
-                <div class="selection-logo">BEYOND THE ORBIT</div>
-                <h2 class="selection-title">SELECT YOUR DESTINATION</h2>
-                <div class="selection-subtitle">Choose a mission to explore the unknown</div>
-            </div>
-
-            <div class="destination-grid" id="missions-card-grid">
-                <!-- Dynamically populated by UIController with Moon, Mars, Europa cards -->
-            </div>
-
-            <div style="text-align: center; margin-top: 36px;">
-                <button class="btn-secondary" data-nav-target="landing">
-                    ← BACK TO PROLOGUE
-                </button>
-            </div>
-        </section>
-
-        <!-- =========================================================
-             SCREEN 3 — SPACECRAFT ENGINEERING HANGAR
-             ========================================================= -->
-        <section id="screen-planning" class="game-screen">
-            <div class="hangar-nav-bar">
-                <div class="hangar-breadcrumbs">
-                    <span class="crumb-link" data-nav-target="selection">1. Destination</span>
-                    <span class="crumb-sep">›</span>
-                    <span class="crumb-active">2. Design</span>
-                    <span class="crumb-sep">›</span>
-                    <span class="crumb-link" id="crumb-launch-link">3. Launch</span>
-                </div>
-                <div style="display:flex; align-items:center; gap:12px;">
-                    <span class="badge badge-ready" id="planning-status-badge">READY for Launch</span>
-                    <button class="control-btn" data-nav-target="selection">⌂ HOME</button>
-                </div>
-            </div>
-
-            <!-- 3-Column Engineering Layout: Components | Spacecraft Hangar | Stats -->
-            <div class="hangar-three-col">
-                <!-- Left Column: Components List -->
-                <div class="hangar-left-col">
-                    <div class="hud-panel-header">FLIGHT SUBSYSTEMS</div>
-                    <div class="component-category-list">
-                        <button class="comp-nav-item active" data-subsystem="power">
-                            <span class="comp-icon">⚡</span>
-                            <span class="comp-label">Power Architecture</span>
-                        </button>
-                        <button class="comp-nav-item" data-subsystem="propulsion">
-                            <span class="comp-icon">🚀</span>
-                            <span class="comp-label">Propulsion &amp; ΔV</span>
-                        </button>
-                        <button class="comp-nav-item" data-subsystem="camera">
-                            <span class="comp-icon">📷</span>
-                            <span class="comp-label">Optical Imaging</span>
-                        </button>
-                        <button class="comp-nav-item" data-subsystem="spectrometer">
-                            <span class="comp-icon">🔬</span>
-                            <span class="comp-label">Spectrometry Suite</span>
-                        </button>
-                        <button class="comp-nav-item" data-subsystem="comms">
-                            <span class="comp-icon">📡</span>
-                            <span class="comp-label">Deep Space Comms</span>
-                        </button>
-                        <button class="comp-nav-item" data-subsystem="thermal">
-                            <span class="comp-icon">🛡</span>
-                            <span class="comp-label">Thermal &amp; Structure</span>
-                        </button>
-                    </div>
-
-                    <!-- Options list for active subsystem -->
-                    <div class="subsystem-options-box" id="subsystem-options-container">
-                        <!-- Populated dynamically -->
-                    </div>
-                </div>
-
-                <!-- Center Column: Spacecraft Hangar Turntable -->
-                <div class="hangar-center-col">
-                    <div class="hangar-viewport-wrapper">
-                        <div class="hangar-lights-bar">
-                            <div class="light-beam"></div>
-                            <div class="light-beam"></div>
-                            <div class="light-beam"></div>
-                        </div>
-                        <div class="blueprint-viewport" id="schematic-viewport">
-                            <!-- High-fidelity Spacecraft on Turntable -->
-                        </div>
-                    </div>
-
-                    <!-- Bottom Component Info & Confirm Bar -->
-                    <div class="hangar-bottom-card" id="hangar-component-detail-box">
-                        <div class="hangar-card-left">
-                            <div class="hangar-detail-title" id="detail-comp-title">Power Architecture</div>
-                            <div class="hangar-detail-desc" id="detail-comp-desc">
-                                Primary electrical generation array configured for planetary distance.
-                            </div>
-                            <div class="hangar-detail-stats" id="detail-comp-stats">
-                                <span class="tag tag-pwr">+280 W Power</span>
-                                <span class="tag tag-mass">+45 kg</span>
-                                <span class="tag tag-cost">$12.0M</span>
-                            </div>
-                        </div>
-                        <div>
-                            <button class="btn-primary" id="launch-action-btn" style="font-size:14px; padding:14px 28px;">
-                                CONFIRM DESIGN ›
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Right Column: Mission Stats -->
-                <div class="hangar-right-col">
-                    <div class="hud-panel-header">MISSION STATS</div>
-                    <div class="hangar-stats-card">
-                        <div class="stat-line">
-                            <span class="stat-label">Mass:</span>
-                            <span class="stat-val" id="tel-mass-val">820 kg</span>
-                        </div>
-                        <div class="stat-line">
-                            <span class="stat-label">Budget:</span>
-                            <span class="stat-val" id="tel-cost-val">$286.0M</span>
-                        </div>
-                        <div class="stat-line">
-                            <span class="stat-label">Power:</span>
-                            <span class="stat-val" id="tel-pwr-val">+84 W</span>
-                        </div>
-                        <div class="stat-line">
-                            <span class="stat-label">Comm. Range:</span>
-                            <span class="stat-val" id="tel-data-val">Global DSN</span>
-                        </div>
-                        <div class="stat-line">
-                            <span class="stat-label">Data Storage:</span>
-                            <span class="stat-val">16 GB</span>
-                        </div>
-                        <div class="stat-line">
-                            <span class="stat-label">Reliability:</span>
-                            <span class="stat-val" id="tel-rel-val">96%</span>
-                        </div>
-
-                        <div class="stats-divider"></div>
-
-                        <div class="readiness-banner" id="readiness-badge-box">
-                            <div class="readiness-icon">✔</div>
-                            <div>
-                                <div class="readiness-title" id="readiness-title-text">READY for Launch</div>
-                                <div class="readiness-sub" id="readiness-sub-text">All systems within NASA margins</div>
-                            </div>
-                        </div>
-
-                        <!-- Critique / Warnings -->
-                        <div id="validation-critique-box" style="margin-top:12px;"></div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- =========================================================
-             CINEMATIC LAUNCH SEQUENCE MODAL
-             ========================================================= -->
-        <div class="launch-modal-overlay" id="launch-modal-container" style="display:none;">
-            <div class="launch-modal-box">
-                <canvas id="launch-anim-canvas" class="launch-anim-canvas"></canvas>
-                <div class="launch-modal-content">
-                    <div class="launch-badge glow-orange-pulse">KENNEDY SPACE CENTER · PAD 39A</div>
-                    <div class="launch-countdown-num" id="launch-countdown-digits">T - 00:05</div>
-                    <div class="launch-status-sub" id="launch-status-text">TERMINAL COUNTDOWN SEQUENCE INITIATED</div>
-                    <div class="launch-telemetry-row">
-                        <div class="telemetry-pill">
-                            <span class="telemetry-lbl">VEHICLE</span>
-                            <span class="telemetry-val" id="launch-lv-name">Heavy-Lift Falcon Core</span>
-                        </div>
-                        <div class="telemetry-pill">
-                            <span class="telemetry-lbl">TARGET DESTINATION</span>
-                            <span class="telemetry-val" id="launch-target-dest">Mars Injection</span>
-                        </div>
-                        <div class="telemetry-pill">
-                            <span class="telemetry-lbl">SYSTEM STATUS</span>
-                            <span class="telemetry-val" style="color:var(--accent-green);">ALL SYSTEMS GO</span>
-                        </div>
-                    </div>
-                    <div class="launch-progress-bar-wrap">
-                        <div class="launch-progress-bar-fill" id="launch-progress-bar"></div>
-                    </div>
-                    <div style="margin-top:18px;">
-                        <button class="btn-secondary" id="skip-launch-btn" style="font-size:12px; padding:8px 20px;">
-                            SKIP TO FLIGHT DECK ››
-                        </button>
-                    </div>
-                </div>
-            </div>
+    <main>
+      <!-- INTRO -->
+      <section class="screen active intro-screen" id="screen-intro" data-screen="intro">
+        <div class="intro-copy">
+          <div class="eyebrow"><span class="eyebrow-line"></span> AN INTERACTIVE SPACE MISSION SIMULATOR</div>
+          <h1>Your next<br><em>frontier</em> is unknown.</h1>
+          <p class="intro-lede">Design the mission. Make the calls. Discover what waits beyond the orbit.</p>
+          <div class="intro-actions">
+            <button class="button button-primary" id="begin-mission">BEGIN MISSION <span>↗</span></button>
+            <button class="button button-quiet" id="how-to-play">HOW TO PLAY <span>↓</span></button>
+          </div>
+          <div class="intro-footnote"><span class="tiny-star">✦</span> YOUR DECISIONS SHAPE THE MISSION OUTCOME</div>
         </div>
+        <div class="hero-orbit-art" aria-label="Illustration of a planet and spacecraft">
+          <div class="orbit orbit-a"></div><div class="orbit orbit-b"></div>
+          <div class="planet planet-earth"><div class="planet-shade"></div><div class="planet-glow"></div></div>
+          <div class="moon moon-one"></div><div class="satellite"><span></span></div>
+          <div class="hero-coordinate coord-one">EARTH // 001</div><div class="hero-coordinate coord-two">DEEP SPACE // ?</div>
+          <div class="hero-caption"><span class="caption-rule"></span><span>THE UNCHARTED<br><b>STARTS HERE</b></span></div>
+        </div>
+        <div class="intro-bottom">
+          <div><small>MISSION SERIES</small><b>BEYOND THE ORBIT · 01</b></div>
+          <div><small>SIMULATION MODE</small><b>EXPLORATION / STRATEGY</b></div>
+          <div><small>ESTIMATED PLAY TIME</small><b>8—12 MINUTES</b></div>
+        </div>
+        <div class="scroll-cue">SCROLL NOT REQUIRED <span>—</span> USE THE CONTROLS</div>
+      </section>
 
-        <!-- =========================================================
-             SCREEN 4 — FLIGHT OPERATIONS DECK
-             ========================================================= -->
-        <section id="screen-simulation" class="game-screen">
-            <!-- Flight Deck Top Bar -->
-            <div class="flight-top-bar">
-                <div>
-                    <div class="flight-mission-name" id="sim-mission-phase-title">Mission: Mars Exploration</div>
-                    <div class="flight-phase-name" id="sim-phase-sub">Phase: Orbital Reconnaissance & Sensor Pass</div>
-                </div>
+      <!-- HOW TO PLAY MODAL -->
+      <div class="modal-backdrop" id="help-modal" hidden>
+        <div class="modal-card">
+          <button class="modal-close" data-close-modal aria-label="Close">×</button>
+          <div class="eyebrow">MISSION BRIEFING // 00</div><h2>How to play</h2>
+          <p>Every mission is a chain of decisions. Choose a destination, configure a spacecraft, manage limited resources, and respond to events during flight.</p>
+          <div class="help-steps">
+            <div><b>01 / SELECT</b><span>Choose a destination and science objective.</span></div>
+            <div><b>02 / CONFIGURE</b><span>Balance spacecraft capability against mass and resources.</span></div>
+            <div><b>03 / EXECUTE</b><span>Respond to mission events and protect your objectives.</span></div>
+            <div><b>04 / REVIEW</b><span>Study your results and learn from the mission.</span></div>
+          </div>
+          <button class="button button-primary" data-close-modal>UNDERSTOOD <span>↗</span></button>
+        </div>
+      </div>
 
-                <div class="flight-top-right">
-                    <div class="mission-timer-box" id="distance-tracker-box">
-                        <span class="timer-label">Distance to Target</span>
-                        <span class="timer-digits" id="mission-distance-val">225,000,000 km</span>
-                    </div>
+      <!-- DESTINATION -->
+      <section class="screen game-screen" id="screen-destination" data-screen="destination">
+        <div class="section-heading">
+          <div><div class="eyebrow"><span class="eyebrow-line"></span> MISSION DESIGN / 01</div><h2>Choose your <em>destination.</em></h2><p>Every world asks a different question. Where will your mission go?</p></div>
+          <div class="step-indicator"><span>01</span><i></i><span>04</span></div>
+        </div>
+        <div class="destination-layout">
+          <div class="destination-grid" id="destination-grid">
+            <button class="destination-card selected" data-destination="moon">
+              <div class="destination-image moon-image"><span class="planet-disc"><span class="relief maria"></span><span class="relief crater-a"></span><span class="relief crater-b"></span><span class="relief crater-c"></span><span class="terminator"></span></span><span class="card-tag">NEAR-EARTH</span></div>
+              <div class="destination-info"><div><h3>The Moon</h3><span class="distance">~384,400 KM</span></div><span class="select-indicator">✓</span></div>
+              <p>Study the lunar surface and prepare for sustained exploration.</p>
+              <div class="card-meta"><span>LOWER COMPLEXITY</span><span>● ● ○</span></div>
+            </button>
+            <button class="destination-card" data-destination="mars">
+              <div class="destination-image mars-image"><span class="planet-disc"><span class="relief maria"></span><span class="relief crater-a"></span><span class="relief crater-b"></span><span class="relief crater-c"></span><span class="terminator"></span></span><span class="card-tag">PLANETARY</span></div>
+              <div class="destination-info"><div><h3>Mars</h3><span class="distance">~225 MILLION KM*</span></div><span class="select-indicator">✓</span></div>
+              <p>Investigate the geology, climate and history of the Red Planet.</p>
+              <div class="card-meta"><span>HIGH COMPLEXITY</span><span>● ● ●</span></div>
+            </button>
+            <button class="destination-card" data-destination="europa">
+              <div class="destination-image europa-image"><span class="planet-disc"><span class="relief maria"></span><span class="relief crater-a"></span><span class="relief crater-b"></span><span class="relief lineae"></span><span class="terminator"></span></span><span class="card-tag">OUTER SOLAR SYSTEM</span></div>
+              <div class="destination-info"><div><h3>Europa</h3><span class="distance">~628 MILLION KM*</span></div><span class="select-indicator">✓</span></div>
+              <p>Explore an icy moon with a global ocean beneath its crust.</p>
+              <div class="card-meta"><span>ADVANCED COMPLEXITY</span><span>● ● ●</span></div>
+            </button>
+          </div>
+          <div class="destination-prompt">
+            <span class="prompt-orbit">◎</span>
+            <div><b>SELECT A WORLD TO BEGIN</b><small>Choose Moon, Mars, or Europa to open its mission briefing.</small></div>
+          </div>
+        </div>
+        <div class="screen-footer"><span>BEYOND THE ORBIT</span><span>*Illustrative average distance; actual distance varies.</span><span>01 / 04</span></div>
+      </section>
 
-                    <div class="mission-timer-box">
-                        <span class="timer-label">Mission Elapsed Time</span>
-                        <span class="timer-digits" id="mission-elapsed-time">00:24:37</span>
-                    </div>
-
-                    <div class="time-warp-cluster">
-                        <button class="warp-btn" data-warp-speed="0">⏸</button>
-                        <button class="warp-btn active" data-warp-speed="1">1x</button>
-                        <button class="warp-btn" data-warp-speed="5">5x</button>
-                        <button class="warp-btn" data-warp-speed="20">20x</button>
-                    </div>
-                </div>
+      <!-- DESTINATION BRIEFING POPUP -->
+      <div class="modal-backdrop destination-backdrop" id="destination-modal" hidden aria-modal="true" role="dialog" aria-labelledby="destination-modal-title">
+        <div class="modal-card destination-modal-card" id="destination-modal-card">
+          <button class="modal-close" id="close-destination-modal" aria-label="Close destination briefing">×</button>
+          <div class="destination-modal-visual" id="destination-modal-visual"><div class="destination-modal-planet" id="destination-modal-planet"></div><span class="destination-modal-orbit"></span><span class="destination-modal-coordinate">MISSION PROFILE // <b id="destination-modal-code">LUNAR-01</b></span></div>
+          <div class="destination-modal-copy">
+            <div class="eyebrow"><span class="live-dot"></span> DESTINATION CONFIRMED</div>
+            <h2 id="destination-modal-title">The Moon</h2>
+            <p id="destination-modal-description">A nearby world and a proving ground for technologies that enable deeper space exploration.</p>
+            <div class="destination-modal-stats">
+              <div><small>DISTANCE</small><b id="destination-modal-distance">384,400 KM</b></div>
+              <div><small>MISSION WINDOW</small><b id="destination-modal-window">Flexible / near-term</b></div>
+              <div><small>PRIMARY CHALLENGE</small><b id="destination-modal-challenge">Landing & surface operations</b></div>
+              <div><small>SCIENCE FOCUS</small><b id="destination-modal-science">Lunar geology & resources</b></div>
+              <div><small>MISSION PROFILE</small><b id="destination-modal-profile">Short-range / 7–10 days</b></div>
+              <div><small>RISK LEVEL</small><b id="destination-modal-risk">Moderate</b></div>
             </div>
+            <label class="field-label" for="science-objective">MISSION SCIENCE OBJECTIVE</label>
+            <select id="science-objective" class="select-control">
+              <option value="geology">Study surface geology</option>
+              <option value="resources">Identify useful resources</option>
+              <option value="environment">Characterize the environment</option>
+            </select>
+            <button class="button button-primary button-full" id="continue-destination">CONFIGURE SPACECRAFT <span>↗</span></button>
+          </div>
+        </div>
+      </div>
 
-            <!-- Main Flight Viewport with Overlays -->
-            <div class="flight-viewport-container">
-                <!-- Looping Dark Moving Starfield Video -->
-                <video id="flight-starfield-video" class="flight-starfield-video" src="assets/starfield_loop.mp4" autoplay loop muted playsinline></video>
-
-                <!-- Dynamic Orbital Space & Viewfinder Canvas -->
-                <canvas id="flight-deck-radar-canvas"></canvas>
-
-                <!-- Spacecraft Realistic Cockpit Foreground Frame (User Reference) -->
-                <div class="cockpit-foreground-overlay" id="cockpit-foreground-overlay">
-                    <img src="assets/cockpit_overlay.png" class="cockpit-frame-img" alt="Flight Deck Cockpit" draggable="false">
-                </div>
-
-                <!-- Floating Objectives Box (Top-Left) -->
-                <div class="flight-overlay-objectives">
-                    <div class="overlay-box-header">MISSION OBJECTIVES</div>
-                    <div id="sim-objectives-checklist">
-                        <!-- Populated by JS -->
-                    </div>
-                </div>
-
-                <!-- Floating Resource Bars (Bottom-Left) -->
-                <div class="flight-overlay-resources">
-                    <div class="resource-bar-row">
-                        <span class="res-name">Fuel</span>
-                        <div class="res-track">
-                            <div class="res-fill fill-fuel" id="hud-fuel-bar" style="width: 72%;"></div>
-                        </div>
-                        <span class="res-val" id="hud-fuel-val">72%</span>
-                    </div>
-                    <div class="resource-bar-row">
-                        <span class="res-name">Power</span>
-                        <div class="res-track">
-                            <div class="res-fill fill-power" id="hud-power-bar" style="width: 88%;"></div>
-                        </div>
-                        <span class="res-val" id="hud-power-val">88%</span>
-                    </div>
-                    <div class="resource-bar-row">
-                        <span class="res-name">Health</span>
-                        <div class="res-track">
-                            <div class="res-fill fill-health" id="hud-health-bar" style="width: 97%;"></div>
-                        </div>
-                        <span class="res-val" id="hud-health-val">97%</span>
-                    </div>
-                </div>
-
-                <!-- Discovery Banner (Bottom-Center) -->
-                <div class="flight-discovery-banner" id="flight-discovery-banner">
-                    <span class="discovery-icon">ℹ</span>
-                    <span id="discovery-text">Surface Sensor Target In Sensor Cone: Shackleton Cold Trap</span>
-                </div>
-
-                <!-- Action Controls (Bottom-Right) -->
-                <div class="flight-action-cluster">
-                    <button class="btn-flight-action btn-scan-glow" id="action-scan-btn">
-                        <span class="act-icon">🎯</span>
-                        <span>SCAN TARGET</span>
-                    </button>
-                    <button class="btn-flight-action" id="action-downlink-btn">
-                        <span class="act-icon">📡</span>
-                        <span>DOWNLINK DATA</span>
-                    </button>
-                    <button class="btn-flight-action" id="action-burn-btn">
-                        <span class="act-icon">🚀</span>
-                        <span>TRAJECTORY BURN</span>
-                    </button>
-                    <button class="btn-flight-action" id="action-power-btn">
-                        <span class="act-icon">🔋</span>
-                        <span id="power-mode-label">POWER: CRUISE</span>
-                    </button>
-                </div>
+      <!-- SPACECRAFT -->
+      <section class="screen game-screen" id="screen-spacecraft" data-screen="spacecraft">
+        <div class="section-heading">
+          <div><div class="eyebrow"><span class="eyebrow-line"></span> MISSION DESIGN / 02</div><h2>Build your <em>spacecraft.</em></h2><p>Capability comes with a cost. Configure a vehicle that can complete the mission.</p></div>
+          <div class="step-indicator"><span>02</span><i></i><span>04</span></div>
+        </div>
+        <div class="craft-layout">
+          <div class="craft-visual-panel">
+            <div class="panel-topline"><span>VEHICLE CONFIGURATION</span><span class="status-chip"><i></i> PRE-FLIGHT</span></div>
+            <div class="craft-stage" data-craft="pathfinder"><div class="craft-halo"></div><div class="craft-model" id="craft-model"><svg class="probe-svg hangar-probe" viewBox="0 0 640 260" role="img" aria-label="Pathfinder spacecraft with solar arrays and high-gain antenna"><defs><linearGradient id="hg-foil" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fffaf0"/><stop offset=".42" stop-color="#e0c892"/><stop offset="1" stop-color="#6e5c3d"/></linearGradient><pattern id="hg-grid" width="14" height="14" patternUnits="userSpaceOnUse"><rect width="14" height="14" fill="#0e315c"/><path d="M14 0H0V14" fill="none" stroke="#b7d7ee" stroke-width=".65" opacity=".8"/></pattern><linearGradient id="hg-plume" x1="1" y1=".5" x2="0" y2=".5"><stop offset="0" stop-color="#fff"/><stop offset=".28" stop-color="#8ad8ff"/><stop offset="1" stop-color="#8ad8ff" stop-opacity="0"/></linearGradient><radialGradient id="hg-port" cx="35%" cy="35%"><stop offset="0" stop-color="#d8f6ff"/><stop offset="1" stop-color="#14324a"/></radialGradient></defs><ellipse cx="330" cy="214" rx="150" ry="16" fill="#7eb6d4" opacity=".18"/><path class="plume" d="M108 130C58 114 16 118 0 130c16 12 58 16 108 0Z" fill="url(#hg-plume)"/><g class="arrays"><rect x="150" y="28" width="300" height="70" rx="2" fill="url(#hg-grid)" stroke="#e7f3fb" stroke-width="2.2"/><rect x="150" y="162" width="300" height="70" rx="2" fill="url(#hg-grid)" stroke="#e7f3fb" stroke-width="2.2"/><path d="M300 98v64" stroke="#c5d5df" stroke-width="3"/></g><rect x="196" y="104" width="250" height="52" rx="10" fill="url(#hg-foil)" stroke="#fff6e8" stroke-width="1.4"/><rect x="286" y="114" width="62" height="28" rx="5" fill="#10283c" stroke="#b7e4f8"/><circle cx="317" cy="128" r="7" fill="url(#hg-port)"/><path d="M196 122h-34l-22 8v20l22 8h34" fill="#73828c"/><path d="M140 128h-18" stroke="#9aa6ae" stroke-width="6"/><g><path d="M392 104V62" stroke="#f4ecdc" stroke-width="2.4"/><ellipse cx="392" cy="58" rx="22" ry="12" fill="none" stroke="#f8f4ea" stroke-width="2.6"/><circle cx="392" cy="58" r="3" fill="#f0d7a4"/></g><g><circle cx="168" cy="118" r="5" fill="#2a3944"/><circle cx="168" cy="142" r="5" fill="#2a3944"/></g></svg></div><div class="craft-orbit-ring"></div></div>
+            <div class="craft-nameplate"><div><small>SELECTED VEHICLE</small><h3 id="craft-name">Pathfinder Explorer</h3></div><span id="craft-class">EXPLORATION CLASS</span></div>
+            <div class="craft-selector">
+              <button class="craft-option selected" data-craft="pathfinder"><span class="craft-mini">◇</span><span><b>Pathfinder</b><small>Balanced explorer</small></span><i>✓</i></button>
+              <button class="craft-option" data-craft="pioneer"><span class="craft-mini">△</span><span><b>Pioneer</b><small>Lightweight scout</small></span><i>✓</i></button>
+              <button class="craft-option" data-craft="sentinel"><span class="craft-mini">⬡</span><span><b>Sentinel</b><small>Heavy-duty explorer</small></span><i>✓</i></button>
             </div>
+          </div>
+          <div class="configuration-panel">
+            <div class="panel-kicker">MISSION LOADOUT</div>
+            <div class="loadout-intro"><h3>Systems & resources</h3><p>Adjust your allocation. Higher capacity can improve resilience but increases mission mass.</p></div>
+            <div class="resource-control"><div class="resource-heading"><label for="fuel-range">PROPULSION FUEL</label><b><span id="fuel-value">70</span><small> / 100</small></b></div><input id="fuel-range" type="range" min="20" max="100" value="70"><div class="range-labels"><span>LIGHT</span><span>HIGH CAPACITY</span></div></div>
+            <div class="resource-control"><div class="resource-heading"><label for="power-range">POWER CAPACITY</label><b><span id="power-value">65</span><small> / 100</small></b></div><input id="power-range" type="range" min="20" max="100" value="65"><div class="range-labels"><span>LOW DRAW</span><span>HIGH OUTPUT</span></div></div>
+            <div class="resource-control"><div class="resource-heading"><label for="supplies-range">CREW & SUPPLIES</label><b><span id="supplies-value">60</span><small> / 100</small></b></div><input id="supplies-range" type="range" min="20" max="100" value="60"><div class="range-labels"><span>LEAN</span><span>EXTENDED</span></div></div>
+            <div class="loadout-summary"><div><span>ESTIMATED MASS INDEX</span><b id="mass-value">65</b></div><div><span>READINESS</span><b id="readiness-value" class="readiness-good">GOOD</b></div></div>
+            <div class="button-row"><button class="button button-quiet" id="back-destination">← BACK</button><button class="button button-primary" id="continue-flight">FINALIZE & LAUNCH <span>↗</span></button></div>
+          </div>
+        </div>
+        <div class="screen-footer"><span>BEYOND THE ORBIT</span><span>Configuration values are illustrative game parameters.</span><span>02 / 04</span></div>
+      </section>
 
-            <!-- Lower Telemetry & Flight Log Row -->
-            <div class="flight-bottom-log-row">
-                <div class="flight-log-panel" style="grid-column: 1 / -1;">
-                    <div class="hud-panel-header" style="display:flex; justify-content:space-between;">
-                        <span>REAL-TIME TELEMETRY LOG</span>
-                        <span style="color:var(--accent-cyan); font-size:11px;">BUFFER: <span id="hud-datacol-val">0 / 16000 MB</span> · SCORE: <span id="hud-science-val">0</span> PTS</span>
-                    </div>
-                    <div class="flight-log-feed" id="flight-log-feed"></div>
-                </div>
-                <div style="display:none;">
-                    <button class="btn-primary" id="action-end-mission-btn" style="display:none;" aria-hidden="true"></button>
-                </div>
+      <!-- FLIGHT -->
+      <section class="screen game-screen flight-screen" id="screen-flight" data-screen="flight">
+        <div class="flight-top">
+          <div><div class="eyebrow"><span class="eyebrow-line"></span> MISSION OPERATIONS / 03</div><h2>Mission <em>in progress.</em></h2></div>
+          <div class="mission-status"><span class="live-dot"></span> LIVE SIMULATION <b id="flight-phase">TRANSIT PHASE</b></div>
+        </div>
+        <div class="flight-layout">
+          <div class="flight-scene" id="flight-scene">
+            <div class="flight-stars stars-back"></div><div class="flight-stars stars-front"></div><div class="flight-nebula"></div>
+            <div class="flight-earth"><span></span></div>
+            <div class="flight-destination" id="flight-destination-art"><div class="flight-planet"></div><span class="planet-atmosphere"></span></div>
+            <div class="flight-asteroids asteroid-one"></div><div class="flight-asteroids asteroid-two"></div><div class="flight-asteroids asteroid-three"></div>
+            <div class="flight-path"><span class="path-node"></span><span class="path-node active"></span><span class="path-node"></span></div>
+            <div class="flight-spacecraft"><svg class="probe-svg flight-probe" viewBox="0 0 640 260" role="img" aria-label="Pathfinder spacecraft in flight"><defs><linearGradient id="fl-foil" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fffaf0"/><stop offset=".45" stop-color="#d9c091"/><stop offset="1" stop-color="#65563a"/></linearGradient><pattern id="fl-grid" width="14" height="14" patternUnits="userSpaceOnUse"><rect width="14" height="14" fill="#0e315c"/><path d="M14 0H0V14" fill="none" stroke="#b7d7ee" stroke-width=".65" opacity=".85"/></pattern><linearGradient id="fl-plume" x1="1" y1=".5" x2="0" y2=".5"><stop offset="0" stop-color="#fff"/><stop offset=".25" stop-color="#9ae4ff"/><stop offset="1" stop-color="#49b7ff" stop-opacity="0"/></linearGradient></defs><path class="plume" d="M118 130C52 108 12 116 0 130c12 16 52 24 118 0Z" fill="url(#fl-plume)"/><rect x="150" y="34" width="286" height="64" rx="2" fill="url(#fl-grid)" stroke="#e7f3fb" stroke-width="2"/><rect x="150" y="162" width="286" height="64" rx="2" fill="url(#fl-grid)" stroke="#e7f3fb" stroke-width="2"/><rect x="188" y="106" width="268" height="48" rx="9" fill="url(#fl-foil)" stroke="#fff6e8"/><rect x="292" y="116" width="58" height="26" rx="4" fill="#10283c" stroke="#b7e4f8"/><circle cx="321" cy="129" r="6" fill="#b6f1ff"/><path d="M188 120h-36l-20 10v20l20 10h36" fill="#73828c"/><path d="M404 106V68" stroke="#f4ecdc" stroke-width="2.4"/><ellipse cx="404" cy="64" rx="20" ry="11" fill="none" stroke="#f8f4ea" stroke-width="2.4"/></svg></div>
+            <div class="flight-scanline"></div>
+            <div class="flight-hud flight-hud-left"><small>VEHICLE ID</small><b id="hud-vehicle">BO-01 / PATHFINDER</b><small>FLIGHT VECTOR</small><b id="flight-vector">LUNAR TRANSFER</b></div>
+            <div class="flight-hud flight-hud-right"><span class="hud-live-dot"></span><small>EXTERNAL CAMERA · 04</small><b>TRACKING LOCK</b></div>
+            <div class="flight-scene-label"><small>MISSION VIEW / EXTERNAL CAMERA</small><b id="flight-scene-caption">EARTH–MOON TRANSFER</b><span id="flight-scene-subtitle">APPROACH VECTOR NOMINAL</span></div>
+            <div class="flight-distance"><small>MISSION PROGRESS</small><b id="progress-value">08%</b><div class="progress-track"><span id="progress-bar"></span></div></div>
+            <div class="flight-objective" id="flight-objective"><span class="objective-pulse"></span><div><small>CURRENT OBJECTIVE</small><b id="flight-objective-title">PILOT THROUGH THE DEBRIS FIELD</b><span id="flight-objective-hint">Use ← → or A / D to steer clear of incoming debris.</span></div><span class="objective-step" id="flight-objective-step">01 / 03</span></div>
+            <div class="flight-game-controls" id="flight-game-controls">
+              <div class="steer-controls"><button class="flight-control" id="steer-left" aria-label="Steer left">←</button><button class="flight-control" id="steer-right" aria-label="Steer right">→</button></div>
+              <div class="primary-flight-controls"><button class="flight-control flight-control-primary" id="flight-action">ENGAGE THRUST</button><button class="flight-control" id="flight-scan" hidden>◉ SCAN TARGET</button><button class="flight-control" id="flight-stabilize" hidden>◎ STABILIZE APPROACH</button><span class="approach-readout" id="approach-readout" hidden>VELOCITY <b id="approach-speed-value">30</b> M/S</span></div>
+              <div class="flight-feedback" id="flight-feedback">FLIGHT CONTROLS ONLINE</div>
             </div>
-
-            <!-- Anomaly Modal -->
-            <div class="anomaly-modal-overlay" id="anomaly-modal-container">
-                <div class="anomaly-modal-box">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                        <span class="badge badge-blocked glow-red-pulse">CRITICAL ANOMALY ALERT</span>
-                        <span style="color:var(--text-dim); font-size:12px;" id="anomaly-phase-label">CRUISE PHASE</span>
-                    </div>
-                    <h3 id="anomaly-title" style="font-family:var(--font-display); font-size:18px; color:var(--text-white); margin-bottom:8px;">
-                        Solar Particle Flare Detected
-                    </h3>
-                    <p id="anomaly-desc" style="font-size:13px; color:var(--text-light); line-height:1.6; margin-bottom:18px;">
-                        High-energy proton flux threatens unshielded CMOS electronics.
-                    </p>
-                    <div style="font-family:var(--font-ui); font-size:12px; color:var(--accent-cyan); font-weight:bold; letter-spacing:1px; margin-bottom:8px;">
-                        COMMAND CHOICES:
-                    </div>
-                    <div class="choices-container" id="anomaly-choices-container">
-                        <!-- Populated by JS -->
-                    </div>
-                </div>
+            <div class="flight-hazards" id="flight-hazards" aria-hidden="true"></div>
+          </div>
+          <aside class="flight-console">
+            <div class="console-head"><div><span class="live-dot"></span> FLIGHT DECK</div><small>BO-01 / AUTONOMOUS</small></div>
+            <div class="telemetry-grid">
+              <div><small>FUEL</small><b id="telemetry-fuel">70<span>%</span></b></div>
+              <div><small>POWER</small><b id="telemetry-power">65<span>%</span></b></div>
+              <div><small>SUPPLIES</small><b id="telemetry-supplies">60<span>%</span></b></div>
+              <div><small>HULL STATUS</small><b class="telemetry-ok" id="telemetry-hull">100%</b></div>
             </div>
-        </section>
-
-        <!-- =========================================================
-             SCREEN 5 — MISSION DEBRIEF
-             ========================================================= -->
-        <section id="screen-debrief" class="game-screen">
-            <div class="debrief-hero-box">
-                <div class="laurel-wreath-icon">🏆</div>
-                <h1 class="debrief-title">MISSION COMPLETE</h1>
-                <div class="debrief-tagline">A successful journey beyond the orbit!</div>
+            <div class="console-divider"></div>
+            <div class="event-kicker">MISSION ACTIVITY <span>● LIVE</span></div>
+            <h3 id="event-title">Flight systems online</h3>
+            <p id="event-description">Your spacecraft is on course. Follow the active objective in the flight window and use the controls to pilot the mission.</p>
+            <div class="flight-stage-list">
+              <div class="flight-stage-item active" id="stage-nav"><span>01</span><div><b>Debris navigation</b><small>Manoeuvre through the field</small></div><i>IN PROGRESS</i></div>
+              <div class="flight-stage-item" id="stage-scan"><span>02</span><div><b>Science operations</b><small>Acquire three data scans</small></div><i>STANDBY</i></div>
+              <div class="flight-stage-item" id="stage-approach"><span>03</span><div><b>Orbit insertion</b><small>Align and stabilize</small></div><i>STANDBY</i></div>
             </div>
+            <div class="console-log" id="console-log"><span>12:04:02</span> Telemetry link established. Awaiting pilot input.</div>
+          </aside>
+        </div>
+        <div class="screen-footer"><span>BEYOND THE ORBIT</span><span>Simulation events are fictional and designed for learning.</span><span>03 / 04</span></div>
+      </section>
 
-            <!-- Two Main Result Cards: Report + Outcome -->
-            <div class="debrief-summary-grid">
-                <!-- Left: Mission Report -->
-                <div class="hud-panel debrief-report-card">
-                    <div class="hud-panel-header">MISSION REPORT</div>
-                    <div class="debrief-stat-row">
-                        <span class="debrief-label">Destination:</span>
-                        <span class="debrief-val" id="debrief-dest-val">Mars</span>
-                    </div>
-                    <div class="debrief-stat-row">
-                        <span class="debrief-label">Objectives Completed:</span>
-                        <span class="debrief-val" id="debrief-obj-completed-val">3 / 3</span>
-                    </div>
-                    <div class="debrief-stat-row">
-                        <span class="debrief-label">Data Collected:</span>
-                        <span class="debrief-val" id="debrief-collected-val">245 GB</span>
-                    </div>
-                    <div class="debrief-stat-row">
-                        <span class="debrief-label">Data Transmitted:</span>
-                        <span class="debrief-val" id="debrief-transmitted-val">245 GB</span>
-                    </div>
-                    <div class="debrief-stat-row">
-                        <span class="debrief-label">Reliability:</span>
-                        <span class="debrief-val" id="debrief-rel-val">98%</span>
-                    </div>
-                    <div class="debrief-stat-row" style="margin-top:14px; padding-top:12px; border-top:1px solid var(--border-subtle);">
-                        <span class="debrief-label" style="font-size:15px; font-weight:bold; color:var(--accent-amber);">Final Score:</span>
-                        <span class="debrief-score-stars" id="debrief-score-num">★ 9,850</span>
-                    </div>
-                </div>
-
-                <!-- Right: Outcome Card -->
-                <div class="hud-panel debrief-outcome-card">
-                    <div class="hud-panel-header" style="text-align:center;">OUTCOME</div>
-                    <div class="outcome-circle-icon" id="outcome-circle-icon">✔</div>
-                    <div class="outcome-text-badge" id="debrief-score-badge">SUCCESS</div>
-                    <p id="debrief-summary-text" style="color:var(--text-light); font-size:13px; text-align:center; margin-top:14px; line-height:1.6;">
-                        Spacecraft performed flawlessly across all mission phases.
-                    </p>
-                </div>
+      <!-- DEBRIEF -->
+      <section class="screen game-screen debrief-screen" id="screen-debrief" data-screen="debrief">
+        <div class="debrief-header"><div class="eyebrow"><span class="eyebrow-line"></span> MISSION OPERATIONS / 04</div><div class="success-stamp" id="success-stamp"><span>✦</span> MISSION COMPLETE</div></div>
+        <div class="debrief-title"><h2>The journey<br><em>leaves a mark.</em></h2><p>Your mission is complete. Here's what your decisions made possible.</p></div>
+        <div class="debrief-layout">
+          <div class="debrief-visual"><div class="debrief-planet" id="debrief-planet"></div><div class="debrief-orbit"></div><div class="debrief-ship">✦</div><div class="debrief-visual-label"><small>DESTINATION REACHED</small><b id="debrief-destination">THE MOON</b></div></div>
+          <div class="results-panel">
+            <div class="score-row"><div><small>MISSION PERFORMANCE</small><div class="score-number" id="final-score">82<span>/100</span></div></div><div class="grade-badge" id="grade-badge">A</div></div>
+            <div class="score-track"><span id="score-bar"></span></div>
+            <div class="result-metrics"><div><small>SCIENCE OBJECTIVE</small><b id="result-science">Completed</b></div><div><small>RESOURCE MANAGEMENT</small><b id="result-resources">Efficient</b></div><div><small>MISSION DECISIONS</small><b id="result-decisions">2 / 2</b></div></div>
+            <div class="debrief-message"><span>MISSION INSIGHT</span><p id="debrief-insight">A successful mission balances ambition with preparation. Your choices protected the spacecraft and preserved capacity for science.</p></div>
+            <div class="button-row"><button class="button button-quiet" id="replay-mission">↻ REPLAY</button><button class="button button-primary" id="new-mission">NEW MISSION <span>↗</span></button></div>
+            <div class="button-row" style="margin-top: 10px; gap: 8px;">
+              <a class="button button-quiet" id="download-html-report" href="#" download="beyond_the_orbit_report.html" style="font-size: 11px; flex: 1; text-align: center; text-decoration: none;">📥 HTML REPORT</a>
+              <a class="button button-quiet" id="download-pdf-report" href="#" download="beyond_the_orbit_report.pdf" style="font-size: 11px; flex: 1; text-align: center; text-decoration: none;">📄 PDF DEBRIEF</a>
             </div>
-
-            <!-- Systems Engineering Scorecard & Objectives Accomplished -->
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-bottom:24px;">
-                <div class="hud-panel">
-                    <div class="hud-panel-header">SYSTEMS ENGINEERING 100-POINT SCORECARD</div>
-                    <div id="debrief-categories-container"></div>
-                </div>
-                <div class="hud-panel">
-                    <div class="hud-panel-header">SCIENTIFIC OBJECTIVES COMPLETED</div>
-                    <ul id="debrief-objectives-list" style="padding-left:18px;"></ul>
-                </div>
-            </div>
-
-            <!-- Lessons Learned & Recommendations -->
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-bottom:24px;">
-                <div class="hud-panel">
-                    <div class="hud-panel-header" style="color:var(--accent-amber);">LESSONS LEARNED</div>
-                    <ul id="debrief-lessons-list" style="padding-left:18px;"></ul>
-                </div>
-                <div class="hud-panel">
-                    <div class="hud-panel-header" style="color:var(--accent-cyan);">FLIGHT RECOMMENDATIONS</div>
-                    <ul id="debrief-suggestions-list" style="padding-left:18px; list-style:none;"></ul>
-                </div>
-            </div>
-
-            <!-- Action Buttons -->
-            <div class="debrief-actions-bar">
-                <button class="btn-secondary" onclick="window.app.printReport()">
-                    VIEW REPORT (PDF)
-                </button>
-                <button class="btn-secondary" data-nav-target="planning">
-                    REPLAY MISSION
-                </button>
-                <button class="btn-primary" data-nav-target="selection" style="background:linear-gradient(135deg, #FFB547, #FF7828); color:#040814; box-shadow:0 0 25px rgba(255,181,71,0.4);">
-                    EXPLORE ANOTHER DESTINATION ›
-                </button>
-            </div>
-        </section>
-
+          </div>
+        </div>
+        <div class="screen-footer"><span>BEYOND THE ORBIT</span><span>Educational simulation · Not a flight planning tool</span><span>04 / 04</span></div>
+      </section>
     </main>
+    <!-- GAME-STYLE MISSION EVENT POPUP -->
+    <div class="modal-backdrop event-backdrop" id="event-modal" hidden aria-modal="true" role="dialog" aria-labelledby="popup-event-title">
+      <div class="modal-card event-modal-card">
+        <div class="event-modal-top"><span class="event-alert-dot"></span><span>MISSION CONTROL // ACTION REQUIRED</span><span class="event-priority">PRIORITY 01</span></div>
+        <div class="eyebrow">INCOMING TRANSMISSION</div>
+        <h2 id="popup-event-title">Unexpected solar activity</h2>
+        <p id="popup-event-description">Sensors have detected an unexpected event.</p>
+        <div class="popup-choice-label">SELECT YOUR RESPONSE</div>
+        <div class="event-choices popup-choices" id="popup-event-choices"></div>
+        <div class="event-outcome" id="event-outcome" hidden><span>COMMAND CONFIRMED</span><p id="event-outcome-text"></p></div>
+        <button class="button button-primary button-full" id="popup-next-event" disabled>SELECT AN ACTION TO CONTINUE</button>
+      </div>
+    </div>
 
-    <!-- Game Modules -->
-    <script src="js/nasa-data.js"></script>
-    <script src="js/game-data.js"></script>
-    <script src="js/game-engine.js"></script>
-    <script src="js/events-engine.js"></script>
-    <script src="js/space-renderer.js"></script>
-    <script src="js/hangar-builder.js"></script>
-    <script src="js/flight-simulator.js"></script>
-    <script src="js/audio-fx.js"></script>
-    <script src="js/ui-controller.js"></script>
+    <!-- MISSION RESULT POPUP -->
+    <div class="modal-backdrop result-backdrop" id="result-modal" hidden aria-modal="true" role="dialog" aria-labelledby="result-modal-title">
+      <div class="modal-card result-modal-card" id="result-modal-card">
+        <div class="result-orbit-art"><div class="result-orbit-planet"></div><div class="result-orbit-ring"></div><span class="result-spark">✦</span></div>
+        <div class="eyebrow" id="result-modal-kicker">MISSION CONTROL // FINAL TRANSMISSION</div>
+        <h2 id="result-modal-title">MISSION SUCCESSFUL</h2>
+        <p id="result-modal-summary">Your spacecraft has completed its mission objectives.</p>
+        <div class="result-popup-stats">
+          <div><small>FINAL SCORE</small><b id="popup-final-score">--</b></div>
+          <div><small>FUEL REMAINING</small><b id="popup-final-fuel">--</b></div>
+          <div><small>POWER REMAINING</small><b id="popup-final-power">--</b></div>
+          <div><small>SUPPLIES REMAINING</small><b id="popup-final-supplies">--</b></div>
+        </div>
+        <div class="result-popup-note" id="popup-result-note">Mission data is ready for review.</div>
+        <button class="button button-primary button-full" id="view-debrief">VIEW MISSION DEBRIEF <span>↗</span></button>
+      </div>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </div>
+  <script type="module" src="js/space-renderer.js"></script>
+  <script src="js/audio-fx.js"></script>
+  <script src="js/game-data.js"></script>
+  <script src="js/ui-controller.js"></script>
 </body>
 </html>

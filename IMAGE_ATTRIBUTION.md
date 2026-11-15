@@ -6,8 +6,8 @@ This project uses authentic NASA, ESA, JAXA, and mission archive photographic im
 ---
 
 ### 1. Cinematic Landing Screen
-* **Primary Earth Horizon Artwork:** Extracted from NASA astronaut photography / ISS Expedition 65 high-resolution orbital horizon imagery (`File:ISS-65_The_atmospheric_glow_blanketing_Earth's_horizon.jpg`).
-  * *Agency/Credit:* NASA / International Space Station Expedition 65.
+* **Primary Earth Horizon Artwork (`assets/planet_earth_globe.jpg` & `assets/artemis_orion_earth.jpg`):** NASA Image ID `art002e000192` — Artemis II Orion optical navigation camera and ISS Expedition 65 high-resolution orbital horizon imagery (`File:ISS-65_The_atmospheric_glow_blanketing_Earth's_horizon.jpg`).
+  * *Agency/Credit:* NASA / Johnson Space Center / International Space Station Expedition 65.
   * *License:* Public Domain (NASA Work).
 * **Spacecraft Foreground:** NASA Artemis I Flight Day 1 Orion optical navigation camera (`File:Orion_and_Earth_(art001e000095).jpg`).
   * *Agency/Credit:* NASA.
@@ -16,13 +16,13 @@ This project uses authentic NASA, ESA, JAXA, and mission archive photographic im
 ---
 
 ### 2. Destination Selection Environments
-* **The Moon:** Lunar Reconnaissance Orbiter (LRO) Camera (LROC) / LOLA global terrain visualization (`File:Full_Moon_(15984763045).jpg`).
+* **The Moon (`assets/planet_moon_clean.jpg`):** NASA Image ID `GSFC_20171208_Archive_e000868` — Lunar Reconnaissance Orbiter (LRO) Camera (LROC) / LOLA global terrain visualization (`File:Full_Moon_(15984763045).jpg`).
   * *Agency/Credit:* NASA Goddard Space Flight Center / Scientific Visualization Studio / Arizona State University.
   * *License:* Public Domain.
-* **Mars:** Viking 1 & 2 Orbiter color mosaic (`File:MARS-Viking.jpg`).
+* **Mars (`assets/planet_mars_clean.jpg`):** NASA Image ID `PIA00407` — Viking 1 & 2 Orbiter color mosaic (`File:MARS-Viking.jpg`).
   * *Agency/Credit:* NASA / Jet Propulsion Laboratory / USGS Astrogeology Science Center.
   * *License:* Public Domain.
-* **Europa:** Galileo spacecraft SSI reprocessed natural color mosaic (`File:PIA19048_realistic_color_Europa_mosaic_(original).jpg`).
+* **Europa (`assets/planet_europa_clean.jpg`):** NASA Image ID `PIA19048` — Galileo spacecraft SSI reprocessed natural color mosaic (`File:PIA19048_realistic_color_Europa_mosaic_(original).jpg`).
   * *Agency/Credit:* NASA / JPL-Caltech / DLR.
   * *License:* Public Domain.
 * **Jupiter Backdrop:** Cassini-Huygens Imaging Science Subsystem Jupiter global mosaic (`File:Portrait_of_Jupiter_from_Cassini.jpg` / PIA04866).

@@ -1,665 +1,644 @@
-/**
- * GAME DATA & HARDWARE CATALOG
- * =============================
- * BEYOND THE ORBIT - Space Mission Design Game
- * Team Orbitera | NASA Space Apps Challenge 2026
- * 
- * Hardware options, launch vehicles, mission profiles,
- * and scientific payloads across all Four Mission Segments.
- */
-
-const GAME_DATA = {
-    missions: {
-        "lunar_explorer": {
-            id: "lunar_explorer",
-            name: "Lunar Explorer",
-            tagline: "Unlocking the Secrets of the Lunar Regolith & Permanently Shadowed Craters",
-            destination: "Moon",
-            difficulty: "Cadet (Introductory)",
-            difficultyStars: "★★☆☆☆",
-            budgetMillion: 300.0,
-            primaryTarget: "South Pole-Aitken Basin & Shackleton Crater",
-            overview: "Embark on a high-precision lunar mission to survey polar water ice deposits, map geochemical compositions, and establish critical surface data corridors. Surviving the 14-day lunar night (-160°C cold sink) and abrasive regolith tests your battery storage and navigation systems.",
-            scientificObjectives: [
-                {
-                    id: "lunar_obj_1",
-                    title: "Map Volatiles & Water Ice in Cold Traps",
-                    instrumentReq: ["radar", "thermal_sensor"],
-                    points: 35,
-                    description: "Probe Permanently Shadowed Regions (PSRs) at the lunar south pole for subsurface hydrogen signatures."
-                },
-                {
-                    id: "lunar_obj_2",
-                    title: "High-Resolution Geomorphic Topography",
-                    instrumentReq: ["camera"],
-                    points: 30,
-                    description: "Produce sub-meter digital elevation models of potential landing corridors and pyroclastic deposits."
-                },
-                {
-                    id: "lunar_obj_3",
-                    title: "Mineralogical & Titanium-Iron Survey",
-                    instrumentReq: ["spectrometer"],
-                    points: 35,
-                    description: "Characterize ilmenite and anorthosite abundances across basaltic maria and highlands."
-                }
-            ],
-            challenges: [
-                "Surviving 14 Earth days of lunar darkness (-130°C to -170°C cold sink)",
-                "Line-of-sight occultations when surveying polar crater floors or far side",
-                "Fine, abrasive lunar regolith and electrostatic dust levitation"
-            ],
-            architectures: [
-                {
-                    id: "polar_low_orbit",
-                    name: "Low Lunar Polar Orbit (100 km)",
-                    description: "Provides global surface coverage over 28 days as the Moon rotates beneath the orbital plane.",
-                    complexityCost: 25.0,
-                    complexityMass: 180.0,
-                    scienceMultiplier: 1.25,
-                    commWindowPct: 92
-                },
-                {
-                    id: "frozen_eccentric_orbit",
-                    name: "Frozen Elliptical Halo Orbit (Perilune 30 km)",
-                    description: "Minimizes station-keeping fuel while providing high-resolution low-altitude passes over the South Pole.",
-                    complexityCost: 35.0,
-                    complexityMass: 230.0,
-                    scienceMultiplier: 1.35,
-                    commWindowPct: 85
-                },
-                {
-                    id: "direct_descent_lander",
-                    name: "Direct Descent Soft Lander",
-                    description: "Places payload on the surface for in-situ drilling and stationary spectral analysis.",
-                    complexityCost: 65.0,
-                    complexityMass: 480.0,
-                    scienceMultiplier: 1.50,
-                    commWindowPct: 75
-                }
-            ],
-            env: {
-                solarFluxScale: 1.0,
-                radiationSeverity: "Moderate",
-                communicationDelayS: 1.28
-            }
-        },
-
-        "mars_discovery": {
-            id: "mars_discovery",
-            name: "Mars Discovery",
-            tagline: "Investigating Past Habitable Climates, Seasonal Methane & Global Dust Cycles",
-            destination: "Mars",
-            difficulty: "Flight Director (Intermediate)",
-            difficultyStars: "★★★★☆",
-            budgetMillion: 550.0,
-            primaryTarget: "Jezero Crater & Valles Marineris",
-            overview: "Launch an interplanetary expedition across millions of kilometers to decode ancient lake deposits and seasonal methane release. Navigate 4 to 24 minute speed-of-light delays, 57% solar energy loss, and planet-encircling dust storms that blanket solar panels for weeks.",
-            scientificObjectives: [
-                {
-                    id: "mars_obj_1",
-                    title: "Subsurface Paleohydrology & Ice Shelves",
-                    instrumentReq: ["radar", "spectrometer"],
-                    points: 35,
-                    description: "Sound subsurface sedimentary beds and buried glaciers up to 1.5 km depth."
-                },
-                {
-                    id: "mars_obj_2",
-                    title: "Atmospheric Trace Gas & Methane Monitoring",
-                    instrumentReq: ["spectrometer", "particle_detector"],
-                    points: 35,
-                    description: "Detect seasonal methane fluctuations and trace gas plumes associated with sub-surface activity."
-                },
-                {
-                    id: "mars_obj_3",
-                    title: "High-Resolution Geomorphology & Dunes",
-                    instrumentReq: ["camera", "thermal_sensor"],
-                    points: 30,
-                    description: "Track active dust devil dynamics, recurring slope lineae (RSL), and ancient delta deposits."
-                }
-            ],
-            challenges: [
-                "Severe solar irradiance reduction (~589 W/m² vs 1361 W/m² at Earth)",
-                "Planet-wide dust storms blocking up to 80% of sunlight for months",
-                "Speed-of-light communication delays (4 to 24 minutes one-way) requiring autonomous fault protection",
-                "Aerodynamic entry and interplanetary transit thermal extremes"
-            ],
-            architectures: [
-                {
-                    id: "sun_sync_areocentric",
-                    name: "Sun-Synchronous Low Mars Orbit (300 km)",
-                    description: "Passes over targets at constant local solar time (ideal for repeatable illumination and shadow analysis).",
-                    complexityCost: 45.0,
-                    complexityMass: 320.0,
-                    scienceMultiplier: 1.30,
-                    commWindowPct: 88
-                },
-                {
-                    id: "aerobraking_elliptical",
-                    name: "Aerobraking Elliptical Relay Orbit",
-                    description: "Uses Mars's upper atmosphere to trim orbital speed, saving propellant mass while providing dual science and relay services.",
-                    complexityCost: 60.0,
-                    complexityMass: 420.0,
-                    scienceMultiplier: 1.40,
-                    commWindowPct: 78
-                },
-                {
-                    id: "mars_surface_lander_pack",
-                    name: "Guided Entry Aero-Shell & Surface Station",
-                    description: "Employs heat shield and retro-propulsion to conduct long-term surface meteorology and soil science.",
-                    complexityCost: 110.0,
-                    complexityMass: 850.0,
-                    scienceMultiplier: 1.60,
-                    commWindowPct: 65
-                }
-            ],
-            env: {
-                solarFluxScale: 0.43,
-                radiationSeverity: "Elevated (GCR + SPE)",
-                communicationDelayS: 750.0
-            }
-        },
-
-        "europa_frontier": {
-            id: "europa_frontier",
-            name: "Europa Frontier",
-            tagline: "Probing the Hidden Ocean & Cryovolcanic Plumes in Jupiter's Radiation Inferno",
-            destination: "Europa",
-            difficulty: "Mission Director (Advanced)",
-            difficultyStars: "★★★★★",
-            budgetMillion: 920.0,
-            primaryTarget: "Conamara Chaos & Thrace Macula Ice Plumes",
-            overview: "Venture 628 million kilometers into the Jovian system, where Europa conceals a global liquid ocean beneath 20 km of floating ice. Survive Jupiter's colossal radiation belts (~5,400 mSv/day), manage power on only 3.7% of Earth's sunlight, and buffer data over a 40-minute light-speed chasm.",
-            scientificObjectives: [
-                {
-                    id: "europa_obj_1",
-                    title: "Sound Ice Shell Thickness & Ocean Interface",
-                    instrumentReq: ["radar", "particle_detector"],
-                    points: 40,
-                    description: "Penetrate the 15-25 km thick floating ice shell to verify liquid water pockets and depth of ocean floor."
-                },
-                {
-                    id: "europa_obj_2",
-                    title: "Cryoplume & Salt-Organic Characterization",
-                    instrumentReq: ["spectrometer", "camera"],
-                    points: 35,
-                    description: "Perform in-situ mass spectrometry on vented vapor plumes for sodium chloride and prebiotic organics."
-                },
-                {
-                    id: "europa_obj_3",
-                    title: "Induced Magnetic Dipole & Ocean Salinity",
-                    instrumentReq: ["particle_detector", "thermal_sensor"],
-                    points: 25,
-                    description: "Measure Jupiter-induced magnetic currents to calculate ocean conductivity, temperature, and salt content."
-                }
-            ],
-            challenges: [
-                "Lethal Jovian magnetospheric radiation belt (~5,400 mSv/day dose)",
-                "Inverse-square law solar starvation: 50.3 W/m² (solar panels must be huge or MMRTG nuclear is required)",
-                "Radio light delay of 35 to 52 minutes, requiring complete onboard autonomy",
-                "Cryogenic temperatures (-220°C) demanding active thermal management"
-            ],
-            architectures: [
-                {
-                    id: "jupiter_flyby_resonance",
-                    name: "Multiple Europa Flyby Trajectory (Jovian Resonance)",
-                    description: "Dips quickly into Europa's radiation zone during close flybys (25 km altitude) and retreats out to safety, modeled after NASA's Europa Clipper.",
-                    complexityCost: 85.0,
-                    complexityMass: 550.0,
-                    scienceMultiplier: 1.45,
-                    commWindowPct: 82
-                },
-                {
-                    id: "dedicated_europa_orbiter",
-                    name: "Dedicated Europa Polar Orbiter (High-Risk/High-Reward)",
-                    description: "Injects directly into a 100 km orbit around Europa. Unprecedented science data, but exposed to continuous, brutal radiation doses.",
-                    complexityCost: 150.0,
-                    complexityMass: 980.0,
-                    scienceMultiplier: 1.75,
-                    commWindowPct: 70
-                },
-                {
-                    id: "surface_penetrator_package",
-                    name: "Orbiter + Cryo-Penetrator Surface Dart",
-                    description: "Deploys a hardened kinetic penetrator into the chaos ice crust to sample surface chemistry directly.",
-                    complexityCost: 190.0,
-                    complexityMass: 1250.0,
-                    scienceMultiplier: 1.90,
-                    commWindowPct: 55
-                }
-            ],
-            env: {
-                solarFluxScale: 0.037,
-                radiationSeverity: "Lethal (Jovian Belt ~5.4 Sv/day)",
-                communicationDelayS: 2400.0
-            }
-        }
+/* Synchronized NASA Space Apps 2026 Game Data exported from Python Backend */
+window.BO_DATA = {
+  "destinationProfiles": {
+    "moon": {
+      "mission_id": "lunar_explorer",
+      "name": "The Moon",
+      "profile": "Short-range / 7\u201310 days",
+      "risk": "Moderate",
+      "distance": "~384,400 KM",
+      "vector": "LUNAR TRANSFER",
+      "budget": "$300.0M",
+      "target": "South Pole-Aitken Basin & Shackleton Crater",
+      "difficulty": "Cadet (Introductory)"
     },
-
-    // -------------------------------------------------------------
-    // A. LAUNCH VEHICLES
-    // -------------------------------------------------------------
-    launchVehicles: {
-        "lv_light": {
-            id: "lv_light",
-            name: "Stratos-V Light Booster",
-            costMillion: 18.0,
-            maxPayloadKg: { "Moon": 450.0, "Mars": 220.0, "Europa": 90.0 },
-            reliability: 0.90,
-            class: "Light-Lift (<500 kg to TLI)",
-            pros: "Lowest launch procurement cost, rapid turnaround.",
-            cons: "Severely restricted payload mass; cannot support heavy shielding or landers.",
-            nasaNote: "Comparable to Rocket Lab Electron or Firefly Alpha."
-        },
-        "lv_medium": {
-            id: "lv_medium",
-            name: "Atlas-Horizon Medium-Heavy",
-            costMillion: 75.0,
-            maxPayloadKg: { "Moon": 1800.0, "Mars": 1100.0, "Europa": 550.0 },
-            reliability: 0.96,
-            class: "Medium-Lift Workhorse",
-            pros: "Proven restartable upper stage, balanced mass allowance for orbiters.",
-            cons: "Marginal for Europa direct injection without gravity assists.",
-            nasaNote: "Comparable to Falcon 9 or Atlas V 401/501 series."
-        },
-        "lv_heavy": {
-            id: "lv_heavy",
-            name: "Titan-Centaur Heavy Lifter",
-            costMillion: 140.0,
-            maxPayloadKg: { "Moon": 4200.0, "Mars": 2800.0, "Europa": 1600.0 },
-            reliability: 0.98,
-            class: "Heavy-Lift Deep Space System",
-            pros: "Enormous payload margin; easily accommodates landers and nuclear power.",
-            cons: "Consumes significant mission budget ($140M).",
-            nasaNote: "Comparable to Falcon Heavy or Vulcan Centaur Heavy."
-        },
-        "lv_super": {
-            id: "lv_super",
-            name: "Deep Space SLS Super-Lifter",
-            costMillion: 260.0,
-            maxPayloadKg: { "Moon": 9500.0, "Mars": 6500.0, "Europa": 3800.0 },
-            reliability: 0.99,
-            class: "Super Heavy-Lift Exploration System",
-            pros: "Maximum translunar/interplanetary injection velocity (high C3).",
-            cons: "Premium cost ($260M); requires large mission budget.",
-            nasaNote: "Comparable to NASA Space Launch System (SLS) Block 1B."
-        }
+    "mars": {
+      "mission_id": "mars_discovery",
+      "name": "Mars",
+      "profile": "Interplanetary / 6\u20139 months",
+      "risk": "High",
+      "distance": "~225,000,000 KM (avg)",
+      "vector": "INTERPLANETARY TRANSFER",
+      "budget": "$550.0M",
+      "target": "Jezero Crater & Valles Marineris",
+      "difficulty": "Flight Director (Intermediate)"
     },
-
-    // -------------------------------------------------------------
-    // B. SPACE SEGMENT SUBSYSTEMS
-    // -------------------------------------------------------------
-    structures: {
-        "struct_aluminum": {
-            id: "struct_aluminum",
-            name: "Standard Aluminum-Lithium Truss",
-            massKg: 160.0,
-            costMillion: 12.0,
-            radShielding: 1.0,
-            reliability: 0.94,
-            desc: "Conventional aerospace honeycomb alloy structure. Cost-effective for benign orbital environments."
-        },
-        "struct_carbon": {
-            id: "struct_carbon",
-            name: "Carbon-Fiber Reinforced Polymer (CFRP)",
-            massKg: 110.0,
-            costMillion: 24.0,
-            radShielding: 1.2,
-            reliability: 0.96,
-            desc: "Ultra-lightweight composite bus offering high rigidity and minimal thermal distortion."
-        },
-        "struct_vault": {
-            id: "struct_vault",
-            name: "Radiation-Hardened Titanium / Tantalum Vault",
-            massKg: 280.0,
-            costMillion: 45.0,
-            radShielding: 3.8,
-            reliability: 0.99,
-            desc: "Armored avionics vault lined with tantalum plates. Vital for surviving Jupiter's extreme radiation belt.",
-            nasaNote: "Modeled after NASA Juno and Europa Clipper radiation vaults."
-        }
-    },
-
-    powerGenerations: {
-        "pwr_silicon": {
-            id: "pwr_silicon",
-            name: "Deployable Silicon Solar Panels",
-            massKg: 60.0,
-            costMillion: 10.0,
-            basePowerW: 400.0,
-            type: "solar",
-            reliability: 0.92,
-            desc: "Standard silicon photovoltaic arrays. Reliable at 1 AU; struggles at Mars; fatal power failure at Europa."
-        },
-        "pwr_ultraflex": {
-            id: "pwr_ultraflex",
-            name: "UltraFlex Gallium-Arsenide (GaAs) Arrays",
-            massKg: 120.0,
-            costMillion: 28.0,
-            basePowerW: 950.0,
-            type: "solar",
-            reliability: 0.96,
-            desc: "High-efficiency triple-junction cells mounted on circular blankets. Delivers robust power at Mars.",
-            nasaNote: "Flown on NASA Orion, Phoenix, and InSight."
-        },
-        "pwr_mmrtg": {
-            id: "pwr_mmrtg",
-            name: "Single MMRTG Radioisotope Generator",
-            massKg: 85.0,
-            costMillion: 65.0,
-            basePowerW: 180.0,
-            type: "nuclear",
-            reliability: 0.99,
-            desc: "Decay of Plutonium-238 delivers continuous electricity and thermal heat day and night, immune to dust storms and distance.",
-            nasaNote: "Powers NASA Curiosity, Perseverance, and New Horizons."
-        },
-        "pwr_dual_mmrtg": {
-            id: "pwr_dual_mmrtg",
-            name: "Dual MMRTG Deep Space Nuclear Plant",
-            massKg: 165.0,
-            costMillion: 115.0,
-            basePowerW: 360.0,
-            type: "nuclear",
-            reliability: 0.995,
-            desc: "Two coupled radioisotope generators delivering 360W continuous power for flagship deep space missions.",
-            nasaNote: "Comparable to the multi-RTG architecture on Cassini."
-        }
-    },
-
-    batteries: {
-        "bat_li_ion": {
-            id: "bat_li_ion",
-            name: "Standard Space-Grade Li-Ion Battery Pack",
-            massKg: 40.0,
-            costMillion: 8.0,
-            capacityWh: 1200.0,
-            reliability: 0.93,
-            desc: "High energy density for standard eclipse durations (45-60 min). Requires careful thermal warming."
-        },
-        "bat_solid_state": {
-            id: "bat_solid_state",
-            name: "Advanced Solid-State Ceramic Battery",
-            massKg: 65.0,
-            costMillion: 22.0,
-            capacityWh: 3200.0,
-            reliability: 0.98,
-            desc: "Non-flammable solid electrolyte with wide operating thermal range (-50°C to +80°C). Massive reserves."
-        }
-    },
-
-    communications: {
-        "comm_s_band": {
-            id: "comm_s_band",
-            name: "S-Band Low-Gain Omnidirectional Antenna",
-            massKg: 18.0,
-            costMillion: 6.0,
-            powerW: 35.0,
-            maxDataRateMbDay: 250.0,
-            reliability: 0.97,
-            desc: "Wide-angle broadcast antenna. Excellent for telemetry pings, but severely throttles scientific imagery."
-        },
-        "comm_x_band": {
-            id: "comm_x_band",
-            name: "X-Band High-Gain Parabolic Dish (1.5m)",
-            massKg: 45.0,
-            costMillion: 18.0,
-            powerW: 85.0,
-            maxDataRateMbDay: 2200.0,
-            reliability: 0.95,
-            desc: "Standard deep-space scientific communication workhorse. Provides multi-megabit downlinks to Earth."
-        },
-        "comm_ka_optical": {
-            id: "comm_ka_optical",
-            name: "Dual Ka-Band & Deep Space Optical Laser (DSOC)",
-            massKg: 75.0,
-            costMillion: 40.0,
-            powerW: 160.0,
-            maxDataRateMbDay: 12000.0,
-            reliability: 0.92,
-            desc: "Hybrid radio and near-infrared laser transceiver. Delivers ultra-high-definition scientific streams from deep space.",
-            nasaNote: "Demonstrated on NASA Psyche, achieving 267 Mbps optical downlink from 31 million km."
-        }
-    },
-
-    avionics: {
-        "av_cots": {
-            id: "av_cots",
-            name: "High-Performance COTS Dual-Core Flight Computer",
-            massKg: 15.0,
-            costMillion: 8.0,
-            powerW: 25.0,
-            storageGb: 128.0,
-            radToleranceKrad: 25.0,
-            reliability: 0.88,
-            desc: "Fast commercial processors with software error-detection. Susceptible to radiation single-event upsets."
-        },
-        "av_rad750": {
-            id: "av_rad750",
-            name: "Radiation-Hardened BAE RAD750 Flight Computer",
-            massKg: 28.0,
-            costMillion: 22.0,
-            powerW: 40.0,
-            storageGb: 64.0,
-            radToleranceKrad: 200.0,
-            reliability: 0.98,
-            desc: "The gold-standard radiation-hardened spacecraft processor with decades of verified deep space heritage.",
-            nasaNote: "Flight computer of MRO, Curiosity, and James Webb Space Telescope."
-        },
-        "av_fault_tolerant": {
-            id: "av_fault_tolerant",
-            name: "Triple-Modular Redundant (TMR) Autonomous System",
-            massKg: 45.0,
-            costMillion: 38.0,
-            powerW: 75.0,
-            storageGb: 512.0,
-            radToleranceKrad: 350.0,
-            reliability: 0.995,
-            desc: "Three voting processor cores with onboard autonomous contingency response algorithms. Resolves anomalies without Earth intervention."
-        }
-    },
-
-    propulsions: {
-        "prop_cold_gas": {
-            id: "prop_cold_gas",
-            name: "Reaction Wheels & Cold-Gas Thrusters",
-            massKg: 40.0,
-            costMillion: 9.0,
-            powerW: 30.0,
-            deltaVMs: 120.0,
-            reliability: 0.92,
-            desc: "Pressurized nitrogen attitude control and 3-axis reaction wheels. Simple, but minimal orbital change delta-V."
-        },
-        "prop_monoprop": {
-            id: "prop_monoprop",
-            name: "Hydrazine Monopropellant Propulsion System",
-            massKg: 140.0,
-            costMillion: 24.0,
-            powerW: 45.0,
-            deltaVMs: 750.0,
-            reliability: 0.96,
-            desc: "Catalytic hydrazine thrusters providing substantial delta-V for trajectory corrections and orbit insertion."
-        },
-        "prop_ion": {
-            id: "prop_ion",
-            name: "NEXT-C Gridded Ion Propulsion / Hall Thruster",
-            massKg: 180.0,
-            costMillion: 48.0,
-            powerW: 180.0,
-            deltaVMs: 3200.0,
-            reliability: 0.95,
-            desc: "Electrostatic xenon gas thruster with exceptional specific impulse (Isp > 3100 s). High delta-V capability.",
-            nasaNote: "Developed by NASA Glenn Research Center; flown on Dawn and DART."
-        }
-    },
-
-    thermals: {
-        "thm_passive": {
-            id: "thm_passive",
-            name: "Passive Multi-Layer Insulation (MLI) & Heaters",
-            massKg: 25.0,
-            costMillion: 6.0,
-            powerW: 25.0,
-            reliability: 0.92,
-            desc: "Mylar/Kapton reflective thermal blankets with small electrical survival heaters."
-        },
-        "thm_active": {
-            id: "thm_active",
-            name: "Variable Louvers & Heat Pipe Loop",
-            massKg: 55.0,
-            costMillion: 18.0,
-            powerW: 40.0,
-            reliability: 0.96,
-            desc: "Ammonia heat pipes and bimetallic louvers that open and close to radiate excess heat dynamically."
-        },
-        "thm_nuclear_rhu": {
-            id: "thm_nuclear_rhu",
-            name: "Radioisotope Heater Units (RHU) & Fluid Loop",
-            massKg: 65.0,
-            costMillion: 32.0,
-            powerW: 15.0,
-            reliability: 0.99,
-            desc: "Pellets of Pu-238 generating constant direct thermal heat with minimal electrical draw. Essential for cryogenic deep space (-220°C).",
-            nasaNote: "Safeguards sensitive instruments on Cassini and Europa Clipper."
-        }
-    },
-
-    // -------------------------------------------------------------
-    // SCIENTIFIC INSTRUMENT PAYLOAD
-    // -------------------------------------------------------------
-    instruments: {
-        "camera": {
-            id: "camera",
-            name: "Multispectral High-Resolution Imager",
-            massKg: 28.0,
-            costMillion: 18.0,
-            powerW: 42.0,
-            dataRateMbDay: 3500.0,
-            reliability: 0.95,
-            scienceVal: 25,
-            desc: "Telescopic framing camera with color filter wheels for sub-meter surface topography and geologic structures.",
-            nasaAnalogue: "LROC (Moon) / HiRISE (Mars)"
-        },
-        "spectrometer": {
-            id: "spectrometer",
-            name: "Near-Infrared Imaging Spectrometer",
-            massKg: 32.0,
-            costMillion: 26.0,
-            powerW: 55.0,
-            dataRateMbDay: 2100.0,
-            reliability: 0.94,
-            scienceVal: 30,
-            desc: "Splits reflected sunlight into diagnostic wavelengths to identify minerals, hydrous salts, and atmospheric trace gases.",
-            nasaAnalogue: "CRISM (Mars) / Moon Mineralogy Mapper / MISE (Europa Clipper)"
-        },
-        "radar": {
-            id: "radar",
-            name: "Subsurface Sounding Shallow Radar (SHARAD)",
-            massKg: 46.0,
-            costMillion: 34.0,
-            powerW: 85.0,
-            dataRateMbDay: 1800.0,
-            reliability: 0.93,
-            scienceVal: 32,
-            desc: "Penetrates dielectric surfaces up to several kilometers. Detects buried polar ice, lava tubes, and subsurface liquid reservoirs.",
-            nasaAnalogue: "SHARAD (Mars) / REASON (Europa Clipper)"
-        },
-        "thermal_sensor": {
-            id: "thermal_sensor",
-            name: "Thermal Infrared Radiometer & Bolometer",
-            massKg: 16.0,
-            costMillion: 14.0,
-            powerW: 28.0,
-            dataRateMbDay: 650.0,
-            reliability: 0.96,
-            scienceVal: 20,
-            desc: "Measures emitted thermal energy day and night to calculate surface thermal inertia, regolith grain size, and hotspots.",
-            nasaAnalogue: "Diviner (Moon) / THEMIS (Mars) / E-THEMIS (Europa Clipper)"
-        },
-        "particle_detector": {
-            id: "particle_detector",
-            name: "Fluxgate Magnetometer & Particle Detector",
-            massKg: 22.0,
-            costMillion: 20.0,
-            powerW: 30.0,
-            dataRateMbDay: 400.0,
-            reliability: 0.97,
-            scienceVal: 22,
-            desc: "Measures magnetic field dynamics and cosmic ray fluxes. Crucial for detecting induction in subsurface saline oceans.",
-            nasaAnalogue: "ECM (Europa Clipper Magnetometer) / MAVEN Magnetometer"
-        }
-    },
-
-    // -------------------------------------------------------------
-    // D. GROUND & USER SEGMENTS
-    // -------------------------------------------------------------
-    groundSegments: {
-        "ground_university": {
-            id: "ground_university",
-            name: "Regional University / Commercial Ground Net",
-            costMillion: 8.0,
-            contactHoursDay: 4.0,
-            downlinkEfficiency: 0.65,
-            reliability: 0.88,
-            desc: "Single-hemisphere tracking dish with limited daily contact passes. Low cost, but creates severe data bottlenecks."
-        },
-        "ground_nsn": {
-            id: "ground_nsn",
-            name: "NASA Near Space Network (NSN) Commercial Alliance",
-            costMillion: 24.0,
-            contactHoursDay: 12.0,
-            downlinkEfficiency: 0.90,
-            reliability: 0.95,
-            desc: "Global distributed ground stations providing consistent contact windows for missions up to 2 million km from Earth.",
-            nasaNote: "NASA NSN supports cislunar and near-Earth operations."
-        },
-        "ground_dsn_34m": {
-            id: "ground_dsn_34m",
-            name: "NASA Deep Space Network (DSN) 34m Beam Waveguide",
-            costMillion: 45.0,
-            contactHoursDay: 18.0,
-            downlinkEfficiency: 0.96,
-            reliability: 0.98,
-            desc: "Continuous 24/7 global coverage through Goldstone, Madrid, and Canberra. Standard deep-space baseline.",
-            nasaNote: "Standard 34m Beam Waveguide dish network."
-        },
-        "ground_dsn_70m": {
-            id: "ground_dsn_70m",
-            name: "NASA DSN 70m Antenna Array + High-Rate Relay",
-            costMillion: 75.0,
-            contactHoursDay: 24.0,
-            downlinkEfficiency: 1.0,
-            reliability: 0.99,
-            desc: "The most sensitive scientific receiving facilities on Earth. Massive 70-meter paraboloids arrayed for maximum deep-space data extraction.",
-            nasaNote: "70-meter antennas at Goldstone, Madrid, and Canberra."
-        }
-    },
-
-    userSegments: {
-        "user_academic": {
-            id: "user_academic",
-            name: "Single University Science Working Group",
-            costMillion: 6.0,
-            scienceMultiplier: 1.0,
-            desc: "Focused academic research team. Produces focused papers but slower pipeline processing for public release."
-        },
-        "user_multicenter": {
-            id: "user_multicenter",
-            name: "NASA Multi-Center & International Science Team",
-            costMillion: 18.0,
-            scienceMultiplier: 1.35,
-            desc: "Collaborative consortium of NASA Centers (JPL, Goddard, Ames) and international partners. Rapid calibrated data validation."
-        },
-        "user_open_pds": {
-            id: "user_open_pds",
-            name: "NASA Planetary Data System (PDS) Rapid Open Pipeline",
-            costMillion: 32.0,
-            scienceMultiplier: 1.60,
-            desc: "Immediate automated ingestion, machine-learning feature classification, and open public archival on the NASA PDS.",
-            nasaNote: "The NASA PDS archives planetary science data for humanity."
-        }
+    "europa": {
+      "mission_id": "europa_frontier",
+      "name": "Europa",
+      "profile": "Deep-space / multi-year",
+      "risk": "Very high",
+      "distance": "~628,300,000 KM",
+      "vector": "JOVIAN SYSTEM APPROACH",
+      "budget": "$920.0M",
+      "target": "Conamara Chaos & Thrace Macula Ice Plumes",
+      "difficulty": "Mission Director (Advanced)"
     }
+  },
+  "destinations": {
+    "moon": {
+      "id": "lunar_explorer",
+      "name": "The Moon",
+      "description": "Embark on a high-precision lunar mission to survey polar ice deposits, map geochemical surface compositions, and establish critical data corridors for sustained exploration. The harsh 14-day lunar night and rugged surface terrain will test your power storage and navigation systems.",
+      "window": "Flexible / Near-term",
+      "challenge": "Surviving 14 Earth days of lunar darkness (-130\u00b0C to -170\u00b0C cold sink)",
+      "science": "Lunar volatiles & cold traps",
+      "scene": "EARTH\u2013MOON TRANSFER",
+      "objectives": [
+        {
+          "id": "geology",
+          "title": "High-Resolution Geomorphic Topography",
+          "desc": "Produce sub-meter digital elevation models of potential landing corridors and pyroclastic deposits."
+        },
+        {
+          "id": "resources",
+          "title": "Map Volatiles & Water Ice in Cold Traps",
+          "desc": "Probe Permanently Shadowed Regions (PSRs) at the lunar south pole for subsurface hydrogen signatures."
+        },
+        {
+          "id": "environment",
+          "title": "Mineralogical & Titanium-Iron Survey",
+          "desc": "Characterize ilmenite and anorthosite abundances across basaltic maria and highlands."
+        }
+      ]
+    },
+    "mars": {
+      "id": "mars_discovery",
+      "name": "Mars",
+      "description": "Launch an interplanetary expedition across millions of kilometers to decode the atmospheric loss mechanisms and sedimentary history of the Red Planet. Navigate the 4 to 24 minute communication lag, solar energy loss, and sudden planet-encircling dust storms that blanket solar panels.",
+      "window": "Every 26 months (Hohmann)",
+      "challenge": "Severe solar irradiance reduction (~589 W/m\u00b2 vs 1361 W/m\u00b2 at Earth)",
+      "science": "Hydrology & methane cycles",
+      "scene": "INTERPLANETARY TRANSFER",
+      "objectives": [
+        {
+          "id": "geology",
+          "title": "Subsurface Paleohydrology & Ice Shelves",
+          "desc": "Sound subsurface sedimentary beds and buried glaciers up to 1.5 km depth."
+        },
+        {
+          "id": "resources",
+          "title": "Atmospheric Trace Gas & Methane Monitoring",
+          "desc": "Detect seasonal methane fluctuations and trace gas plumes associated with sub-surface activity."
+        },
+        {
+          "id": "environment",
+          "title": "High-Resolution Geomorphology & Dunes",
+          "desc": "Track active dust devil dynamics, recurring slope lineae (RSL), and ancient delta deposits."
+        }
+      ]
+    },
+    "europa": {
+      "id": "europa_frontier",
+      "name": "Europa",
+      "description": "Venture into the outer Solar System to Jupiter's icy moon Europa, which conceals a global liquid water ocean with more volume than all of Earth's oceans combined. Survive Jupiter's colossal trapped radiation belt, manage power with only 3.7% of Earth's solar energy, and buffer data over a 45-minute light-speed chasm.",
+      "window": "Jupiter synodic alignment",
+      "challenge": "Lethal Jovian magnetospheric radiation belt (~5,400 mSv/day dose)",
+      "science": "Subsurface ocean & plume astrobiology",
+      "scene": "JOVIAN SYSTEM APPROACH",
+      "objectives": [
+        {
+          "id": "resources",
+          "title": "Sound Ice Shell Thickness & Ocean Interface",
+          "desc": "Penetrate the 15-25 km thick floating ice shell to verify liquid water pockets and depth of ocean floor."
+        },
+        {
+          "id": "environment",
+          "title": "Cryoplume & Salt-Organic Characterization",
+          "desc": "Perform in-situ mass spectrometry on vented vapor plumes for sodium chloride and prebiotic organics."
+        },
+        {
+          "id": "geology",
+          "title": "Induced Magnetic Dipole & Ocean Salinity",
+          "desc": "Measure Jupiter-induced magnetic currents to calculate ocean conductivity, temperature, and salt content."
+        }
+      ]
+    }
+  },
+  "spacecraft": {
+    "pathfinder": {
+      "id": "pathfinder",
+      "name": "Pathfinder Explorer",
+      "class": "EXPLORATION CLASS",
+      "desc": "Balanced NASA SMD Medium-class planetary bus with dual articulating solar arrays and high-gain antenna.",
+      "fuel": 70,
+      "power": 65,
+      "supplies": 60,
+      "launch_vehicle": "lv_medium",
+      "avionics": "av_rad750",
+      "thermal": "thm_active"
+    },
+    "pioneer": {
+      "id": "pioneer",
+      "name": "Pioneer Scout",
+      "class": "LIGHT SCOUT CLASS",
+      "desc": "Agile, lightweight SmallSat/CubeSat bus designed for rapid transit and targeted observation runs.",
+      "fuel": 55,
+      "power": 48,
+      "supplies": 45,
+      "launch_vehicle": "lv_light",
+      "avionics": "av_cots",
+      "thermal": "thm_passive"
+    },
+    "sentinel": {
+      "id": "sentinel",
+      "name": "Sentinel Heavy Explorer",
+      "class": "HEAVY EXPLORATION CLASS",
+      "desc": "Flagship multi-instrument deep-space probe with titanium radiation vault and bipropellant propulsion.",
+      "fuel": 85,
+      "power": 82,
+      "supplies": 80,
+      "launch_vehicle": "lv_heavy",
+      "avionics": "av_tri_modular",
+      "thermal": "thm_active"
+    }
+  },
+  "missionEvents": {
+    "moon": [
+      {
+        "title": "Trans-Lunar Injection Burn Deviation",
+        "phase": "Trans-Lunar Injection (TLI)",
+        "description": "During the upper-stage burn toward the Moon, slight thrust vector oscillations introduce a 2.4 m/s velocity dispersion. A correction maneuver is necessary to prevent a lunar flyby overshoot.",
+        "nasa_context": "NASA Apollo and Artemis trajectories use Trajectory Correction Maneuvers (TCMs) to ensure accurate insertion into lunar orbit.",
+        "choices": [
+          {
+            "id": "c1",
+            "title": "Execute immediate active RCS burn to trim trajectory",
+            "detail": "Consumes onboard fuel/power but restores nominal orbital trajectory.",
+            "effects": {
+              "fuel": -6,
+              "power": -3,
+              "supplies": 0
+            },
+            "score": 10,
+            "log": "Consumes onboard fuel/power but restores nominal orbital trajectory."
+          },
+          {
+            "id": "c2",
+            "title": "Coast and perform a combined insertion trim closer to the Moon",
+            "detail": "Conserves immediate fuel, but increases required delta-V later and risks navigational dispersion.",
+            "effects": {
+              "fuel": -2,
+              "power": -8,
+              "supplies": 0
+            },
+            "score": 7,
+            "log": "Conserves immediate fuel, but increases required delta-V later and risks navigational dispersion."
+          }
+        ]
+      },
+      {
+        "title": "Descent into Polar Crater Shadow (Lunar Night)",
+        "phase": "Low Lunar Polar Orbit",
+        "description": "The spacecraft enters the shadow of Shackleton Crater at the Lunar South Pole. Solar panels stop producing electricity, and temperatures plummet to -160\u00b0C. Thermal heaters and batteries are engaged.",
+        "nasa_context": "NASA Lunar Reconnaissance Orbiter (LRO) experiences periodic eclipses where instruments switch to low-power keep-alive modes to protect optics from freezing.",
+        "choices": [
+          {
+            "id": "c1",
+            "title": "Enter Safe Cold-Soak Mode (Shut down scientific instruments)",
+            "detail": "Protects battery reserves and thermal stability, but halts science observations during the pass.",
+            "effects": {
+              "fuel": -6,
+              "power": -3,
+              "supplies": 0
+            },
+            "score": 10,
+            "log": "Protects battery reserves and thermal stability, but halts science observations during the pass."
+          },
+          {
+            "id": "c2",
+            "title": "Keep Subsurface Radar Active to Sound Frozen Shadowed Traps",
+            "detail": "Drains electrical storage, but yields invaluable subsurface water ice signatures.",
+            "effects": {
+              "fuel": -2,
+              "power": -8,
+              "supplies": 0
+            },
+            "score": 7,
+            "log": "Drains electrical storage, but yields invaluable subsurface water ice signatures."
+          }
+        ]
+      },
+      {
+        "title": "Electrostatic Regolith Dust Levitating Over Terminator",
+        "phase": "Primary Mapping Survey",
+        "description": "Passing over the lunar day-night terminator, solar ultraviolet light charges fine sub-micron regolith particles, levitating dust clouds up to orbital altitude. Dust adhesion threatens optical camera lenses.",
+        "nasa_context": "First observed by Apollo astronauts (lunar horizon glow) and investigated by NASA LADEE, electrostatic dust lofting is a major hazard for lunar exploration.",
+        "choices": [
+          {
+            "id": "c1",
+            "title": "Rotate spacecraft 180\u00b0 to keep optical apertures in the wake",
+            "detail": "Safeguards camera optics, but temporarily misaligns high-gain earth communication dish.",
+            "effects": {
+              "fuel": -6,
+              "power": -3,
+              "supplies": 0
+            },
+            "score": 10,
+            "log": "Safeguards camera optics, but temporarily misaligns high-gain earth communication dish."
+          },
+          {
+            "id": "c2",
+            "title": "Activate electrostatic lens repeller rings at higher power",
+            "detail": "Maintains telescope orientation while consuming 35W extra electrical power.",
+            "effects": {
+              "fuel": -2,
+              "power": -8,
+              "supplies": 0
+            },
+            "score": 7,
+            "log": "Maintains telescope orientation while consuming 35W extra electrical power."
+          }
+        ]
+      },
+      {
+        "title": "Serendipitous Cabeus Crater Volatile Detection",
+        "phase": "Deep Science Phase",
+        "description": "The near-infrared spectrometer detects an anomalous hydroxyl/water absorption band (2.8 microns) in Cabeus Crater floor ejecta. A targeted second pass requires an orbital inclination adjustment.",
+        "nasa_context": "NASA LCROSS confirmed ~5.6% water ice in the Cabeus plume in 2009. High-resolution spectral verification remains top planetary decadal priority.",
+        "choices": [
+          {
+            "id": "c1",
+            "title": "Burn propellant to lower orbit to 50 km for ultra-high-resolution scan",
+            "detail": "High fuel expenditure and increased gravitational perturbation risk, but doubles scientific discovery yield.",
+            "effects": {
+              "fuel": -6,
+              "power": -3,
+              "supplies": 0
+            },
+            "score": 10,
+            "log": "High fuel expenditure and increased gravitational perturbation risk, but doubles scientific discovery yield."
+          },
+          {
+            "id": "c2",
+            "title": "Maintain standard 100 km orbit and conduct multi-orbit cumulative integration",
+            "detail": "Low risk, zero extra fuel consumed, standard science return.",
+            "effects": {
+              "fuel": -2,
+              "power": -8,
+              "supplies": 0
+            },
+            "score": 7,
+            "log": "Low risk, zero extra fuel consumed, standard science return."
+          }
+        ]
+      },
+      {
+        "title": "Far-Side Occultation & Ground Contact Blackout",
+        "phase": "Extended Operations",
+        "description": "The spacecraft orbits behind the lunar far side. Direct radio line-of-sight to Earth is severed for 48 minutes. An unexpected gyroscopic telemetry anomaly occurs in reaction wheel #2.",
+        "nasa_context": "NASA Lunar Orbiters must rely on autonomous fault protection software when occulted by the Moon without a relay satellite.",
+        "choices": [
+          {
+            "id": "c1",
+            "title": "Allow autonomous onboard flight software to reset wheel electronics",
+            "detail": "Relies on avionics reliability; fixes glitch before re-emerging on Earth-facing side.",
+            "effects": {
+              "fuel": -6,
+              "power": -3,
+              "supplies": 0
+            },
+            "score": 10,
+            "log": "Relies on avionics reliability; fixes glitch before re-emerging on Earth-facing side."
+          },
+          {
+            "id": "c2",
+            "title": "Freeze attitude in drift mode and wait for Earth acquisition of signal (AOS)",
+            "detail": "Safe, but loses 48 minutes of science imaging and drifts slightly off target.",
+            "effects": {
+              "fuel": -2,
+              "power": -8,
+              "supplies": 0
+            },
+            "score": 7,
+            "log": "Safe, but loses 48 minutes of science imaging and drifts slightly off target."
+          }
+        ]
+      }
+    ],
+    "mars": [
+      {
+        "title": "Interplanetary Coronal Mass Ejection (CME) Impact",
+        "phase": "Cruise Phase (0.8 AU to Mars)",
+        "description": "A powerful X-class solar flare triggers an intense proton storm across the inner solar system. The spacecraft is hit by high-energy galactic cosmic rays and solar energetic particles.",
+        "nasa_context": "The RAD instrument on NASA Curiosity proved that interplanetary transit exposes electronics and future astronauts to significant radiation doses.",
+        "choices": [
+          {
+            "id": "c1",
+            "title": "Re-orient bus so radiation vault/propellant tanks shield avionics",
+            "detail": "Shields critical processor cores; temporary loss of Earth communication link.",
+            "effects": {
+              "fuel": -8,
+              "power": -4,
+              "supplies": 0
+            },
+            "score": 10,
+            "log": "Shields critical processor cores; temporary loss of Earth communication link."
+          },
+          {
+            "id": "c2",
+            "title": "Keep scientific particle detector actively recording solar storm spectra",
+            "detail": "Gathers high-value space weather data, but risks single-event latchups on unshielded avionics.",
+            "effects": {
+              "fuel": -3,
+              "power": -10,
+              "supplies": 0
+            },
+            "score": 7,
+            "log": "Gathers high-value space weather data, but risks single-event latchups on unshielded avionics."
+          }
+        ]
+      },
+      {
+        "title": "Mars Orbit Insertion (MOI) Main Engine Burn",
+        "phase": "Mars Orbit Insertion",
+        "description": "Approaching Mars at 5.7 km/s, the spacecraft must fire its propulsion system retrograde to enter Martian gravity capture. Speed-of-light delay to Earth is 14 minutes.",
+        "nasa_context": "NASA Mars missions (MRO, MAVEN, Mars Odyssey) undergo critical autonomous orbit insertion burns where ground teams can only watch delayed telemetry after the fact.",
+        "choices": [
+          {
+            "id": "c1",
+            "title": "Standard continuous retro-burn targeting 350 km circular science orbit",
+            "detail": "High propellant usage, but achieves optimal survey orbit immediately.",
+            "effects": {
+              "fuel": -8,
+              "power": -4,
+              "supplies": 0
+            },
+            "score": 10,
+            "log": "High propellant usage, but achieves optimal survey orbit immediately."
+          },
+          {
+            "id": "c2",
+            "title": "High elliptical capture orbit followed by multi-week Aerobraking",
+            "detail": "Conserves up to 40% propellant mass, but subjects spacecraft thermal blankets to atmospheric frictional heating.",
+            "effects": {
+              "fuel": -3,
+              "power": -10,
+              "supplies": 0
+            },
+            "score": 7,
+            "log": "Conserves up to 40% propellant mass, but subjects spacecraft thermal blankets to atmospheric frictional heating."
+          }
+        ]
+      },
+      {
+        "title": "Global Martian Dust Storm (Tau > 3.5)",
+        "phase": "Primary Science Phase",
+        "description": "A massive regional dust storm merges into a global planet-encircling event. Atmospheric opacity (optical depth Tau) spikes to 3.5, reducing incoming solar irradiance by over 75% for 6 weeks.",
+        "nasa_context": "The 2018 global dust storm ended NASA's solar-powered Opportunity rover, while the nuclear-powered Curiosity and Perseverance rovers continued operations uninterrupted.",
+        "choices": [
+          {
+            "id": "c1",
+            "title": "Power down all non-essential payloads into Low-Power Hibernation",
+            "detail": "Ensures spacecraft survival; pauses scientific data collection until skies clear.",
+            "effects": {
+              "fuel": -8,
+              "power": -4,
+              "supplies": 0
+            },
+            "score": 10,
+            "log": "Ensures spacecraft survival; pauses scientific data collection until skies clear."
+          },
+          {
+            "id": "c2",
+            "title": "Rely on power reserves and deploy Subsurface Radar (unaffected by dust)",
+            "detail": "If power/nuclear allows, continues subsurface science through the opaque storm.",
+            "effects": {
+              "fuel": -3,
+              "power": -10,
+              "supplies": 0
+            },
+            "score": 7,
+            "log": "If power/nuclear allows, continues subsurface science through the opaque storm."
+          }
+        ]
+      },
+      {
+        "title": "Methane Plume Detection & Solar Conjunction",
+        "phase": "Deep Science Phase",
+        "description": "The infrared spectrometer detects localized 12 ppb methane spikes emerging from Gale Crater fault zones. Meanwhile, Earth and Mars are moving into Solar Conjunction, where the Sun directly blocks radio signals between the two planets.",
+        "nasa_context": "During NASA Mars Solar Conjunction (~every 26 months), solar plasma corrupts RF signals, forcing commands to be suspended and data to be stored onboard in mass memory.",
+        "choices": [
+          {
+            "id": "c1",
+            "title": "Buffer all high-rate methane mapping data to onboard flash storage",
+            "detail": "Safeguards all observations; tests onboard memory capacity until conjunction ends.",
+            "effects": {
+              "fuel": -8,
+              "power": -4,
+              "supplies": 0
+            },
+            "score": 10,
+            "log": "Safeguards all observations; tests onboard memory capacity until conjunction ends."
+          },
+          {
+            "id": "c2",
+            "title": "Transmit real-time telemetry at emergency low baud rate via X-band",
+            "detail": "Risk of high packet loss and parity bit corruption due to solar corona interference.",
+            "effects": {
+              "fuel": -3,
+              "power": -10,
+              "supplies": 0
+            },
+            "score": 7,
+            "log": "Risk of high packet loss and parity bit corruption due to solar corona interference."
+          }
+        ]
+      },
+      {
+        "title": "Ancient Delta Sediment Core Calibration",
+        "phase": "Extended Mission",
+        "description": "Orbital camera surveys reveal exposed phyllosilicates (clay minerals) at the base of an ancient alluvial fan. A specialized multi-angle hyperspectral imaging pass is requested.",
+        "nasa_context": "NASA's CRISM and HiRISE instruments on MRO revolutionized our understanding of Mars's aqueous history by targeting hydrated minerals in river deltas.",
+        "choices": [
+          {
+            "id": "c1",
+            "title": "Perform dedicated roll maneuver and full multi-spectral spectral sweep",
+            "detail": "Produces premier scientific finding, consuming 60W power and 1.8 GB data.",
+            "effects": {
+              "fuel": -8,
+              "power": -4,
+              "supplies": 0
+            },
+            "score": 10,
+            "log": "Produces premier scientific finding, consuming 60W power and 1.8 GB data."
+          },
+          {
+            "id": "c2",
+            "title": "Standard nadir-pointing imaging pass without roll maneuver",
+            "detail": "Lower resolution and mineral diagnostic fidelity, but zero pointing stress on reaction wheels.",
+            "effects": {
+              "fuel": -3,
+              "power": -10,
+              "supplies": 0
+            },
+            "score": 7,
+            "log": "Lower resolution and mineral diagnostic fidelity, but zero pointing stress on reaction wheels."
+          }
+        ]
+      }
+    ],
+    "europa": [
+      {
+        "title": "Jupiter Magnetosphere Radiation Belt Ingress",
+        "phase": "Jovian System Arrival",
+        "description": "Entering the inner Jovian system, the spacecraft crosses the intense flux tube of Io and Europa. Radiation levels spike to 5,400 mSv/day\u2014hundreds of times higher than Earth's Van Allen belts.",
+        "nasa_context": "NASA's Europa Clipper utilizes a specialized armored radiation vault with thick aluminum and tantalum walls to protect its electronic heart from Jupiter's harsh fields.",
+        "choices": [
+          {
+            "id": "c1",
+            "title": "Route all computational tasks into shielded radiation-hardened core",
+            "detail": "Protects processors from latchups; drops unneeded background tasks.",
+            "effects": {
+              "fuel": -10,
+              "power": -5,
+              "supplies": 0
+            },
+            "score": 10,
+            "log": "Protects processors from latchups; drops unneeded background tasks."
+          },
+          {
+            "id": "c2",
+            "title": "Keep magnetic particle detectors wide open to map Jovian flux lines",
+            "detail": "Spectacular scientific data return on radiation physics, but stresses unshielded electronic buses.",
+            "effects": {
+              "fuel": -4,
+              "power": -12,
+              "supplies": 0
+            },
+            "score": 7,
+            "log": "Spectacular scientific data return on radiation physics, but stresses unshielded electronic buses."
+          }
+        ]
+      },
+      {
+        "title": "Cryogenic Solar Starvation (-220\u00b0C Thermal Shock)",
+        "phase": "Europa Approach",
+        "description": "At 5.2 AU from the Sun, solar irradiance is only 50 W/m\u00b2 (less than 4% of Earth sunlight). The shadow of Jupiter causes an eclipse lasting 3.2 hours. Internal thermal loop drops to -40\u00b0C.",
+        "nasa_context": "At Jupiter, solar arrays must span the size of basketball courts (as on Europa Clipper/Juno), or utilize Radioisotope Thermoelectric Generators (MMRTGs) for heat and power.",
+        "choices": [
+          {
+            "id": "c1",
+            "title": "Fire Radioisotope / Electrical survival heaters at maximum output",
+            "detail": "Prevents propellant freezing and keeps instruments warm, drawing heavy battery power unless nuclear.",
+            "effects": {
+              "fuel": -10,
+              "power": -5,
+              "supplies": 0
+            },
+            "score": 10,
+            "log": "Prevents propellant freezing and keeps instruments warm, drawing heavy battery power unless nuclear."
+          },
+          {
+            "id": "c2",
+            "title": "Allow outer sensor bays to cold-soak while preserving core electronics",
+            "detail": "Conserves 50% battery energy, but risks calibration shift on optical sensors.",
+            "effects": {
+              "fuel": -4,
+              "power": -12,
+              "supplies": 0
+            },
+            "score": 7,
+            "log": "Conserves 50% battery energy, but risks calibration shift on optical sensors."
+          }
+        ]
+      },
+      {
+        "title": "Cryovolcanic Plume Eruption at Thrace Macula",
+        "phase": "Close Flyby (25 km Altitude)",
+        "description": "Real-time navigation cameras detect a 160-km-high vapor plume erupting through a chaos fracture in Europa's ice crust. Flying directly through the plume could sample subsurface ocean vapor.",
+        "nasa_context": "Hubble Space Telescope and Galileo observations suggested active plumes on Europa, offering a direct window into the subsurface ocean without drilling through 20 km of ice.",
+        "choices": [
+          {
+            "id": "c1",
+            "title": "Dip altitude to 25 km and fly through plume for in-situ mass spectrometry",
+            "detail": "High aerodynamic and ice-particle impact risk, but the ultimate scientific jackpot for prebiotic organics.",
+            "effects": {
+              "fuel": -10,
+              "power": -5,
+              "supplies": 0
+            },
+            "score": 10,
+            "log": "High aerodynamic and ice-particle impact risk, but the ultimate scientific jackpot for prebiotic organics."
+          },
+          {
+            "id": "c2",
+            "title": "Observe plume remotely from 300 km altitude with infrared spectrometer",
+            "detail": "Zero impact risk; delivers safe spectral emission data.",
+            "effects": {
+              "fuel": -4,
+              "power": -12,
+              "supplies": 0
+            },
+            "score": 7,
+            "log": "Zero impact risk; delivers safe spectral emission data."
+          }
+        ]
+      },
+      {
+        "title": "Deep Space Optical Communications (DSOC) Plasma Jitter",
+        "phase": "Interplanetary Downlink Phase",
+        "description": "With the spacecraft over 620 million kilometers away, the 42-minute one-way radio delay complicates communications. Dense Jovian plasma clouds cause refractive beam jitter on high-frequency signals.",
+        "nasa_context": "NASA DSN 70m dishes in California, Spain, and Australia utilize cryogenically cooled maser amplifiers and beam waveguides to resolve picowatt signals from the outer planets.",
+        "choices": [
+          {
+            "id": "c1",
+            "title": "Switch to Low-Frequency Robust X-Band Carrier with Forward Error Correction",
+            "detail": "Slow downlink data rate, but guarantees zero corrupted packets.",
+            "effects": {
+              "fuel": -10,
+              "power": -5,
+              "supplies": 0
+            },
+            "score": 10,
+            "log": "Slow downlink data rate, but guarantees zero corrupted packets."
+          },
+          {
+            "id": "c2",
+            "title": "Request NASA DSN 70m Dish Arraying with High-Gain Ka-band burst",
+            "detail": "Maximizes science throughput, requiring premium DSN ground tracking lock.",
+            "effects": {
+              "fuel": -4,
+              "power": -12,
+              "supplies": 0
+            },
+            "score": 7,
+            "log": "Maximizes science throughput, requiring premium DSN ground tracking lock."
+          }
+        ]
+      },
+      {
+        "title": "Planetary Protection End-of-Life Disposal",
+        "phase": "Mission Conclusion",
+        "description": "With propulsion fuel at 5%, the mission must execute planetary protection protocols. International COSPAR and NASA guidelines strictly prohibit accidentally contaminating Europa's potentially habitable subsurface ocean with terrestrial microbes.",
+        "nasa_context": "NASA Galileo and Cassini were intentionally de-orbited into the crushing atmospheres of Jupiter and Saturn to safeguard Europa and Enceladus from biological contamination.",
+        "choices": [
+          {
+            "id": "c1",
+            "title": "Execute Controlled De-orbit Burn into Jupiter's Giant Atmosphere",
+            "detail": "Complete spacecraft incineration. 100% planetary protection compliance; NASA gold-standard.",
+            "effects": {
+              "fuel": -10,
+              "power": -5,
+              "supplies": 0
+            },
+            "score": 10,
+            "log": "Complete spacecraft incineration. 100% planetary protection compliance; NASA gold-standard."
+          },
+          {
+            "id": "c2",
+            "title": "Boost into a stable High Jovian Graveyard Orbit",
+            "detail": "Preserves spacecraft intact for potential future relay, but carries small long-term resonance impact risk.",
+            "effects": {
+              "fuel": -4,
+              "power": -12,
+              "supplies": 0
+            },
+            "score": 7,
+            "log": "Preserves spacecraft intact for potential future relay, but carries small long-term resonance impact risk."
+          }
+        ]
+      }
+    ]
+  }
 };
-
-if (typeof module !== "undefined") {
-    module.exports = GAME_DATA;
-}
-

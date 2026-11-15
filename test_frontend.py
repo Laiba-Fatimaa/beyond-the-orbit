@@ -1,19 +1,14 @@
 import os, sys
 
 js_files = [
-    'js/nasa-data.js',
-    'js/game-data.js',
-    'js/game-engine.js',
-    'js/events-engine.js',
     'js/space-renderer.js',
-    'js/hangar-builder.js',
-    'js/flight-simulator.js',
     'js/audio-fx.js',
+    'js/game-data.js',
     'js/ui-controller.js'
 ]
 
 print("=" * 60)
-print("VALIDATING FRONTEND JAVASCRIPT & DOM INTEGRITY")
+print("VALIDATING RECOVERED FRONTEND JAVASCRIPT & DOM INTEGRITY")
 print("=" * 60)
 
 all_passed = True
@@ -29,7 +24,7 @@ for path in js_files:
 
     lines = code.split('\n')
     
-    # Simple brace balance check ignoring comments and strings
+    # Simple syntax and bracket balance validator
     curly = 0
     square = 0
     paren = 0
@@ -74,7 +69,7 @@ for path in js_files:
                     square = 0
         elif in_string:
             if c == '\\':
-                i += 1 # skip escape
+                i += 1
             elif c == in_string:
                 in_string = False
         elif in_comment == 'multi':
@@ -93,59 +88,85 @@ for path in js_files:
     else:
         print(f"✔ PASS: {path} (Lines: {len(lines)}, Bytes: {len(code)})")
 
-# Check index.html element IDs required by UIController and FlightSimulator
+# Check index.html element IDs required by UIController
 with open("index.html", "r", encoding="utf-8") as f:
     html_content = f.read()
 
 required_ids = [
     "space-canvas",
-    "landing-planet-canvas",
-    "landing-craft-canvas",
-    "missions-card-grid",
-    "schematic-viewport",
-    "subsystem-options-container",
-    "tel-mass-val",
-    "tel-cost-val",
-    "tel-pwr-val",
-    "tel-data-val",
-    "tel-rel-val",
-    "planning-status-badge",
-    "validation-critique-box",
-    "launch-action-btn",
-    "sim-mission-phase-title",
-    "mission-elapsed-time",
-    "flight-deck-radar-canvas",
-    "sim-objectives-checklist",
-    "hud-fuel-val",
-    "hud-fuel-bar",
-    "hud-power-val",
-    "hud-power-bar",
-    "hud-health-val",
-    "hud-health-bar",
-    "hud-datacol-val",
-    "hud-science-val",
-    "flight-discovery-banner",
-    "action-scan-btn",
-    "action-downlink-btn",
-    "action-burn-btn",
-    "action-power-btn",
-    "power-mode-label",
-    "flight-log-feed",
-    "action-end-mission-btn",
-    "anomaly-modal-container",
-    "debrief-dest-val",
-    "debrief-obj-completed-val",
-    "debrief-collected-val",
-    "debrief-transmitted-val",
-    "debrief-rel-val",
-    "debrief-score-num",
-    "debrief-score-badge",
-    "outcome-circle-icon",
-    "debrief-summary-text",
-    "debrief-categories-container",
-    "debrief-objectives-list",
-    "debrief-lessons-list",
-    "debrief-suggestions-list"
+    "system-clock",
+    "sound-toggle",
+    "screen-intro",
+    "begin-mission",
+    "how-to-play",
+    "help-modal",
+    "screen-destination",
+    "destination-grid",
+    "destination-modal",
+    "destination-modal-card",
+    "close-destination-modal",
+    "destination-modal-planet",
+    "destination-modal-title",
+    "destination-modal-description",
+    "destination-modal-distance",
+    "science-objective",
+    "continue-destination",
+    "screen-spacecraft",
+    "craft-name",
+    "craft-class",
+    "fuel-range",
+    "fuel-value",
+    "power-range",
+    "power-value",
+    "supplies-range",
+    "supplies-value",
+    "mass-value",
+    "readiness-value",
+    "back-destination",
+    "continue-flight",
+    "screen-flight",
+    "flight-phase",
+    "flight-scene",
+    "flight-destination-art",
+    "progress-value",
+    "progress-bar",
+    "flight-objective-title",
+    "flight-action",
+    "flight-scan",
+    "flight-stabilize",
+    "telemetry-fuel",
+    "telemetry-power",
+    "telemetry-supplies",
+    "telemetry-hull",
+    "screen-debrief",
+    "success-stamp",
+    "debrief-planet",
+    "debrief-destination",
+    "final-score",
+    "grade-badge",
+    "score-bar",
+    "result-science",
+    "result-resources",
+    "result-decisions",
+    "debrief-insight",
+    "replay-mission",
+    "new-mission",
+    "download-html-report",
+    "download-pdf-report",
+    "event-modal",
+    "popup-event-title",
+    "popup-event-choices",
+    "event-outcome",
+    "popup-next-event",
+    "result-modal",
+    "result-modal-card",
+    "result-modal-title",
+    "popup-final-score",
+    "popup-final-fuel",
+    "popup-final-power",
+    "popup-final-supplies",
+    "view-debrief",
+    "toast"
 ]
 
 print("\n" + "=" * 60)
@@ -176,4 +197,3 @@ else:
     print("VALIDATION FAILED WITH ERRORS")
     print("=" * 60)
     sys.exit(1)
-

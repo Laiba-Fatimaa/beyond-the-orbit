@@ -1,52 +1,12 @@
-/* 
- * BEYOND THE ORBIT — ANIMATIONS & KEYFRAMES
- * =========================================
- * Team Orbitera | NASA Space Apps Challenge 2026
- */
-
-@keyframes pulseGlowCyan {
-    0% { box-shadow: 0 0 10px rgba(67, 217, 255, 0.2); }
-    50% { box-shadow: 0 0 25px rgba(67, 217, 255, 0.5); }
-    100% { box-shadow: 0 0 10px rgba(67, 217, 255, 0.2); }
-}
-
-@keyframes pulseGlowRed {
-    0% { box-shadow: 0 0 10px rgba(255, 82, 99, 0.2); }
-    50% { box-shadow: 0 0 25px rgba(255, 82, 99, 0.6); }
-    100% { box-shadow: 0 0 10px rgba(255, 82, 99, 0.2); }
-}
-
-@keyframes scanlineMove {
-    0% { transform: translateY(-100%); }
-    100% { transform: translateY(100%); }
-}
-
-@keyframes spinSlow {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
-
-.radar-sweep {
-    animation: spinSlow 8s linear infinite;
-    transform-origin: center;
-}
-
-.glow-cyan-pulse {
-    animation: pulseGlowCyan 2.5s infinite ease-in-out;
-}
-
-.glow-red-pulse {
-    animation: pulseGlowRed 1.8s infinite ease-in-out;
-}
-
-.hologram-line {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, rgba(67, 217, 255, 0.8), transparent);
-    animation: scanlineMove 3.5s linear infinite;
-    pointer-events: none;
-}
-
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+@keyframes screen-in{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes craft-float{0%,100%{transform:translateY(0) rotate(-20deg)}50%{transform:translateY(-10px) rotate(-17deg)}}
+@keyframes ship-drift{0%,100%{transform:translate(0,0) rotate(-25deg)}50%{transform:translate(9px,-8px) rotate(-20deg)}}
+@keyframes star-drift{from{background-position:0 0}to{background-position:420px 280px}}
+@keyframes earthFloat{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-10px) rotate(0.8deg)}}
+@keyframes probeFloat{0%,100%{transform:rotate(-25deg) translate(0,0)}50%{transform:rotate(-22deg) translate(7px,-9px)}}
+@keyframes moonOrbitDrift{0%,100%{transform:translate(0,0)}50%{transform:translate(-6px,8px)}}
+@keyframes orbitRotateSlow{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes heroFadeInUp{0%{opacity:0;transform:translateY(24px)}100%{opacity:1;transform:translateY(0)}}
+@keyframes heroOrbitIntro{0%{opacity:0;transform:scale(.94) translateY(20px);filter:blur(4px)}100%{opacity:1;transform:scale(1) translateY(0);filter:blur(0)}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}}

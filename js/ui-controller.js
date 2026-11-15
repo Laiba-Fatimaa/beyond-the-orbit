@@ -1,890 +1,953 @@
-/**
- * BEYOND THE ORBIT — MASTER UI & GAME CONTROLLER
- * ==============================================
- * Team Orbitera | NASA Space Apps Challenge 2026
- * 
- * Orchestrates the complete 5-screen game flow:
- * 1. Cinematic Opening Prologue (Massive planet, spacecraft, glowing orbital logo)
- * 2. Planetary Reconnaissance & Target Selection (Moon, Mars, Europa cards)
- * 3. CAD Cleanroom Spacecraft Engineering Hangar (3-column layout, turntable craft)
- * 4. Active Flight Operations Gameplay Deck (orbital trajectory, viewfinder, actions)
- * 5. Aerospace Systems Evaluation & Flight Debrief (laurel wreath, report, scorecard)
- */
+(() => {
+  const $ = (s, root=document) => root.querySelector(s);
+  const $$ = (s, root=document) => [...root.querySelectorAll(s)];
+  
+  const state = {
+    screen: "intro",
+    destination: "moon",
+    objective: "geology",
+    craft: "pathfinder",
+    fuel: 70,
+    power: 65,
+    supplies: 60,
+    eventIndex: 0,
+    decisions: [],
+    score: 60,
+    progress: 18,
+    playerX: 50,
+    shipVisualX: 50,
+    gameStage: null,
+    hull: 100,
+    scanCount: 0,
+    approachSpeed: 30,
+    thrusting: false,
+    missionOver: false,
+    failReason: "",
+    hits: 0,
+    backendState: null
+  };
 
-class UIController {
-    constructor() {
-        this.currentScreen = "landing";
-        this.selectedMissionId = "lunar_explorer";
-        this.activeSubsystem = "power";
+  const data = window.BO_DATA || {};
+  const keys = { left: false, right: false };
+  let modalTimer = null, eventTimer = null, gameTimer = null, flightRaf = 0, flightLast = 0;
 
-        this.config = {
-            launchVehicle: "lv_medium",
-            architecture: "polar_low_orbit",
-            structure: "struct_aluminum",
-            powerGen: "pwr_silicon",
-            battery: "bat_li_ion",
-            comms: "comm_x_band",
-            avionics: "av_rad750",
-            propulsion: "prop_monoprop",
-            thermal: "thm_active",
-            instruments: ["camera", "spectrometer"],
-            groundSegment: "ground_nsn",
-            userSegment: "user_multicenter"
-        };
+  // -------------------------------------------------------------
+  // AUDIO WRAPPER
+  // -------------------------------------------------------------
+  const audio = {
+    playHover: () => window.AudioFX && window.AudioFX.playHover(),
+    playClick: () => window.AudioFX && window.AudioFX.playClick(),
+    playSelect: () => window.AudioFX && window.AudioFX.playSelect(),
+    playConfirmDestination: () => window.AudioFX && window.AudioFX.playConfirmDestination(),
+    playCraftSelect: () => window.AudioFX && window.AudioFX.playCraftSelect(),
+    playSlider: () => window.AudioFX && window.AudioFX.playSliderTick(),
+    playIgnition: () => window.AudioFX && window.AudioFX.playIgnition(),
+    playThrust: (engaged) => window.AudioFX && window.AudioFX.playThrust(engaged),
+    playCollision: () => window.AudioFX && window.AudioFX.playCollision(),
+    playWarning: () => window.AudioFX && window.AudioFX.playWarning(),
+    playScan: () => window.AudioFX && window.AudioFX.playScan(),
+    playAlert: () => window.AudioFX && window.AudioFX.playEventAlert(),
+    playSuccess: () => window.AudioFX && window.AudioFX.playSuccess(),
+    playFailure: () => window.AudioFX && window.AudioFX.playFailure(),
+    startLandingAmbience: () => window.AudioFX && window.AudioFX.startLandingAmbience(),
+    startFlightAmbience: () => window.AudioFX && window.AudioFX.startFlightAmbience(),
+    stopAmbience: () => window.AudioFX && window.AudioFX.stopAmbience()
+  };
 
-        this.simState = {
-            healthPct: 100.0,
-            powerPct: 100.0,
-            dataCollectedMb: 0.0,
-            dataTransmittedMb: 0.0,
-            sciencePoints: 0.0,
-            log: []
-        };
+  // -------------------------------------------------------------
+  // STREAMLIT BACKEND MESSAGING BRIDGE
+  // -------------------------------------------------------------
+  const isStreamlit = window.parent && window.parent !== window;
 
-        this.hangar = new HangarBuilder();
-        this.flightSim = new FlightSimulator(this);
-        window.flightSimulator = this.flightSim;
+  function sendBackend(action, payload = {}) {
+    if (isStreamlit) {
+      window.parent.postMessage({
+        isStreamlitMessage: true,
+        type: "streamlit:setComponentValue",
+        value: { action, payload, timestamp: Date.now() }
+      }, "*");
+    }
+  }
 
-        this.landingAnimFrame = null;
-        this.missionTimer = null;
-        this.missionSecondsElapsed = 0;
+  function initStreamlitBridge() {
+    if (!isStreamlit) return;
 
-        this.init();
+    // 1. Announce ready to Streamlit
+    window.parent.postMessage({
+      isStreamlitMessage: true,
+      type: "streamlit:componentReady",
+      apiVersion: 1
+    }, "*");
+
+    // 2. Adjust frame height to fill window
+    const reportHeight = () => {
+      const h = Math.max(window.innerHeight, document.documentElement.scrollHeight || 0);
+      window.parent.postMessage({
+        isStreamlitMessage: true,
+        type: "streamlit:setFrameHeight",
+        height: h
+      }, "*");
+    };
+    reportHeight();
+    window.addEventListener("resize", reportHeight);
+
+    // 3. Listen for state dispatched from Python Streamlit app
+    window.addEventListener("message", (e) => {
+      if (e.data && e.data.type === "streamlit:render") {
+        const bState = e.data.args && e.data.args.backend_state;
+        if (bState) {
+          handleBackendStateUpdate(bState);
+        }
+      }
+    });
+  }
+
+  function handleBackendStateUpdate(bState) {
+    state.backendState = bState;
+
+    // Synchronize HTML / PDF report download links if present
+    if (bState.html_report_data_uri) {
+      const hBtn = $("#download-html-report");
+      if (hBtn) hBtn.href = bState.html_report_data_uri;
+    }
+    if (bState.pdf_report_base64) {
+      const pBtn = $("#download-pdf-report");
+      if (pBtn) pBtn.href = "data:application/pdf;base64," + bState.pdf_report_base64;
     }
 
-    init() {
-        this.bindEvents();
-        this.setMission("lunar_explorer", false);
-        this.showScreen("landing");
+    // Synchronize Debrief score if evaluated by backend
+    if (bState.score_report) {
+      const sr = bState.score_report;
+      if (typeof sr.total_score === "number") {
+        state.score = sr.total_score;
+        $("#final-score").innerHTML = Math.round(sr.total_score) + '<span>/100</span>';
+        $("#score-bar").style.width = Math.min(100, Math.round(sr.total_score)) + "%";
+      }
+      if (sr.grade) {
+        $("#grade-badge").textContent = sr.grade;
+      }
+      if (sr.summary_text) {
+        $("#debrief-insight").textContent = sr.summary_text;
+      }
+    }
+  }
+
+  // -------------------------------------------------------------
+  // UI CORE: SCREEN & MODAL MANAGEMENT
+  // -------------------------------------------------------------
+  const screens = ["intro", "destination", "spacecraft", "flight", "debrief"];
+
+  function showScreen(name) {
+    if (name !== "flight") stopFlightLoop();
+    state.screen = name;
+    screens.forEach(s => $("#screen-" + s).classList.toggle("active", s === name));
+
+    if (name === "flight") {
+      audio.startFlightAmbience();
+    } else if (name === "intro") {
+      audio.startLandingAmbience();
+    } else {
+      audio.playSelect();
     }
 
-    bindEvents() {
-        // Navigation buttons
-        document.querySelectorAll("[data-nav-target]").forEach(btn => {
-            btn.addEventListener("click", () => {
-                const target = btn.getAttribute("data-nav-target");
-                if (window.AudioFX) window.AudioFX.playClick();
-                this.showScreen(target);
-            });
-        });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
 
-        // Audio toggle button
-        const audioBtn = document.getElementById("audio-toggle-btn");
-        if (audioBtn) {
-            audioBtn.addEventListener("click", () => {
-                const muted = window.AudioFX.toggleMute();
-                audioBtn.innerHTML = muted ? "🔇 AUDIO: MUTED" : "🔊 AUDIO: ACTIVE";
-            });
-        }
+  function openModal(id) {
+    const el = $("#" + id);
+    if (!el) return;
+    if (modalTimer) clearTimeout(modalTimer);
+    el.hidden = false;
+    requestAnimationFrame(() => el.classList.add("is-visible"));
+  }
 
-        // Audio volume slider
-        const volSlider = document.getElementById("audio-volume-slider");
-        if (volSlider) {
-            volSlider.addEventListener("input", (e) => {
-                if (window.AudioFX) window.AudioFX.setVolume(e.target.value);
-            });
-        }
+  function closeModal(id) {
+    const el = $("#" + id);
+    if (!el) return;
+    el.classList.remove("is-visible");
+    modalTimer = setTimeout(() => { el.hidden = true; }, 420);
+  }
 
-        // Start mission button from landing page (activates ambience & systems chime)
-        const startHeroBtn = document.querySelector("#screen-landing [data-nav-target='selection']");
-        if (startHeroBtn) {
-            startHeroBtn.addEventListener("click", () => {
-                if (window.AudioFX) {
-                    window.AudioFX.playStartup();
-                    window.AudioFX.startAmbience();
-                }
-            });
-        }
+  function toast(message) {
+    const el = $("#toast");
+    if (!el) return;
+    el.textContent = message;
+    el.classList.add("show");
+    setTimeout(() => el.classList.remove("show"), 2200);
+  }
 
-        // Reset button
-        const resetBtn = document.getElementById("reset-btn");
-        if (resetBtn) {
-            resetBtn.addEventListener("click", () => {
-                if (window.AudioFX) window.AudioFX.playClick();
-                this.flightSim.stop();
-                if (this.missionTimer) clearInterval(this.missionTimer);
-                this.showScreen("landing");
-            });
-        }
+  // -------------------------------------------------------------
+  // DESTINATION SELECTION
+  // -------------------------------------------------------------
+  function updateDestination(animate = true) {
+    const d = data.destinations[state.destination] || {};
+    const profile = data.destinationProfiles[state.destination] || {};
+    const labels = { moon: "LUNAR-01", mars: "MARS-02", europa: "EUROPA-03" };
 
-        // Crumb launch link
-        const crumbLaunch = document.getElementById("crumb-launch-link");
-        if (crumbLaunch) {
-            crumbLaunch.addEventListener("click", () => this.launchMission());
-        }
+    const put = (id, value) => { const el = $("#" + id); if (el && value) el.textContent = value; };
+    put("destination-modal-title", d.name);
+    put("destination-modal-description", d.description);
+    put("destination-modal-distance", profile.distance);
+    put("destination-modal-window", d.window);
+    put("destination-modal-challenge", d.challenge);
+    put("destination-modal-science", d.science);
+    put("destination-modal-profile", profile.profile);
+    put("destination-modal-risk", profile.risk);
+    put("destination-modal-code", labels[state.destination]);
 
-        // Subsystem Category Nav in Hangar (Left Column)
-        document.querySelectorAll(".comp-nav-item").forEach(item => {
-            item.addEventListener("click", () => {
-                if (window.AudioFX) window.AudioFX.playClick();
-                document.querySelectorAll(".comp-nav-item").forEach(b => b.classList.remove("active"));
-                item.classList.add("active");
-                this.activeSubsystem = item.getAttribute("data-subsystem");
-                this.renderSubsystemOptions();
-            });
-        });
+    const planet = $("#destination-modal-planet");
+    if (planet) planet.className = "destination-modal-planet " + state.destination;
+    const art = $("#destination-modal-visual");
+    if (art) art.dataset.destination = state.destination;
 
-        // Launch Action Button
-        const launchBtn = document.getElementById("launch-action-btn");
-        if (launchBtn) {
-            launchBtn.addEventListener("click", () => this.launchMission());
-        }
+    $$(".destination-card").forEach(card => {
+      const active = card.dataset.destination === state.destination;
+      card.classList.toggle("selected", active);
+      card.setAttribute("aria-pressed", String(active));
+    });
 
-        // Flight Deck Time Warp Buttons
-        document.querySelectorAll(".warp-btn").forEach(btn => {
-            btn.addEventListener("click", () => {
-                document.querySelectorAll(".warp-btn").forEach(b => b.classList.remove("active"));
-                btn.classList.add("active");
-                const speed = parseFloat(btn.getAttribute("data-warp-speed"));
-                this.flightSim.setTimeWarp(speed);
-            });
-        });
-
-        // Flight Action Deck Buttons
-        const scanBtn = document.getElementById("action-scan-btn");
-        if (scanBtn) scanBtn.addEventListener("click", () => this.flightSim.executeScan());
-
-        const downBtn = document.getElementById("action-downlink-btn");
-        if (downBtn) downBtn.addEventListener("click", () => this.flightSim.executeDownlink());
-
-        const burnBtn = document.getElementById("action-burn-btn");
-        if (burnBtn) burnBtn.addEventListener("click", () => this.flightSim.executeBurn());
-
-        const powerToggleBtn = document.getElementById("action-power-btn");
-        if (powerToggleBtn) {
-            powerToggleBtn.addEventListener("click", () => {
-                const nextMode = this.flightSim.powerMode === "cruise" ? "science" : (this.flightSim.powerMode === "science" ? "safe" : "cruise");
-                this.flightSim.setPowerMode(nextMode);
-                const modeLabel = document.getElementById("power-mode-label");
-                if (modeLabel) modeLabel.textContent = `POWER: ${nextMode.toUpperCase()}`;
-            });
-        }
-
-        const endMissionBtn = document.getElementById("action-end-mission-btn");
-        if (endMissionBtn) {
-            endMissionBtn.style.display = "none";
-        }
+    const modal = $("#destination-modal-card");
+    if (animate && modal) {
+      modal.classList.remove("profile-changed");
+      void modal.offsetWidth;
+      modal.classList.add("profile-changed");
     }
+  }
 
-    showScreen(screenId) {
-        // Stop landing animation if leaving landing
-        if (this.currentScreen === "landing" && screenId !== "landing") {
-            if (this.landingAnimFrame) {
-                cancelAnimationFrame(this.landingAnimFrame);
-                this.landingAnimFrame = null;
-            }
-            document.body.classList.remove("screen-landing");
-        } else if (screenId === "landing") {
-            document.body.classList.add("screen-landing");
-        }
+  function chooseDestination(id) {
+    if (!data.destinations || !data.destinations[id]) return;
+    state.destination = id;
+    updateDestination(true);
+    audio.playSelect();
+    openModal("destination-modal");
+  }
 
-        // Clear debrief body class when leaving debrief
-        if (this.currentScreen === "debrief" && screenId !== "debrief") {
-            document.body.classList.remove("debrief-moon", "debrief-mars", "debrief-europa");
-        }
+  // -------------------------------------------------------------
+  // SPACECRAFT CONFIGURATION & LOADOUT
+  // -------------------------------------------------------------
+  function chooseCraft(id) {
+    state.craft = id;
+    const c = data.spacecraft[id];
+    if (!c) return;
 
-        // Handle leaving flight simulation screen
-        if (this.currentScreen === "simulation" && screenId !== "simulation") {
-            this.flightSim.stop();
-            if (this.missionTimer) clearInterval(this.missionTimer);
-        }
+    $("#craft-name").textContent = c.name;
+    $("#craft-class").textContent = c.class;
+    $("#fuel-range").value = c.fuel;
+    $("#power-range").value = c.power;
+    $("#supplies-range").value = c.supplies;
+    state.fuel = c.fuel;
+    state.power = c.power;
+    state.supplies = c.supplies;
 
-        // Animated screen transition flash
-        const flashEl = document.createElement("div");
-        flashEl.className = "screen-flash-overlay";
-        document.body.appendChild(flashEl);
-        setTimeout(() => flashEl.remove(), 700);
+    $$(".craft-option").forEach(x => x.classList.toggle("selected", x.dataset.craft === id));
+    const stage = $(".craft-stage");
+    if (stage) stage.dataset.craft = id;
+    const hud = $("#hud-vehicle");
+    if (hud) hud.textContent = "BO-01 / " + c.name.split(" ")[0].toUpperCase();
 
-        this.currentScreen = screenId;
-        document.querySelectorAll(".game-screen").forEach(el => el.classList.remove("active-screen"));
-        const targetScreen = document.getElementById(`screen-${screenId}`);
-        if (targetScreen) targetScreen.classList.add("active-screen");
+    audio.playCraftSelect();
+    updateLoadout();
+  }
 
-        // Update nav bar active state
-        document.querySelectorAll(".nav-step-btn").forEach(btn => {
-            if (btn.getAttribute("data-nav-target") === screenId) {
-                btn.classList.add("active");
-            } else {
-                btn.classList.remove("active");
-            }
+  function updateLoadout() {
+    state.fuel = +$("#fuel-range").value;
+    state.power = +$("#power-range").value;
+    state.supplies = +$("#supplies-range").value;
+
+    $("#fuel-value").textContent = state.fuel;
+    $("#power-value").textContent = state.power;
+    $("#supplies-value").textContent = state.supplies;
+
+    const mass = Math.round((state.fuel + state.power + state.supplies) / 3);
+    $("#mass-value").textContent = mass;
+
+    const readiness = mass > 78 ? "HEAVY" : mass < 43 ? "LIMITED" : "GOOD";
+    const el = $("#readiness-value");
+    el.textContent = readiness;
+    el.className = mass > 78 ? "readiness-warn" : mass < 43 ? "readiness-low" : "readiness-good";
+  }
+
+  // -------------------------------------------------------------
+  // FLIGHT SIMULATION DECK
+  // -------------------------------------------------------------
+  function startFlight() {
+    state.eventIndex = 0;
+    state.decisions = [];
+    state.score = 60;
+    state.progress = 8;
+    state.hull = 100;
+    state.playerX = 50;
+    state.shipVisualX = 50;
+    state.scanCount = 0;
+    state.approachSpeed = 30;
+    state.thrusting = false;
+    state.missionOver = false;
+    state.failReason = "";
+    state.hits = 0;
+    keys.left = keys.right = false;
+
+    if (gameTimer) clearInterval(gameTimer);
+    if (eventTimer) clearTimeout(eventTimer);
+
+    // Audio & Visual cues
+    audio.playIgnition();
+    audio.startFlightAmbience();
+
+    const d = data.destinations[state.destination] || {};
+    const p = data.destinationProfiles[state.destination] || {};
+    $("#flight-destination-art").className = "flight-destination " + state.destination;
+    const fScene = $("#flight-scene");
+    if (fScene) fScene.className = "flight-scene dest-" + state.destination;
+    $("#flight-scene-caption").textContent = d.scene || "INTERPLANETARY TRANSFER";
+    $("#flight-vector").textContent = p.vector || "NOMINAL APPROACH VECTOR";
+    $("#flight-scene").style.setProperty("--flight-progress", state.progress + "%");
+    setShipPosition(true);
+    $("#flight-scene-subtitle").textContent = "DESTINATION LOCKED · SYSTEMS NOMINAL";
+
+    updateTelemetry();
+    showScreen("flight");
+
+    // Sync with backend
+    sendBackend("CONFIGURE_SPACECRAFT", {
+      destination: state.destination,
+      objective: state.objective,
+      craft: state.craft,
+      fuel: state.fuel,
+      power: state.power,
+      supplies: state.supplies
+    });
+
+    beginGameStage("navigate");
+    startFlightLoop();
+  }
+
+  function updateTelemetry() {
+    $("#telemetry-fuel").innerHTML = Math.max(0, Math.round(state.fuel)) + '<span>%</span>';
+    $("#telemetry-power").innerHTML = Math.max(0, Math.round(state.power)) + '<span>%</span>';
+    $("#telemetry-supplies").innerHTML = Math.max(0, Math.round(state.supplies)) + '<span>%</span>';
+    const hull = $('#telemetry-hull');
+    if (hull) hull.textContent = Math.max(0, Math.round(state.hull ?? 100)) + "%";
+
+    ["fuel", "power", "supplies"].forEach(k => {
+      const el = $("#telemetry-" + k);
+      if (el) el.style.color = state[k] < 25 ? "#e58c83" : state[k] < 45 ? "#e7bd82" : "#e8f0f6";
+    });
+  }
+
+  function checkResourceFailure() {
+    if (state.screen !== "flight" || state.missionOver) return false;
+    const depleted = [];
+    if (state.fuel <= 0) depleted.push("PROPULSION FUEL");
+    if (state.power <= 0) depleted.push("ELECTRICAL POWER");
+    if (state.hull <= 0) depleted.push("HULL STRUCTURAL INTEGRITY");
+
+    if (!depleted.length) return false;
+
+    state.failReason = depleted.join(" AND ") + " DEPLETED";
+    if (gameTimer) { clearInterval(gameTimer); gameTimer = null; }
+    if (eventTimer) { clearTimeout(eventTimer); eventTimer = null; }
+
+    setFeedback(state.failReason + " · MISSION ABORTED");
+    completeFlight(true);
+    return true;
+  }
+
+  function setProgress(value) {
+    state.progress = value;
+    $("#progress-value").textContent = value + "%";
+    $("#progress-bar").style.width = value + "%";
+    $("#flight-scene").style.setProperty("--flight-progress", value + "%");
+  }
+
+  function setObjective(title, hint, step) {
+    $("#flight-objective-title").textContent = title;
+    $("#flight-objective-hint").textContent = hint;
+    $("#flight-objective-step").textContent = step;
+  }
+
+  function setFeedback(message) {
+    $("#flight-feedback").textContent = message;
+  }
+
+  function setShipPosition(immediate = false) {
+    const ships = $$(".flight-spacecraft"), scene = $("#flight-scene");
+    if (!ships.length || !scene) return;
+    if (typeof state.shipVisualX !== "number" || immediate) state.shipVisualX = state.playerX;
+    const offset = (state.shipVisualX - 50) * scene.clientWidth / 100;
+    ships.forEach(ship => ship.style.setProperty("--ship-x", offset + "px"));
+  }
+
+  function startFlightLoop() {
+    stopFlightLoop();
+    flightLast = 0;
+    const frame = (now) => {
+      if (state.screen !== "flight" || state.missionOver) { flightRaf = 0; return; }
+      const dt = flightLast ? Math.min((now - flightLast) / 1000, 0.05) : 0;
+      flightLast = now;
+
+      if (!$("#event-modal").classList.contains("is-visible")) {
+        if (keys.left) state.playerX = Math.max(8, state.playerX - 42 * dt);
+        if (keys.right) state.playerX = Math.min(92, state.playerX + 42 * dt);
+      }
+      const current = typeof state.shipVisualX === "number" ? state.shipVisualX : state.playerX;
+      state.shipVisualX = current + (state.playerX - current) * (1 - Math.exp(-15 * dt));
+      setShipPosition();
+      flightRaf = requestAnimationFrame(frame);
+    };
+    flightRaf = requestAnimationFrame(frame);
+  }
+
+  function stopFlightLoop() {
+    if (flightRaf) cancelAnimationFrame(flightRaf);
+    flightRaf = 0;
+    flightLast = 0;
+    keys.left = keys.right = false;
+  }
+
+  function movePlayer(delta) {
+    if (state.screen !== "flight" || !state.gameStage || state.missionOver) return;
+    state.playerX = Math.max(8, Math.min(92, state.playerX + delta));
+    audio.playClick();
+  }
+
+  // -------------------------------------------------------------
+  // GAMEPLAY PHASES: NAVIGATE, SCAN, APPROACH
+  // -------------------------------------------------------------
+  function beginGameStage(stage) {
+    if (state.missionOver) return;
+    if (gameTimer) clearInterval(gameTimer);
+    state.gameStage = stage;
+    state.playerX = stage === "approach" ? 50 : state.playerX;
+
+    const hazards = $("#flight-hazards");
+    hazards.innerHTML = "";
+    ["stage-nav", "stage-scan", "stage-approach"].forEach((id, i) => {
+      const el = $("#" + id);
+      if (!el) return;
+      el.classList.toggle("active", ["navigate", "scan", "approach"][i] === stage);
+      el.classList.toggle("done", ["navigate", "scan", "approach"].indexOf(stage) > i);
+      const tag = el.querySelector("i");
+      if (tag) tag.textContent = el.classList.contains("done") ? "COMPLETE" : el.classList.contains("active") ? "IN PROGRESS" : "STANDBY";
+    });
+
+    hazards.classList.toggle("active", stage === "navigate");
+    $("#flight-action").hidden = false;
+    $("#flight-scan").hidden = true;
+    $("#flight-stabilize").hidden = true;
+    $("#approach-readout").hidden = true;
+    $("#flight-scene").dataset.stage = stage;
+
+    if (stage === "navigate") {
+      state.stageTime = 0;
+      state.hits = 0;
+      state.hazardList = [
+        { x: 22, y: -10, hit: false },
+        { x: 43, y: -42, hit: false },
+        { x: 67, y: -75, hit: false },
+        { x: 84, y: -110, hit: false },
+        { x: 55, y: -150, hit: false }
+      ];
+      state.hazardList.forEach((h, i) => {
+        const el = document.createElement("span");
+        el.className = "flight-hazard-rock rock-" + (i + 1);
+        el.style.left = h.x + "%";
+        el.style.top = h.y + "%";
+        hazards.appendChild(el);
+        h.el = el;
+      });
+
+      setObjective("PILOT THROUGH THE DEBRIS FIELD", "Steer with ← → or A / D. Avoid the incoming rocks for 16 seconds.", "01 / 03");
+      $("#flight-phase").textContent = "DEBRIS NAVIGATION";
+      $("#flight-action").textContent = "ENGAGE THRUST";
+      $("#flight-action").onclick = () => {
+        state.thrusting = !state.thrusting;
+        $("#flight-action").classList.toggle("engaged", state.thrusting);
+        $("#flight-action").textContent = state.thrusting ? "THRUST ENGAGED" : "ENGAGE THRUST";
+        audio.playThrust(state.thrusting);
+        setFeedback(state.thrusting ? "MAIN ENGINE FIRING · VELOCITY INCREASING" : "COASTING · MANUAL STEERING ACTIVE");
+      };
+      setFeedback("FLIGHT CONTROLS ONLINE · AVOID COLLISION");
+
+      gameTimer = setInterval(() => {
+        state.stageTime += 0.1;
+        state.hazardList.forEach(h => {
+          h.y += state.thrusting ? 1.05 : 0.72;
+          h.el.style.top = h.y + "%";
+          if (!h.hit && h.y > 74 && h.y < 95 && Math.abs(state.playerX - h.x) < 8.5) {
+            h.hit = true;
+            state.hits++;
+            state.hull = Math.max(0, state.hull - 20);
+            state.fuel = Math.max(0, state.fuel - 4);
+            h.el.classList.add("impact");
+            updateTelemetry();
+            audio.playCollision();
+            setFeedback("IMPACT DETECTED · HULL " + state.hull + "% · STEER CLEAR");
+            if (checkResourceFailure()) return;
+          }
         });
 
-        window.scrollTo({ top: 0, behavior: "smooth" });
+        setProgress(Math.min(34, 8 + Math.floor(state.stageTime / 16 * 26)));
 
-        if (screenId === "landing") {
-            this.startLandingAnimation();
-        } else if (screenId === "selection") {
-            this.renderMissionsScreen();
-        } else if (screenId === "planning") {
-            this.renderPlanningScreen();
-        } else if (screenId === "simulation") {
-            this.startSimulationDeck();
-        } else if (screenId === "debrief") {
-            this.renderDebriefScreen();
+        if (state.stageTime >= 16) {
+          clearInterval(gameTimer);
+          gameTimer = null;
+          state.thrusting = false;
+          audio.playThrust(false);
+          $("#flight-action").classList.remove("engaged");
+          state.score += Math.max(0, 14 - state.hits * 3);
+          state.fuel = Math.max(0, state.fuel - 2);
+          updateTelemetry();
+          if (checkResourceFailure()) return;
+          hazards.classList.remove("active");
+          setFeedback("DEBRIS FIELD CLEARED · FLIGHT PATH STABLE");
+          $("#event-title").textContent = "Debris field cleared";
+          $("#event-description").textContent = "Navigation complete. Priority transmission incoming from Mission Control.";
+          setTimeout(() => loadEvent(), 850);
         }
-    }
+      }, 100);
 
-    setMission(missionId, transitionToPlanning = true) {
-        this.selectedMissionId = missionId;
-        const mission = GAME_DATA.missions[missionId];
-        this.config.architecture = mission.architectures[0].id;
+    } else if (stage === "scan") {
+      state.scanCount = 0;
+      state.targetX = 50;
+      state.stageTime = 0;
+      const target = document.createElement("div");
+      target.className = "scan-target";
+      target.innerHTML = '<span></span><b>SCIENCE TARGET</b>';
+      hazards.appendChild(target);
+      state.scanTarget = target;
 
-        // Sensible initial configuration tailored to destination
-        if (missionId === "europa_frontier") {
-            this.config.launchVehicle = "lv_heavy";
-            this.config.structure = "struct_vault";
-            this.config.powerGen = "pwr_mmrtg";
-            this.config.groundSegment = "ground_dsn_34m";
-            this.config.thermal = "thm_nuclear_rhu";
-            this.config.instruments = ["radar", "spectrometer", "particle_detector"];
-        } else if (missionId === "mars_discovery") {
-            this.config.launchVehicle = "lv_medium";
-            this.config.structure = "struct_aluminum";
-            this.config.powerGen = "pwr_ultraflex";
-            this.config.groundSegment = "ground_nsn";
-            this.config.instruments = ["camera", "spectrometer", "radar"];
+      $("#flight-action").hidden = true;
+      $("#flight-scan").hidden = false;
+      setObjective("ACQUIRE SCIENCE DATA", "Track the moving signal. Align your ship with the target, then scan it 3 times.", "02 / 03");
+      $("#flight-phase").textContent = "SCIENCE OPERATIONS";
+      setFeedback("TARGET SIGNAL ACQUIRED · ALIGN AND SCAN");
+
+      gameTimer = setInterval(() => {
+        state.stageTime += 0.1;
+        state.targetX = 50 + Math.sin(state.stageTime * 0.72) * 31;
+        target.style.left = state.targetX + "%";
+        setProgress(Math.min(70, 42 + state.scanCount * 9));
+      }, 80);
+
+      $("#flight-scan").onclick = () => {
+        if (Math.abs(state.playerX - state.targetX) < 11) {
+          state.scanCount++;
+          state.score += 7;
+          state.power = Math.max(0, state.power - 2);
+          setFeedback("SCAN LOCK " + state.scanCount + " / 3 · DATA STORED");
+          audio.playScan();
         } else {
-            this.config.launchVehicle = "lv_medium";
-            this.config.structure = "struct_aluminum";
-            this.config.powerGen = "pwr_silicon";
-            this.config.groundSegment = "ground_nsn";
-            this.config.instruments = ["camera", "spectrometer"];
+          state.power = Math.max(0, state.power - 4);
+          setFeedback("SCAN MISSED · REALIGN WITH THE SIGNAL");
+          audio.playWarning();
         }
+        updateTelemetry();
+        if (checkResourceFailure()) return;
 
-        // Highlight selected card
-        document.querySelectorAll(".dest-card").forEach(c => {
-            if (c.getAttribute("data-mission-id") === missionId) c.classList.add("selected");
-            else c.classList.remove("selected");
-        });
-
-        if (transitionToPlanning) {
-            if (window.AudioFX) window.AudioFX.playClick();
-            this.showScreen("planning");
+        if (state.scanCount >= 3) {
+          clearInterval(gameTimer);
+          gameTimer = null;
+          $("#flight-scan").disabled = true;
+          setProgress(72);
+          setFeedback("SCIENCE PACKAGE COMPLETE · 3 DATA SETS STORED");
+          $("#event-title").textContent = "Science package secured";
+          $("#event-description").textContent = "Three high-priority data sets stored. Mission update arriving.";
+          setTimeout(() => {
+            $("#flight-scan").disabled = false;
+            loadEvent();
+          }, 1000);
         }
-    }
+      };
 
-    // =========================================================
-    // SCREEN 1: CINEMATIC OPENING PROLOGUE
-    // =========================================================
-    startLandingAnimation() {
-        if (!window.spaceRenderer) return;
+    } else if (stage === "approach") {
+      state.stageTime = 0;
+      state.approachSpeed = 30;
+      setProgress(82);
+      $("#flight-phase").textContent = "DESTINATION APPROACH";
+      $("#flight-action").hidden = false;
+      $("#flight-action").textContent = "+ INCREASE THRUST";
+      $("#flight-action").onclick = () => {
+        state.approachSpeed = Math.min(70, state.approachSpeed + 5);
+        $("#approach-speed-value").textContent = state.approachSpeed;
+        setFeedback("APPROACH VELOCITY · " + state.approachSpeed + " M/S");
+        audio.playClick();
+      };
 
-        const loop = () => {
-            if (this.currentScreen !== "landing") return;
-            window.spaceRenderer.renderLandingPlanet("landing-planet-canvas");
-            window.spaceRenderer.renderLandingCraft("landing-craft-canvas");
-            this.landingAnimFrame = requestAnimationFrame(loop);
-        };
+      $("#flight-stabilize").hidden = false;
+      $("#approach-readout").hidden = false;
+      $("#approach-speed-value").textContent = state.approachSpeed;
+      setObjective("FINAL APPROACH & ORBIT INSERTION", "Set approach speed to 45–55 m/s. Align near the center and stabilize.", "03 / 03");
+      setFeedback("DESTINATION IN RANGE · PREPARE ORBIT INSERTION");
+      $("#event-title").textContent = "Destination in range";
+      $("#event-description").textContent = "Tune approach velocity, align spacecraft, and stabilize orbit insertion.";
 
-        if (this.landingAnimFrame) cancelAnimationFrame(this.landingAnimFrame);
-        this.landingAnimFrame = requestAnimationFrame(loop);
-    }
+      gameTimer = setInterval(() => {
+        state.stageTime = (state.stageTime || 0) + 0.1;
+        setProgress(Math.min(96, 82 + Math.floor(state.stageTime / 20 * 14)));
+      }, 100);
 
-    // =========================================================
-    // SCREEN 2: DESTINATION RECONNAISSANCE
-    // =========================================================
-    renderMissionsScreen() {
-        const container = document.getElementById("missions-card-grid");
-        if (!container) return;
-
-        const missions = Object.values(GAME_DATA.missions);
-
-        // Map destination → photo asset
-        const destPhotos = {
-            "Moon":   "assets/dest_card_moon.jpg",
-            "Mars":   "assets/dest_card_mars.jpg",
-            "Europa": "assets/dest_card_europa.jpg"
-        };
-        const destGradients = {
-            "Moon":   "linear-gradient(to top, rgba(5,7,11,0.95) 0%, rgba(10,15,24,0.5) 55%, rgba(5,7,11,0.1) 100%)",
-            "Mars":   "linear-gradient(to top, rgba(10,4,2,0.95) 0%, rgba(20,8,4,0.5) 55%, rgba(5,7,11,0.1) 100%)",
-            "Europa": "linear-gradient(to top, rgba(2,5,15,0.95) 0%, rgba(4,8,20,0.5) 55%, rgba(5,7,11,0.1) 100%)"
-        };
-        const destDifficulty = {
-            "Moon":   { diff:"Easy",   challenge:"Craters & Dust",  focus:"Lunar Geology",    icon:"🌕" },
-            "Mars":   { diff:"Medium", challenge:"Dust Storms",     focus:"Signs of Life",    icon:"🔴" },
-            "Europa": { diff:"Hard",   challenge:"Extreme Cold",    focus:"Subsurface Ocean", icon:"🧊" }
-        };
-        const destNames = {
-            "Moon":   { title:"THE MOON",  subtitle:"Study our closest neighbor" },
-            "Mars":   { title:"MARS",      subtitle:"Uncover the Red Planet" },
-            "Europa": { title:"EUROPA",    subtitle:"Explore the Ocean World" }
-        };
-
-        container.innerHTML = missions.map(m => {
-            const isSelected = m.id === this.selectedMissionId;
-            const info = destDifficulty[m.destination] || {};
-            const names = destNames[m.destination] || {};
-            const photo = destPhotos[m.destination] || "";
-            const grad = destGradients[m.destination] || "";
-
-            return `
-                <div class="dest-card ${isSelected ? 'selected' : ''}" data-mission-id="${m.id}" onclick="window.app.setMission('${m.id}', true)">
-                    <div class="dest-planet-viewport" style="background-image: url('${photo}'); background-size:cover; background-position:center;">
-                        <div class="dest-planet-gradient" style="background: ${grad};"></div>
-                        <div class="dest-planet-label">${info.icon || ''} ${names.title || m.destination.toUpperCase()}</div>
-                    </div>
-
-                    <div class="dest-card-body">
-                        <div class="dest-card-name">${names.title || m.destination.toUpperCase()}</div>
-                        <div class="dest-card-tagline">— ${names.subtitle || ''} —</div>
-
-                        <div class="dest-info-grid">
-                            <div class="dest-info-item">
-                                <span class="icon">📊</span>
-                                <span class="label">Difficulty:</span>
-                                <span class="value">${info.diff || '—'}</span>
-                            </div>
-                            <div class="dest-info-item">
-                                <span class="icon">💰</span>
-                                <span class="label">Budget:</span>
-                                <span class="value" style="color:var(--accent-amber);">$${m.budgetMillion}M</span>
-                            </div>
-                            <div class="dest-info-item" style="grid-column: span 2;">
-                                <span class="icon">⚠️</span>
-                                <span class="label">Key Challenge:</span>
-                                <span class="value">${info.challenge || '—'}</span>
-                            </div>
-                            <div class="dest-info-item" style="grid-column: span 2;">
-                                <span class="icon">🔬</span>
-                                <span class="label">Focus:</span>
-                                <span class="value" style="color:var(--accent-cyan);">${info.focus || '—'}</span>
-                            </div>
-                        </div>
-
-                        <button class="dest-select-btn" onclick="event.stopPropagation(); window.app.setMission('${m.id}', true);">
-                            LAUNCH TO ${m.destination.toUpperCase()} ›
-                        </button>
-                    </div>
-                </div>
-            `;
-        }).join("");
-    }
-
-    // =========================================================
-    // SCREEN 3: CAD CLEANROOM SPACECRAFT LAB
-    // =========================================================
-    renderPlanningScreen() {
-        const mission = GAME_DATA.missions[this.selectedMissionId];
-        const calc = GameEngine.calculateMissionDesign(this.selectedMissionId, this.config);
-
-        // Update Mission Stats
-        const massVal = document.getElementById("tel-mass-val");
-        if (massVal) {
-            massVal.textContent = `${calc.totalMassKg} kg`;
-            massVal.style.color = calc.totalMassKg > calc.lvMaxPayloadKg ? "#FF2A55" : "var(--accent-cyan)";
-        }
-
-        const costVal = document.getElementById("tel-cost-val");
-        if (costVal) {
-            costVal.textContent = `$${calc.totalCostMillion}M`;
-            costVal.style.color = calc.budgetMarginMillion < 0 ? "#FF2A55" : "var(--accent-amber)";
-        }
-
-        const pwrVal = document.getElementById("tel-pwr-val");
-        if (pwrVal) {
-            pwrVal.textContent = `${calc.powerBalanceW >= 0 ? '+' : ''}${calc.powerBalanceW} W`;
-            pwrVal.style.color = calc.powerBalanceW < -20 ? "#FF2A55" : (calc.powerBalanceW < 0 ? "#FFB800" : "var(--accent-cyan)");
-        }
-
-        const relVal = document.getElementById("tel-rel-val");
-        if (relVal) {
-            relVal.textContent = `${calc.compositeReliabilityPct}%`;
-        }
-
-        // Readiness Banner
-        const readinessTitle = document.getElementById("readiness-title-text");
-        const readinessSub = document.getElementById("readiness-sub-text");
-        const readinessBox = document.getElementById("readiness-badge-box");
-        const statusBadge = document.getElementById("planning-status-badge");
-
-        if (calc.validationStatus === "READY FOR LAUNCH") {
-            if (readinessTitle) readinessTitle.textContent = "READY for Launch";
-            if (readinessSub) readinessSub.textContent = "All systems within NASA margins";
-            if (readinessBox) readinessBox.style.borderColor = "var(--accent-green)";
-            if (statusBadge) {
-                statusBadge.className = "badge badge-ready";
-                statusBadge.textContent = "READY for Launch";
-            }
-        } else if (calc.validationStatus === "NEEDS ATTENTION") {
-            if (readinessTitle) readinessTitle.textContent = "ATTENTION REQUIRED";
-            if (readinessSub) readinessSub.textContent = calc.warnings[0] || "Review subsystem trade-offs";
-            if (readinessBox) readinessBox.style.borderColor = "var(--accent-amber)";
-            if (statusBadge) {
-                statusBadge.className = "badge badge-attention";
-                statusBadge.textContent = "NEEDS ATTENTION";
-            }
+      $("#flight-stabilize").onclick = () => {
+        const aligned = state.playerX >= 43 && state.playerX <= 57;
+        const speed = state.approachSpeed >= 45 && state.approachSpeed <= 55;
+        if (aligned && speed) {
+          clearInterval(gameTimer);
+          gameTimer = null;
+          state.score += 16;
+          state.fuel = Math.max(0, state.fuel - 3);
+          updateTelemetry();
+          if (checkResourceFailure()) return;
+          setProgress(100);
+          setFeedback("ORBIT INSERTION SUCCESSFUL · DESTINATION SECURED");
+          audio.playSuccess();
+          setTimeout(() => completeFlight(false), 1400);
         } else {
-            if (readinessTitle) readinessTitle.textContent = "LAUNCH BLOCKED";
-            if (readinessSub) readinessSub.textContent = calc.blockers[0] || "Mass or budget capacity exceeded";
-            if (readinessBox) readinessBox.style.borderColor = "var(--accent-red)";
-            if (statusBadge) {
-                statusBadge.className = "badge badge-blocked";
-                statusBadge.textContent = "LAUNCH BLOCKED";
-            }
+          state.fuel = Math.max(0, state.fuel - 5);
+          updateTelemetry();
+          audio.playWarning();
+          if (checkResourceFailure()) return;
+          setFeedback(!aligned ? "ALIGNMENT OUTSIDE SAFE CORRIDOR · STEER TO CENTER" : "VELOCITY OUT OF RANGE · TARGET 45–55 M/S");
         }
+      };
+    }
+    setShipPosition(true);
+  }
 
-        // Render CAD Turntable Spacecraft Viewport
-        const schemViewport = document.getElementById("schematic-viewport");
-        if (schemViewport) {
-            schemViewport.innerHTML = this.hangar.renderCleanroomBlueprint(calc, mission.destination);
-        }
-
-        // Render Critique
-        const critiqueBox = document.getElementById("validation-critique-box");
-        if (critiqueBox) {
-            let critiqueHtml = "";
-            calc.blockers.forEach(b => {
-                critiqueHtml += `<div style="color:var(--accent-red); font-size:11px; margin-bottom:4px;">✖ <strong>BLOCKER:</strong> ${b}</div>`;
-            });
-            calc.warnings.forEach(w => {
-                critiqueHtml += `<div style="color:var(--accent-amber); font-size:11px; margin-bottom:4px;">▲ <strong>CAUTION:</strong> ${w}</div>`;
-            });
-            critiqueBox.innerHTML = critiqueHtml;
-        }
-
-        // Render Subsystem Options (Left Column)
-        this.renderSubsystemOptions();
-
-        // Update Launch CTA
-        const launchBtn = document.getElementById("launch-action-btn");
-        if (launchBtn) {
-            if (calc.validationStatus === "LAUNCH BLOCKED") {
-                launchBtn.className = "btn-primary btn-disabled";
-                launchBtn.innerHTML = "✖ LAUNCH BLOCKED";
-                launchBtn.onclick = () => { if (window.AudioFX) window.AudioFX.playAlert(); };
-            } else {
-                launchBtn.className = "btn-primary";
-                launchBtn.innerHTML = calc.validationStatus === "READY FOR LAUNCH" 
-                    ? "CONFIRM DESIGN ›" 
-                    : "ACCEPT RISKS & LAUNCH ›";
-                launchBtn.onclick = () => this.launchMission();
-            }
-        }
+  // -------------------------------------------------------------
+  // IN-FLIGHT EVENTS & DECISIONS
+  // -------------------------------------------------------------
+  function loadEvent() {
+    const eventsList = (data.missionEvents && data.missionEvents[state.destination]) || data.events || [];
+    const ev = eventsList[state.eventIndex];
+    if (!ev) {
+      beginGameStage("approach");
+      return;
     }
 
-    renderSubsystemOptions() {
-        const container = document.getElementById("subsystem-options-container");
-        if (!container) return;
+    $("#event-title").textContent = ev.title;
+    $("#event-description").textContent = ev.description;
+    $("#popup-event-title").textContent = ev.title;
+    $("#popup-event-description").textContent = ev.description;
 
-        const sub = this.activeSubsystem;
-        const mission = GAME_DATA.missions[this.selectedMissionId];
-        let items = [];
-        let configKey = "";
-        let isMulti = false;
+    const choicesHtml = ev.choices.map((c, i) => `
+      <button class="event-choice" data-choice="${c.id}" data-index="${i}">
+        <span class="choice-index">${String.fromCharCode(65 + i)}</span>
+        <span><b>${c.title}</b><small>${c.detail}</small></span>
+        <span class="choice-arrow">↗</span>
+      </button>
+    `).join("");
 
-        if (sub === "power") {
-            items = Object.values(GAME_DATA.powerGenerations);
-            configKey = "powerGen";
-        } else if (sub === "propulsion") {
-            items = Object.values(GAME_DATA.propulsions);
-            configKey = "propulsion";
-        } else if (sub === "comms") {
-            items = Object.values(GAME_DATA.communications);
-            configKey = "comms";
-        } else if (sub === "thermal") {
-            items = Object.values(GAME_DATA.structures);
-            configKey = "structure";
-        } else if (sub === "camera") {
-            // Camera toggle
-            const cam = GAME_DATA.instruments["camera"];
-            items = [cam];
-            isMulti = true;
-        } else if (sub === "spectrometer") {
-            const spec = GAME_DATA.instruments["spectrometer"];
-            items = [spec];
-            isMulti = true;
-        }
+    $("#popup-event-choices").innerHTML = choicesHtml;
+    $("#event-outcome").hidden = true;
+    $("#popup-event-choices").hidden = false;
+    $("#popup-next-event").disabled = true;
+    $("#popup-next-event").textContent = "SELECT AN ACTION TO CONTINUE";
 
-        container.innerHTML = items.map(item => {
-            const isSelected = isMulti 
-                ? this.config.instruments.includes(item.id) 
-                : this.config[configKey] === item.id;
+    openModal("event-modal");
+    audio.playAlert();
 
-            return `
-                <div class="subsystem-option-card ${isSelected ? 'selected' : ''}" onclick="window.app.selectSubsystemOption('${sub}', '${item.id}')">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <span style="font-family:var(--font-ui); font-size:13px; font-weight:700; color:var(--text-white);">${item.name}</span>
-                        <span style="font-family:var(--font-display); font-size:11px; color:var(--accent-amber);">$${item.costMillion}M</span>
-                    </div>
-                    <div style="font-size:11px; color:var(--text-dim); margin-top:2px;">${item.desc || item.pros || ""}</div>
-                </div>
-            `;
-        }).join("");
+    $$("#popup-event-choices .event-choice").forEach(btn => {
+      btn.addEventListener("click", () => makeDecision(ev, btn.dataset.choice, parseInt(btn.dataset.index, 10), btn));
+    });
+  }
 
-        // Update Bottom Detail Box
-        this.updateHangarDetailBox(sub, items[0]);
+  function makeDecision(ev, choiceId, choiceIdx, button) {
+    if (button.classList.contains("selected")) return;
+    const choice = ev.choices.find(c => c.id === choiceId) || ev.choices[choiceIdx];
+    if (!choice) return;
+
+    audio.playSelect();
+    $$("#popup-event-choices .event-choice").forEach(b => {
+      b.classList.remove("selected");
+      b.disabled = true;
+    });
+    button.classList.add("selected");
+
+    const eff = choice.effects || {};
+    state.fuel = Math.max(0, Math.min(100, state.fuel + (eff.fuel || 0)));
+    state.power = Math.max(0, Math.min(100, state.power + (eff.power || 0)));
+    state.supplies = Math.max(0, Math.min(100, state.supplies + (eff.supplies || 0)));
+    state.score += (choice.score || 8);
+    state.decisions.push(choice.title);
+
+    updateTelemetry();
+
+    // Inform backend of the decision
+    sendBackend("APPLY_DECISION", {
+      destination: state.destination,
+      event_idx: state.eventIndex,
+      choice_idx: choiceIdx,
+      choice_id: choiceId,
+      telemetry: {
+        fuel: state.fuel,
+        power: state.power,
+        supplies: state.supplies,
+        hull: state.hull,
+        score: state.score
+      }
+    });
+
+    if (checkResourceFailure()) return;
+
+    $("#flight-scene-subtitle").textContent = "COMMAND ACCEPTED · SYSTEMS RECONFIGURED";
+    $("#console-log").innerHTML = `<span>12:0${state.eventIndex + 5}:18</span> ${choice.log}`;
+    $("#event-outcome-text").textContent = choice.log + ` Telemetry Status: Fuel ${Math.round(state.fuel)}%, Power ${Math.round(state.power)}%, Supplies ${Math.round(state.supplies)}%.`;
+    $("#event-outcome").hidden = false;
+    $("#popup-next-event").disabled = false;
+    $("#popup-next-event").textContent = "RESUME FLIGHT ↗";
+
+    if (eventTimer) clearTimeout(eventTimer);
+    eventTimer = setTimeout(advanceFlight, 2400);
+  }
+
+  function advanceFlight() {
+    closeModal("event-modal");
+    eventTimer = setTimeout(() => {
+      state.eventIndex++;
+      if (state.eventIndex === 1) beginGameStage("scan");
+      else beginGameStage("approach");
+    }, 460);
+  }
+
+  // -------------------------------------------------------------
+  // MISSION COMPLETION & DEBRIEF EVALUATION
+  // -------------------------------------------------------------
+  function completeFlight(emergency = false) {
+    if (state.missionOver) return;
+    state.missionOver = true;
+    stopFlightLoop();
+
+    if (gameTimer) { clearInterval(gameTimer); gameTimer = null; }
+    if (eventTimer) { clearTimeout(eventTimer); eventTimer = null; }
+    audio.playThrust(false);
+
+    // Calculate score addition from resource conservation
+    state.score += Math.round((state.fuel + state.power + state.supplies) / 16);
+    state.score = Math.max(0, Math.min(100, state.score));
+
+    const success = !emergency && state.hull > 0 && state.score >= 60 && state.fuel > 0 && state.power > 0;
+    if (success) state.progress = 100;
+
+    const grade = state.score >= 90 ? "A+" : state.score >= 80 ? "A" : state.score >= 70 ? "B" : state.score >= 60 ? "C" : "D";
+
+    $("#final-score").innerHTML = Math.round(state.score) + '<span>/100</span>';
+    $("#grade-badge").textContent = grade;
+    $("#score-bar").style.width = Math.min(100, Math.round(state.score)) + "%";
+
+    const destObj = data.destinations[state.destination] || { name: state.destination.toUpperCase() };
+    $("#debrief-destination").textContent = destObj.name.toUpperCase();
+    $("#debrief-planet").className = "debrief-planet " + state.destination;
+
+    $("#result-science").textContent = state.objective === "resources" ? "Resource Survey (Targeted)" : state.objective === "environment" ? "Environmental Dynamics" : "Topographical Geology";
+    $("#result-resources").textContent = (state.fuel + state.power + state.supplies) > 175 ? "Optimal Reserves" : "Constrained Allocation";
+    $("#result-decisions").textContent = state.decisions.length + " Critical Calls Logged";
+
+    $("#debrief-insight").textContent = success ?
+      "Outstanding mission planning and execution. Your operational decisions successfully balanced spacecraft hardware resilience with scientific returns." :
+      "Mission terminated prematurely. " + (state.failReason || "Resource depletion prevented completion of primary scientific objectives.") + " Systems telemetry has been captured for debrief analysis.";
+
+    $("#progress-value").textContent = state.progress + "%";
+    $("#progress-bar").style.width = state.progress + "%";
+
+    $("#result-modal-title").textContent = success ? "MISSION SUCCESSFUL" : "MISSION FAILED";
+    $("#result-modal-kicker").textContent = success ? "MISSION CONTROL // OBJECTIVES ACHIEVED" : "MISSION CONTROL // FLIGHT TERMINATED";
+    $("#result-modal-summary").textContent = success ?
+      `Your ${destObj.name} spacecraft has successfully inserted into orbit and completed all core science milestones.` :
+      (state.failReason ? state.failReason + ". Critical system failure prevented completion of the flight profile." : "Mission objectives could not be met. Systems data has been archived for engineering debrief.");
+
+    $("#popup-final-score").textContent = Math.round(state.score) + " / 100";
+    $("#popup-final-fuel").textContent = Math.round(state.fuel) + "%";
+    $("#popup-final-power").textContent = Math.round(state.power) + "%";
+    $("#popup-final-supplies").textContent = Math.round(state.supplies) + "%";
+    $("#popup-result-note").textContent = `${state.decisions.length} operational decisions · ${destObj.name.toUpperCase()} · Grade ${grade}`;
+
+    $("#result-modal-card").classList.toggle("failed", !success);
+    $("#success-stamp").textContent = success ? "✦ MISSION SUCCESSFUL" : "⚠ MISSION FAILED";
+    $("#success-stamp").classList.toggle("failed", !success);
+
+    openModal("result-modal");
+    if (success) audio.playSuccess(); else audio.playFailure();
+
+    // Send complete evaluation request to Python backend
+    sendBackend("EVALUATE_MISSION", {
+      destination: state.destination,
+      craft: state.craft,
+      objective: state.objective,
+      emergency: emergency,
+      failReason: state.failReason,
+      telemetry: {
+        fuel: state.fuel,
+        power: state.power,
+        supplies: state.supplies,
+        hull: state.hull,
+        score: state.score,
+        decisions: state.decisions
+      }
+    });
+  }
+
+  function reset() {
+    stopFlightLoop();
+    state.missionOver = false;
+    if (eventTimer) clearTimeout(eventTimer);
+    if (gameTimer) clearInterval(gameTimer);
+    state.failReason = "";
+    state.destination = "moon";
+    state.objective = "geology";
+    chooseCraft("pathfinder");
+    $("#science-objective").value = "geology";
+    closeModal("result-modal");
+    audio.playClick();
+    sendBackend("RESET_MISSION", {});
+    showScreen("intro");
+  }
+
+  // -------------------------------------------------------------
+  // DOM EVENT BINDINGS
+  // -------------------------------------------------------------
+  $("#begin-mission").addEventListener("click", () => {
+    audio.playClick();
+    showScreen("destination");
+  });
+
+  $("#how-to-play").addEventListener("click", () => {
+    audio.playClick();
+    openModal("help-modal");
+  });
+
+  $$("[data-close-modal]").forEach(b => b.addEventListener("click", () => {
+    audio.playClick();
+    closeModal("help-modal");
+  }));
+
+  $("#help-modal").addEventListener("click", e => {
+    if (e.target.id === "help-modal") closeModal("help-modal");
+  });
+
+  $$(".destination-card").forEach(c => c.addEventListener("click", () => chooseDestination(c.dataset.destination)));
+
+  $("#science-objective").addEventListener("change", e => {
+    state.objective = e.target.value;
+    audio.playSelect();
+  });
+
+  $("#continue-destination").addEventListener("click", () => {
+    state.objective = $("#science-objective").value;
+    audio.playConfirmDestination();
+    closeModal("destination-modal");
+
+    sendBackend("SELECT_DESTINATION", {
+      destination: state.destination,
+      objective: state.objective
+    });
+
+    setTimeout(() => showScreen("spacecraft"), 220);
+  });
+
+  $("#close-destination-modal").addEventListener("click", () => {
+    audio.playClick();
+    closeModal("destination-modal");
+  });
+
+  $("#destination-modal").addEventListener("click", e => {
+    if (e.target.id === "destination-modal") closeModal("destination-modal");
+  });
+
+  $$(".craft-option").forEach(c => c.addEventListener("click", () => chooseCraft(c.dataset.craft)));
+
+  ["fuel-range", "power-range", "supplies-range"].forEach(id => {
+    const el = $("#" + id);
+    if (el) {
+      el.addEventListener("input", () => {
+        updateLoadout();
+        audio.playSlider();
+      });
     }
+  });
 
-    selectSubsystemOption(sub, itemId) {
-        if (window.AudioFX) window.AudioFX.playClick();
+  $("#back-destination").addEventListener("click", () => {
+    audio.playClick();
+    showScreen("destination");
+  });
 
-        if (sub === "power") {
-            this.config.powerGen = itemId;
-        } else if (sub === "propulsion") {
-            this.config.propulsion = itemId;
-        } else if (sub === "comms") {
-            this.config.comms = itemId;
-        } else if (sub === "thermal") {
-            this.config.structure = itemId;
-        } else if (sub === "camera" || sub === "spectrometer") {
-            if (this.config.instruments.includes(itemId)) {
-                this.config.instruments = this.config.instruments.filter(id => id !== itemId);
-            } else {
-                this.config.instruments.push(itemId);
-            }
-        }
+  $("#continue-flight").addEventListener("click", startFlight);
 
-        this.renderPlanningScreen();
+  $("#steer-left").addEventListener("click", () => movePlayer(-8));
+  $("#steer-right").addEventListener("click", () => movePlayer(8));
+
+  document.addEventListener("keydown", e => {
+    if (state.screen !== "flight" || state.missionOver || $("#event-modal").classList.contains("is-visible")) return;
+    if (["ArrowLeft", "a", "A"].includes(e.key)) { e.preventDefault(); keys.left = true; }
+    if (["ArrowRight", "d", "D"].includes(e.key)) { e.preventDefault(); keys.right = true; }
+  });
+
+  document.addEventListener("keyup", e => {
+    if (["ArrowLeft", "a", "A"].includes(e.key)) keys.left = false;
+    if (["ArrowRight", "d", "D"].includes(e.key)) keys.right = false;
+  });
+
+  window.addEventListener("blur", () => { keys.left = keys.right = false; });
+  window.addEventListener("resize", () => setShipPosition(true));
+
+  $("#popup-next-event").addEventListener("click", () => {
+    if ($("#popup-next-event").disabled) return;
+    audio.playClick();
+    if (eventTimer) clearTimeout(eventTimer);
+    advanceFlight();
+  });
+
+  $("#view-debrief").addEventListener("click", () => {
+    audio.playClick();
+    closeModal("result-modal");
+    setTimeout(() => showScreen("debrief"), 220);
+  });
+
+  $("#replay-mission").addEventListener("click", () => {
+    audio.playClick();
+    closeModal("result-modal");
+    chooseCraft(state.craft);
+    setTimeout(() => showScreen("spacecraft"), 220);
+  });
+
+  $("#new-mission").addEventListener("click", reset);
+
+  // Sound toggle button in header
+  const soundToggle = $("#sound-toggle");
+  if (soundToggle) {
+    soundToggle.addEventListener("click", () => {
+      const isMutedNow = window.AudioFX ? window.AudioFX.toggleMute() : false;
+      soundToggle.setAttribute("aria-pressed", String(!isMutedNow));
+      soundToggle.innerHTML = !isMutedNow ?
+        '<span class="sound-icon">♫</span><span> SOUND ON</span>' :
+        '<span class="sound-icon">♫</span><span> SOUND OFF</span>';
+      toast(!isMutedNow ? "Mission audio online" : "Audio muted");
+    });
+  }
+
+  // Hover sound on interactive elements
+  document.addEventListener("pointerover", e => {
+    if (e.target.closest("button, .destination-card, .craft-option, .event-choice")) {
+      audio.playHover();
     }
+  });
 
-    updateHangarDetailBox(sub, item) {
-        const titleEl = document.getElementById("detail-comp-title");
-        const descEl = document.getElementById("detail-comp-desc");
-        const statsEl = document.getElementById("detail-comp-stats");
-
-        if (!titleEl || !item) return;
-
-        titleEl.textContent = item.name;
-        descEl.textContent = item.desc || "Optimized aerospace hardware engineered for extreme space environments.";
-
-        const pwrVal = item.basePowerW ? `+${item.basePowerW}W Base` : (item.powerW ? `-${item.powerW}W Load` : "+20% Power");
-        const massVal = item.massKg ? `+${item.massKg} kg` : "+50 kg";
-        const costVal = item.costMillion ? `$${item.costMillion}M` : "$1.2M";
-
-        statsEl.innerHTML = `
-            <span class="tag tag-pwr">${pwrVal}</span>
-            <span class="tag tag-mass">${massVal}</span>
-            <span class="tag tag-cost">${costVal}</span>
-        `;
+  // Global click sound for buttons
+  document.addEventListener("click", e => {
+    if (e.target.closest("button") && !e.target.closest("#sound-toggle")) {
+      audio.playClick();
     }
+  });
 
-    launchMission() {
-        const calc = GameEngine.calculateMissionDesign(this.selectedMissionId, this.config);
-        if (calc.validationStatus === "LAUNCH BLOCKED") {
-            if (window.AudioFX) window.AudioFX.playAlert();
-            return;
-        }
+  // Initialization
+  initStreamlitBridge();
+  updateDestination(false);
+  chooseCraft("pathfinder");
+  updateLoadout();
 
-        const mission = GAME_DATA.missions[this.selectedMissionId];
-        const modal = document.getElementById("launch-modal-container");
-        if (!modal) {
-            if (window.AudioFX) window.AudioFX.playLaunch();
-            this.showScreen("simulation");
-            return;
-        }
-
-        // Setup telemetry labels
-        const lvEl = document.getElementById("launch-lv-name");
-        if (lvEl) lvEl.textContent = calc.selectedComponents.launchVehicle.name;
-
-        const destEl = document.getElementById("launch-target-dest");
-        if (destEl) destEl.textContent = `${mission.destination} Injection`;
-
-        const digitsEl = document.getElementById("launch-countdown-digits");
-        const statusEl = document.getElementById("launch-status-text");
-        const progBar = document.getElementById("launch-progress-bar");
-
-        modal.style.display = "flex";
-
-        // Setup launch plume canvas animation
-        const canvas = document.getElementById("launch-anim-canvas");
-        let animActive = true;
-        let launchParticles = [];
-
-        if (canvas) {
-            const ctx = canvas.getContext("2d");
-            canvas.width = canvas.clientWidth || 680;
-            canvas.height = canvas.clientHeight || 450;
-
-            const renderPlume = () => {
-                if (!animActive) return;
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-                // Spawn flame/spark particles
-                const originX = canvas.width * 0.5;
-                const originY = canvas.height * 0.42;
-
-                for (let i = 0; i < 4; i++) {
-                    launchParticles.push({
-                        x: originX + (Math.random() - 0.5) * 30,
-                        y: originY,
-                        vx: (Math.random() - 0.5) * 5,
-                        vy: Math.random() * 8 + 4,
-                        size: Math.random() * 12 + 6,
-                        life: 1.0,
-                        color: Math.random() > 0.4 ? "#FF9500" : (Math.random() > 0.5 ? "#FF3B30" : "#FFCC00")
-                    });
-                }
-
-                // Update & draw particles
-                for (let i = launchParticles.length - 1; i >= 0; i--) {
-                    const p = launchParticles[i];
-                    p.x += p.vx;
-                    p.y += p.vy;
-                    p.size *= 0.96;
-                    p.life -= 0.03;
-
-                    if (p.life <= 0) {
-                        launchParticles.splice(i, 1);
-                        continue;
-                    }
-
-                    ctx.fillStyle = p.color;
-                    ctx.globalAlpha = p.life * 0.7;
-                    ctx.beginPath();
-                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-                ctx.globalAlpha = 1.0;
-
-                requestAnimationFrame(renderPlume);
-            };
-            requestAnimationFrame(renderPlume);
-        }
-
-        const skipBtn = document.getElementById("skip-launch-btn");
-        const finishLaunch = () => {
-            animActive = false;
-            modal.style.display = "none";
-            this.showScreen("simulation");
-        };
-
-        if (skipBtn) skipBtn.onclick = finishLaunch;
-
-        // Sequence timeline: Authentic 5-4-3-2-1-LIFTOFF sequence
-        if (digitsEl) digitsEl.textContent = "T - 00:05";
-        if (statusEl) statusEl.textContent = "TERMINAL COUNTDOWN SEQUENCE INITIATED · RANGE GO";
-        if (progBar) progBar.style.width = "10%";
-        if (window.AudioFX) window.AudioFX.playClick();
-
-        setTimeout(() => {
-            if (!animActive) return;
-            if (digitsEl) digitsEl.textContent = "T - 00:04";
-            if (statusEl) statusEl.textContent = "INTERNAL POWER TRANSFERRED · FLIGHT COMPUTERS ARMED";
-            if (progBar) progBar.style.width = "28%";
-            if (window.AudioFX) window.AudioFX.playClick();
-        }, 1000);
-
-        setTimeout(() => {
-            if (!animActive) return;
-            if (digitsEl) digitsEl.textContent = "T - 00:03";
-            if (statusEl) statusEl.textContent = "MAIN ENGINE VALVES OPEN · TURBOPUMPS AT 100%";
-            if (progBar) progBar.style.width = "48%";
-            if (window.AudioFX) window.AudioFX.playClick();
-        }, 2000);
-
-        setTimeout(() => {
-            if (!animActive) return;
-            if (digitsEl) digitsEl.textContent = "T - 00:02";
-            if (statusEl) statusEl.textContent = "MAIN ENGINE IGNITION SEQUENCE START";
-            if (progBar) progBar.style.width = "68%";
-            if (window.AudioFX) window.AudioFX.playLaunch();
-        }, 3000);
-
-        setTimeout(() => {
-            if (!animActive) return;
-            if (digitsEl) digitsEl.textContent = "T - 00:01";
-            if (statusEl) statusEl.textContent = "ALL ENGINES RUNNING · COMMENCING VEHICLE RELEASE";
-            if (progBar) progBar.style.width = "88%";
-        }, 4000);
-
-        setTimeout(() => {
-            if (!animActive) return;
-            if (digitsEl) digitsEl.textContent = "LIFTOFF!";
-            if (statusEl) statusEl.textContent = "WE HAVE LIFTOFF OF BEYOND THE ORBIT!";
-            if (progBar) progBar.style.width = "100%";
-        }, 4800);
-
-        setTimeout(() => {
-            if (!animActive) return;
-            finishLaunch();
-        }, 5800);
-    }
-
-    // =========================================================
-    // SCREEN 4: FLIGHT OPERATIONS DECK
-    // =========================================================
-    startSimulationDeck() {
-        const calc = GameEngine.calculateMissionDesign(this.selectedMissionId, this.config);
-        const mission = GAME_DATA.missions[this.selectedMissionId];
-
-        // Header Title
-        const phaseTitle = document.getElementById("sim-mission-phase-title");
-        if (phaseTitle) phaseTitle.textContent = `Mission: ${mission.name}`;
-
-        // Initialize Elapsed Timer
-        this.missionSecondsElapsed = 0; // Start from 0:00
-        const timerDigits = document.getElementById("mission-elapsed-time");
-        if (this.missionTimer) clearInterval(this.missionTimer);
-        this.missionTimer = setInterval(() => {
-            if (this.flightSim.timeWarp > 0) {
-                this.missionSecondsElapsed += Math.round(this.flightSim.timeWarp);
-                const hrs = Math.floor(this.missionSecondsElapsed / 3600).toString().padStart(2, '0');
-                const mins = Math.floor((this.missionSecondsElapsed % 3600) / 60).toString().padStart(2, '0');
-                const secs = (this.missionSecondsElapsed % 60).toString().padStart(2, '0');
-                if (timerDigits) timerDigits.textContent = `${hrs}:${mins}:${secs}`;
-            }
-        }, 1000);
-
-        // Start FlightSimulator loop
-        this.flightSim.start(this.selectedMissionId, calc);
-
-        // Render Objectives Checklist on HUD
-        this.renderFlightObjectivesList(mission);
-    }
-
-    renderFlightObjectivesList(mission) {
-        const objList = document.getElementById("sim-objectives-checklist");
-        if (!objList) return;
-
-        objList.innerHTML = `
-            <div class="objective-check-item done">✔ Reach ${mission.destination}</div>
-            <div class="objective-check-item done">✔ Insert Orbit</div>
-            ${mission.scientificObjectives.map(obj => {
-                const isComplete = (this.flightSim.objectiveProgress[obj.id] || 0) >= 80;
-                return `
-                    <div class="objective-check-item ${isComplete ? 'done' : ''}" id="hud-obj-${obj.id}">
-                        ${isComplete ? '✔' : '○'} ${obj.title.slice(0, 24)}...
-                    </div>
-                `;
-            }).join("")}
-            <div class="objective-check-item ${this.flightSim.dataDownlinkedMb > 500 ? 'done' : ''}" id="hud-obj-downlink">
-                ${this.flightSim.dataDownlinkedMb > 500 ? '✔' : '○'} Transmit Telemetry
-            </div>
-        `;
-    }
-
-    // =========================================================
-    // SCREEN 5: FLIGHT DEBRIEF & SCORING
-    // =========================================================
-    renderDebriefScreen() {
-        const mission = GAME_DATA.missions[this.selectedMissionId];
-        const calc = GameEngine.calculateMissionDesign(this.selectedMissionId, this.config);
-        const debrief = GameEngine.evaluateMission(this.selectedMissionId, calc, this.simState);
-
-        // ── Destination-specific cinematic background ──────────────────────
-        document.body.classList.remove("debrief-moon", "debrief-mars", "debrief-europa");
-        const dest = mission ? mission.destination : "";
-        if (dest === "Moon")   document.body.classList.add("debrief-moon");
-        else if (dest === "Mars")   document.body.classList.add("debrief-mars");
-        else if (dest === "Europa") document.body.classList.add("debrief-europa");
-
-        // ── Update debrief tagline & title with outcome & destination ───────
-        const debriefTitle = document.querySelector(".debrief-title");
-        const debriefTagline = document.querySelector(".debrief-tagline");
-        const laurelIcon = document.querySelector(".laurel-wreath-icon");
-        const isSuccess = debrief.totalScore >= 60 && !debrief.outcomeBadge.includes("FAILURE");
-
-        if (debriefTitle) {
-            debriefTitle.textContent = isSuccess ? "MISSION SUCCESS" : "MISSION FAILED";
-            debriefTitle.style.color = isSuccess ? "var(--accent-cyan)" : "#FF5263";
-        }
-        if (laurelIcon) {
-            laurelIcon.textContent = isSuccess ? "🏆" : "🚨";
-        }
-        if (debriefTagline) {
-            const destEmoji = { Moon: "🌕", Mars: "🔴", Europa: "🧊" };
-            if (isSuccess) {
-                debriefTagline.textContent = `Mission to ${dest} achieved flight milestones — journey beyond the orbit complete! ${destEmoji[dest] || "🚀"}`;
-            } else {
-                debriefTagline.textContent = `Mission to ${dest} encountered fatal operational breakdown. Telemetry inquest initiated.`;
-            }
-        }
-
-        // Left Summary Card
-        const destVal = document.getElementById("debrief-dest-val");
-        if (destVal) destVal.textContent = mission.destination;
-
-        const objCompVal = document.getElementById("debrief-obj-completed-val");
-        const completedCount = debrief.matchedObjectives.filter(o => o.status.includes("Achieved")).length;
-        if (objCompVal) objCompVal.textContent = `${completedCount} / ${mission.scientificObjectives.length}`;
-
-        const collectedVal = document.getElementById("debrief-collected-val");
-        if (collectedVal) collectedVal.textContent = `${Math.round(this.simState.dataCollectedMb / 1024 * 10) / 10} GB`;
-
-        const transVal = document.getElementById("debrief-transmitted-val");
-        if (transVal) transVal.textContent = `${Math.round(this.simState.dataTransmittedMb / 1024 * 10) / 10} GB`;
-
-        const relVal = document.getElementById("debrief-rel-val");
-        if (relVal) relVal.textContent = `${calc.compositeReliabilityPct}%`;
-
-        const scoreNum = document.getElementById("debrief-score-num");
-        if (scoreNum) {
-            const scaledScore = Math.round(debrief.totalScore * 98.5);
-            scoreNum.textContent = `★ ${scaledScore.toLocaleString()}`;
-        }
-
-        // Right Outcome Card
-        const outcomeBadge = document.getElementById("debrief-score-badge");
-        const outcomeIcon = document.getElementById("outcome-circle-icon");
-        const outcomeSummary = document.getElementById("debrief-summary-text");
-
-        if (outcomeBadge) {
-            outcomeBadge.textContent = debrief.outcomeBadge;
-            outcomeBadge.style.color = debrief.outcomeColor;
-        }
-        if (outcomeIcon) {
-            outcomeIcon.style.borderColor = debrief.outcomeColor;
-            outcomeIcon.style.color = debrief.outcomeColor;
-        }
-        if (outcomeSummary) outcomeSummary.textContent = debrief.summaryText;
-
-        // Play appropriate mission debrief resolution sound
-        if (window.AudioFX) {
-            if (debrief.totalScore >= 60 || (debrief.outcomeBadge && debrief.outcomeBadge.includes("SUCCESS"))) {
-                window.AudioFX.playSuccess();
-            } else {
-                window.AudioFX.playFailure();
-            }
-        }
-
-        // 100-Point Category Breakdown
-        const catContainer = document.getElementById("debrief-categories-container");
-        if (catContainer) {
-            const cats = Object.values(debrief.categories);
-            catContainer.innerHTML = cats.map(cat => `
-                <div style="margin-bottom:12px;">
-                    <div style="display:flex; justify-content:space-between; font-family:var(--font-ui); font-size:13.5px; font-weight:700; margin-bottom:4px;">
-                        <span style="color:var(--text-white);">${cat.name}</span>
-                        <span style="color:var(--accent-cyan); font-family:var(--font-display);">${cat.score} / ${cat.max}</span>
-                    </div>
-                    <div class="score-progress-track">
-                        <div class="score-progress-fill" style="width: ${cat.pct}%;"></div>
-                    </div>
-                </div>
-            `).join("");
-        }
-
-        // Objectives List
-        const objContainer = document.getElementById("debrief-objectives-list");
-        if (objContainer) {
-            objContainer.innerHTML = debrief.matchedObjectives.map(obj => {
-                const color = obj.status === "Fully Achieved" ? "var(--accent-green)" : (obj.status === "Partially Achieved" ? "var(--accent-amber)" : "var(--accent-red)");
-                return `<li style="margin-bottom:6px; color:var(--text-white);"><strong>${obj.title}</strong> — <span style="color:${color}; font-weight:bold;">${obj.status}</span></li>`;
-            }).join("");
-        }
-
-        // Lessons Learned
-        const lessonsContainer = document.getElementById("debrief-lessons-list");
-        if (lessonsContainer) {
-            lessonsContainer.innerHTML = debrief.lessonsLearned.map(l => `<li style="margin-bottom:6px; color:var(--text-light); font-size:13px;">${l}</li>`).join("");
-        }
-
-        // Suggestions
-        const sugContainer = document.getElementById("debrief-suggestions-list");
-        if (sugContainer) {
-            sugContainer.innerHTML = debrief.suggestions.map(s => `<li style="margin-bottom:6px; color:var(--accent-cyan); font-size:13px;">💡 <strong>Recommendation:</strong> ${s}</li>`).join("");
-        }
-    }
-
-    printReport() {
-        if (window.AudioFX) window.AudioFX.playClick();
-        window.print();
-    }
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-    window.spaceRenderer = new SpaceRenderer("space-canvas");
-    window.app = new UIController();
-});
+  const clock = $("#system-clock");
+  if (clock) {
+    setInterval(() => {
+      const d = new Date();
+      clock.textContent = d.toISOString().slice(11, 19) + " UTC";
+    }, 1000);
+  }
+})();
