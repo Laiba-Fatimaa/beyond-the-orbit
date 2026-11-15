@@ -65,7 +65,7 @@ This project uses authentic NASA, ESA, JAXA, and mission archive photographic im
 ---
 
 ### 4. Flight Operations & Reconnaissance Environments
-* **Deep Space Earth & Auroral Horizon (`assets/artemis_orion_earth.png` / `assets/artemis_orion_earth.jpg`):**
+* **Deep Space Earth & Auroral Horizon (`assets/artemis_orion_earth.jpg`):**
   * *NASA Image ID:* `art002e000192` — Earth photographed by Artemis II crew aiming through Orion spacecraft window.
   * *Exact Source URL:* https://images.nasa.gov/details/art002e000192
   * *Agency/Credit:* NASA / Johnson Space Center.
