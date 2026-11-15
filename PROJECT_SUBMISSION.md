@@ -20,8 +20,9 @@ BEYOND THE ORBIT solves this by delivering a five-screen cinematic mission contr
 
 ## 2. Project Demo
 
-- **Application URL:** Local Streamlit deployment running on Python 3.11.
-- **Repository:** https://github.com/Laiba-Fatimaa/beyond-the-orbit.git
+- **Interactive Presentation (7 Slides in Gamma):** https://gamma.app/docs/BEYOND-THE-ORBIT-qpe5tpx84puk9hu
+- **Playable Web Deployment:** https://laiba-fatimaa.github.io/beyond-the-orbit/
+- **GitHub Repository:** https://github.com/Laiba-Fatimaa/beyond-the-orbit.git
 - **Gameplay Walkthrough Video (Suggested 30-Second Script below)**
 - **Report Samples:** Standalone interactive HTML debrief report and ReportLab PDF generated natively in-game.
 
